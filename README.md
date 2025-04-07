@@ -97,7 +97,7 @@ We recommend to use the installation via pip, when you are only interested in th
 4. To install the aMACEing_toolkit clone this git repository and use pip:
 
     ```python
-    git clone https://gitlab.tu-ilmenau.de/joha4087/amaceing_toolkit.git
+    git clone https://github.com/jhaens/amaceing_toolkit.git
     cd amaceing_toolkit
     ```
     First install the requirements:
