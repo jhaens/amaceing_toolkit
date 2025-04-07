@@ -1,5 +1,5 @@
 Analyzer Module
-==============
+===============
 
 Overview
 --------
@@ -7,26 +7,26 @@ Overview
 The Analyzer module is a powerful component of the aMACEing toolkit designed to analyze molecular dynamics trajectories. It provides tools for calculating fundamental physical properties and visualizing the results.
 
 Analysis Capabilities
---------------------
+---------------------
 
 The Analyzer supports the following types of analyses:
 
 Radial Distribution Function (RDF)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Calculates the probability of finding particles at a specific distance from a reference particle
 * Helps identify structural organization in systems
 * Automatically proposes relevant atom pairs based on system composition
 
 Mean Square Displacement (MSD)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Measures how far atoms move from their initial positions
 * Used to calculate diffusion coefficients
 * Identifies atomic mobility in the system
 
 Single-particle Mean Square Displacement (sMSD)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Tracks individual particle displacement rather than ensemble averages
 * Identifies heterogeneous dynamics in the system
@@ -38,7 +38,7 @@ Usage
 The Analyzer can be used in two ways:
 
 Q&A Session
-~~~~~~~~~~
+~~~~~~~~~~~
 
 Start an interactive Q&A session with:
 
@@ -57,7 +57,7 @@ This guides you through:
 The Analyzer offers a "smart proposal" feature that automatically recommends analyses based on the atom types in your system.
 
 Command-line Usage
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Analyze files directly with a single command:
 
@@ -79,7 +79,7 @@ For multiple trajectory analysis:
     amaceing_ana -f="traj1.xyz,traj2.xyz" -p="pbc1.txt,pbc2.txt" -t="0.5,1.0" -v="y"
 
 Output and Visualization
------------------------
+------------------------
 
 The Analyzer produces:
 
@@ -90,22 +90,9 @@ The Analyzer produces:
 * A comprehensive LaTeX report summarizing all results
 
 Technical Details
----------------
+-----------------
 
 * Diffusion coefficients are calculated by fitting the MSD curve in the time range 10-30 ps
 * For sMSD analysis, statistics include mean, standard deviation, median, and the five highest diffusion coefficients
 * The Analyzer automatically handles periodic boundary conditions
 * Multiple trajectory analysis allows for direct comparison between different simulations
-
-API Reference
------------
-
-.. automodule:: amaceing_toolkit.trajec_ana.analyzer_agent
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. automodule:: amaceing_toolkit.trajec_ana.default_analyzer
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,5 +1,5 @@
 4KOH_92H2O Example
-===============
+==================
 
 Overview
 --------
@@ -15,7 +15,7 @@ The example shows how to set up various types of calculations using CP2K, MACE, 
 * Energy calculations
 
 System Structure
----------------
+----------------
 
 The example is organized with the following directory structure:
 
@@ -34,10 +34,10 @@ The example is organized with the following directory structure:
 Each test script demonstrates the corresponding module's functionality with the 4KOH_92H2O system.
 
 Running the Examples
--------------------
+--------------------
 
 CP2K Examples
-~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 The ``cp2k_test.sh`` script demonstrates five different types of CP2K calculations:
 
@@ -126,7 +126,7 @@ Technical Details:
 
 
 MACE Examples
-~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 The ``mace_test.sh`` script demonstrates seven different types of MACE calculations:
 
@@ -291,7 +291,7 @@ After running these examples, each calculation will generate appropriate Python 
 
 
 MatterSim Examples
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 The ``mattersim_test.sh`` script demonstrates four different types of MatterSim calculations:
 
@@ -417,7 +417,7 @@ After running these examples, each calculation will generate appropriate Python 
         └── mattersim_input.log
 
 SevenNet Examples
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 The ``sevennet_test.sh`` script demonstrates four different types of SevenNet calculations:
 
@@ -526,7 +526,7 @@ Note that SevenNet models have specific naming conventions:
 * The "modal" parameter refers to the specific modal variant (mpa = materials/properties average)
 
 Utility Examples
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 The ``utils_test.sh`` script demonstrates six different utilities that help with various aspects of molecular dynamics workflows:
 
@@ -643,7 +643,7 @@ These utilities help with common tasks in the ML-potential workflow, such as:
 
 
 Next Steps
----------
+----------
 
 After running these examples, you can:
 

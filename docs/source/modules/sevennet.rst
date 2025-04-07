@@ -1,5 +1,5 @@
 SevenNet Module
-==============
+===============
 
 Overview
 --------
@@ -7,12 +7,12 @@ Overview
 The SevenNet module is a component of the aMACEing toolkit designed to facilitate the creation of input files for SevenNet simulations. SevenNet is a machine learning potential that enables atomistic simulations with high accuracy and efficiency. This module provides an interface for preparing molecular dynamics simulations and model evaluation with SevenNet.
 
 Capabilities
------------
+------------
 
 The SevenNet module supports the creation of input files for the following calculation types:
 
 Molecular Dynamics (MD)
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 * Performs standard molecular dynamics simulations
 * Supports various thermostats (Langevin, Nose-Hoover Chain, Bussi)
@@ -20,7 +20,7 @@ Molecular Dynamics (MD)
 * Options for trajectory output frequency
 
 Multi-Configuration Molecular Dynamics (MULTI_MD)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Runs multiple MD calculations with different foundation models
 * Allows comparison of performance across different models
@@ -28,7 +28,7 @@ Multi-Configuration Molecular Dynamics (MULTI_MD)
 * Creates organized directory structure for each run
 
 Reference Trajectory Recalculation (RECALC)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Recomputes energies and forces along an existing trajectory
 * Useful for evaluating model performance on reference trajectories
@@ -43,7 +43,7 @@ Usage
 The SevenNet module can be used in two ways:
 
 Q&A Session
-~~~~~~~~~~
+~~~~~~~~~~~
 
 Start an interactive Q&A session with:
 
@@ -65,7 +65,7 @@ The system will then generate:
 - A log file documenting your choices
 
 Command-line Usage
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Create input files directly with a single command:
 
@@ -97,7 +97,7 @@ For RECALC:
    Do **NOT** use double quotes inside the dictionary. Also do **NOT** use commas inside of lists in the dictionary.
 
 Output Files
------------
+------------
 
 The module generates:
 
@@ -108,7 +108,7 @@ The module generates:
 * For multi-configuration MD: Directory structure with files for each configuration
 
 Foundation Models
----------------
+-----------------
 
 The module supports various foundation models:
 
@@ -116,17 +116,9 @@ The module supports various foundation models:
 * **custom**: User-provided model path or model from the model logger
 
 Technical Details
----------------
+-----------------
 
 * Box configuration: Supports specification of cubic and orthorhombic simulation cells
 * Thermostats: Langevin, NoseHooverChainNVT, Bussi
 * Integration with ASE: Uses ASE for simulation infrastructure and trajectory handling
 * Environment management: Runs in a separate conda environment to avoid package conflicts
-
-API Reference
------------
-
-.. automodule:: amaceing_toolkit.workflow.sevennet_input_writer
-   :members:
-   :undoc-members:
-   :show-inheritance:

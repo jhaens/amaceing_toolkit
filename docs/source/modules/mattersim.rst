@@ -1,5 +1,5 @@
 MatterSim Module
-===============
+================
 
 Overview
 --------
@@ -7,12 +7,12 @@ Overview
 The MatterSim module is a component of the aMACEing toolkit that facilitates the creation of input files for MatterSim simulations. MatterSim is a deep learning atomistic model that enables accurate simulations across elements, temperatures, and pressures. This module provides an interface for preparing molecular dynamics simulations and model fine-tuning with MatterSim.
 
 Capabilities
------------
+------------
 
 The MatterSim module supports the creation of input files for the following calculation types:
 
 Molecular Dynamics (MD)
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 * Performs standard molecular dynamics simulations
 * Supports various thermostats (Langevin, Nose-Hoover Chain, Bussi)
@@ -20,7 +20,7 @@ Molecular Dynamics (MD)
 * Options for constant pressure simulations (NPT)
 
 Multi-Configuration Molecular Dynamics (MULTI_MD)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Runs multiple MD calculations with different foundation models
 * Allows comparison of performance across different models
@@ -28,7 +28,7 @@ Multi-Configuration Molecular Dynamics (MULTI_MD)
 * Creates organized directory structure for each run
 
 Fine-tuning of Foundation Models (FINETUNE)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fine-tunes MatterSim foundation models with custom datasets
 * Configurable training parameters (learning rate, batch size, etc.)
@@ -36,7 +36,7 @@ Fine-tuning of Foundation Models (FINETUNE)
 * Support for both CPU and GPU training
 
 Reference Trajectory Recalculation (RECALC)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Recomputes energies and forces along an existing trajectory
 * Useful for evaluating model performance on reference trajectories
@@ -48,7 +48,7 @@ Usage
 The MatterSim module can be used in two ways:
 
 Q&A Session
-~~~~~~~~~~
+~~~~~~~~~~~
 
 Start an interactive Q&A session with:
 
@@ -71,7 +71,7 @@ The system will then generate:
 - A log file documenting your choices
 
 Command-line Usage
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Create input files directly with a single command:
 
@@ -109,7 +109,7 @@ For RECALC:
    Do **NOT** use double quotes inside the dictionary. Also do **NOT** use commas inside of lists in the dictionary.
 
 Output Files
------------
+------------
 
 The module generates:
 
@@ -120,7 +120,7 @@ The module generates:
 * For multi-configuration MD: Directory structure with files for each configuration
 
 Foundation Models
----------------
+-----------------
 
 The module supports various foundation models:
 
@@ -129,7 +129,7 @@ The module supports various foundation models:
 * **custom**: User-provided model path or model from the model logger
 
 Technical Details
----------------
+-----------------
 
 * Box configuration: Supports specification of cubic and orthorhombic simulation cells
 * Thermostats: Langevin, NoseHooverChainNVT, Bussi, and NPT (for constant pressure)
@@ -137,11 +137,3 @@ Technical Details
 * Dataset creation: Support for creating training datasets from coordinate and force files
 * Model Logger: Automatic tracking of fine-tuned models
 * Integration with ASE: Uses ASE for simulation infrastructure and trajectory handling
-
-API Reference
------------
-
-.. automodule:: amaceing_toolkit.workflow.mattersim_input_writer
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -7,7 +7,7 @@ Overview
 The MACE module is a core component of the aMACEing toolkit designed to facilitate the creation of input files for MACE-torch simulations. It provides a user-friendly interface for preparing various machine learning-based molecular dynamics simulations and model fine-tuning tasks.
 
 Capabilities
------------
+------------
 
 The MACE module supports the creation of input files for the following calculation types:
 
@@ -19,28 +19,28 @@ Geometry Optimization (GEO_OPT)
 * Configurable convergence settings and maximum iterations
 
 Cell Optimization (CELL_OPT)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Optimizes both atomic positions and cell parameters
 * Uses hydrostatic strain filtering
 * Supports periodic boundary conditions
 
 Molecular Dynamics (MD)
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 * Supports various thermostats (Langevin, Nose-Hoover Chain, Bussi, NPT)
 * Configurable temperature, timestep, and run length
 * Options for trajectory output and logging frequency
 
 Multi-Configuration Molecular Dynamics (MULTI_MD)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Runs multiple MD calculations with different foundation models
 * Allows comparison of performance across different models
 * Uses the same simulation settings for consistent comparison
 
 Fine-tuning of Foundation Models (FINETUNE)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fine-tunes MACE foundation models with custom datasets
 * Configurable training parameters (learning rate, batch size, etc.)
@@ -48,14 +48,14 @@ Fine-tuning of Foundation Models (FINETUNE)
 * Automatic E0 detection for supported exchange-correlation functionals
 
 Multihead Fine-tuning (FINETUNE_MULTIHEAD)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Trains multiple model heads for different data types
 * Supports various exchange-correlation functionals
 * Flexible dataset configuration for each head
 
 Reference Trajectory Recalculation (RECALC)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Recomputes energies and forces along an existing trajectory
 * Useful for evaluating model performance on reference trajectories
@@ -67,7 +67,7 @@ Usage
 The MACE module can be used in two ways:
 
 Q&A Session
-~~~~~~~~~~
+~~~~~~~~~~~
 
 Start an interactive Q&A session with:
 
@@ -90,7 +90,7 @@ The system will then generate:
 - A log file documenting your choices
 
 Command-line Usage
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Create input files directly with a single command:
 
@@ -122,7 +122,7 @@ For FINETUNE:
    Do **NOT** use double quotes inside the dictionary. Also do **NOT** use commas inside of lists in the dictionary.
 
 Output Files
------------
+------------
 
 The module generates:
 
@@ -133,7 +133,7 @@ The module generates:
 * For recalculation: Files with recalculated energies and forces
 
 Foundation Models
----------------
+-----------------
 
 The module supports various foundation models:
 
@@ -143,18 +143,10 @@ The module supports various foundation models:
 * **custom**: User-provided model path
 
 Technical Details
----------------
+-----------------
 
 * Box configuration: Supports specification of cubic and orthorhombic simulation cells
 * Thermostats: Langevin, NoseHooverChainNVT, Bussi, and NPT (for constant pressure)
 * Dispersion corrections: Optional inclusion of dispersion via MACE
 * Acceleration: Optional support for cuequivariance for faster calculations
 * Model Logger: Automatic tracking of fine-tuned models
-
-API Reference
------------
-
-.. automodule:: amaceing_toolkit.workflow.mace_input_writer
-   :members:
-   :undoc-members:
-   :show-inheritance:

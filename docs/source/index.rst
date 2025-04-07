@@ -1,5 +1,5 @@
 Welcome to aMACEing Toolkit's documentation!
-===========================================
+============================================
 
 aMACEing Toolkit is a Python package for the creation of input files for CP2K, MACE-torch, MatterSim, and SevenNet as well as the post-processing and evaluation of these simulations.
 

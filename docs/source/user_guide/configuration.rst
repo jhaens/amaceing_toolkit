@@ -1,8 +1,8 @@
 Configuration Guide
-==================
+===================
 
 Default Values for Input Files
------------------------------
+------------------------------
 
 You can customize default values for input files in the following configuration files:
 
@@ -17,7 +17,7 @@ Additional data files:
 * MACE atomic energies: ``/src/amaceing_toolkit/default_configs/mace_e0s.py``
 
 HPC Runscript Creator
---------------------
+---------------------
 
 The package supports LSF and SLURM workload managers. Configuration is stored in:
 

@@ -1,13 +1,13 @@
 Usage Guide
-==========
+===========
 
 This package is designed to be easy to use. You can create input files for CP2K, MACE, MatterSim, and SevenNet via a Q&A session or one-line commands.
 
 Command-Line Usage
------------------
+------------------
 
 Q&A Session
-~~~~~~~~~~
+~~~~~~~~~~~
 
 Run the following commands to start a Q&A session for input creation:
 
@@ -21,7 +21,7 @@ Run the following commands to start a Q&A session for input creation:
     amaceing_utils         # Utilities
 
 One-Line Commands
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 You can also use one-line commands for input creation:
 
@@ -33,10 +33,10 @@ You can also use one-line commands for input creation:
    **Important**: Do **NOT** use double quotes or commas inside lists in the dictionary.
 
 Available Functions
------------------
+-------------------
 
 CP2K Input Creation
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 Supports:
 
@@ -47,7 +47,7 @@ Supports:
 * Single point energy calculation
 
 MACE Input Creation
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 Supports:
 
@@ -60,7 +60,7 @@ Supports:
 * Recalculation of a reference trajectory
 
 MatterSim Input Creation
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Supports:
 
@@ -70,7 +70,7 @@ Supports:
 * Recalculation of a reference trajectory
 
 SevenNet Input Creation
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Supports:
 
@@ -79,7 +79,7 @@ Supports:
 * Recalculation of a reference trajectory
 
 Analyzer
-~~~~~~~
+~~~~~~~~
 
 Analyze results with:
 
@@ -90,7 +90,7 @@ Analyze results with:
 * Single Particle MSD (sMSD)
 
 Utilities
-~~~~~~~~
+~~~~~~~~~
 
 Includes:
 

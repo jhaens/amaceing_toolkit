@@ -1,10 +1,10 @@
 Installation Guide
-=================
+==================
 
 The package is available on GitHub and can be installed via pip.
 
 Installation from Source
------------------------
+------------------------
 
 **We recommend using the installation from source for maximum flexibility.**
 
@@ -65,7 +65,7 @@ Installation from Source
        pip install mattersim==1.1.2 sevenn==0.11.0
 
 Installation via pip
-------------------
+--------------------
 
 This is the easiest way to install the package but has limitations (e.g., no direct MatterSim/SevenNet support).
 

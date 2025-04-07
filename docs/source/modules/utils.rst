@@ -1,5 +1,5 @@
 Utilities Module
-===============
+================
 
 Overview
 --------
@@ -7,12 +7,12 @@ Overview
 The Utilities module provides a set of helpful tools for working with machine learning potentials and molecular dynamics trajectories. It includes functions for evaluating model accuracy, preparing datasets, manipulating trajectories, and citing relevant software packages.
 
 Capabilities
------------
+------------
 
 The Utilities module includes the following tools:
 
 Model Error Evaluation (EVAL_ERROR)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Calculates errors between machine learning potential predictions and reference data
 * Computes mean absolute error (MAE) for both forces and energies
@@ -20,7 +20,7 @@ Model Error Evaluation (EVAL_ERROR)
 * Outputs detailed error statistics to a text file
 
 Reference Data Preparation (PREPARE_EVAL_ERROR)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Extracts frames from a trajectory file at specified intervals
 * Creates input files for CP2K reference calculations
@@ -28,7 +28,7 @@ Reference Data Preparation (PREPARE_EVAL_ERROR)
 * Generates runscripts for obtaining reference data
 
 Trajectory Frame Extraction (EXTRACT_XYZ)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Extracts frames from XYZ trajectory files at specified intervals
 * Creates a new XYZ file with the extracted frames
@@ -36,7 +36,7 @@ Trajectory Frame Extraction (EXTRACT_XYZ)
 * Useful for reducing trajectory size for analysis or visualization
 
 Citation Generation (MACE_CITATIONS)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Provides proper citations for the toolkit and underlying methods
 * Extracts model information from log files
@@ -44,7 +44,7 @@ Citation Generation (MACE_CITATIONS)
 * Ensures proper attribution of methods used in calculations
 
 Benchmarking (BENCHMARK)
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Creates a structured directory for benchmarking multiple ML potentials
 * Supports MACE, MatterSim, and SevenNet potentials
@@ -55,7 +55,7 @@ Benchmarking (BENCHMARK)
 * Automatically generates comparison statistics when using RECALC mode
 
 Logger Access
-~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 * Provides access to the run logger and model logger
 * Displays summaries of previous calculations
@@ -75,7 +75,7 @@ Usage
 The Utilities module can be accessed in two ways:
 
 Q&A Session
-~~~~~~~~~~
+~~~~~~~~~~~
 
 Start an interactive Q&A session with:
 
@@ -90,7 +90,7 @@ This guides you through:
 3. Configuring parameters specific to that function
 
 Command-line Usage
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Access utilities directly with a single command:
 
@@ -126,7 +126,7 @@ To view logger information:
     amaceing_utils -l=runs    # Shows run history
 
 Output and File Structure
-------------------------
+-------------------------
 
 Each utility function produces different outputs:
 
@@ -136,18 +136,10 @@ Each utility function produces different outputs:
 * **BENCHMARK**: Creates directories ``mace/``, ``mattersim/``, and ``sevennet/`` with input files
 
 Technical Details
----------------
+-----------------
 
 * Force units: eV/Å (converted from Hartree/Bohr when reading CP2K output)
 * Energy units: eV (converted from Hartree when reading CP2K output)
 * Frame extraction uses consistent time intervals based on frame numbers
 * Error statistics include both absolute and relative errors
 * Benchmarking supports both forward simulation and reference trajectory recalculation
-
-API Reference
------------
-
-.. automodule:: amaceing_toolkit.workflow.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:

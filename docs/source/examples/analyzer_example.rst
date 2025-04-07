@@ -1,5 +1,5 @@
 Analyzer Example
-===============
+================
 
 Overview
 --------
@@ -13,7 +13,7 @@ This example demonstrates the trajectory analysis capabilities of the aMACEing t
 The example includes both single trajectory analysis and comparative multi-trajectory analysis.
 
 Example Data
------------
+------------
 
 The example uses the following files in the ``examples/analyzer/data/`` directory:
 
@@ -25,7 +25,7 @@ The example uses the following files in the ``examples/analyzer/data/`` director
 These files contain atomic positions from molecular dynamics simulations of KOH solutions.
 
 Running the Examples with Bash Script
-------------------------------------
+-------------------------------------
 
 The ``analyzer_test.sh`` script demonstrates two types of analysis:
 
@@ -48,12 +48,12 @@ The script performs the following operations:
 6. Compiles a comparative LaTeX report
 
 Running the Examples Manually
----------------------------
+-----------------------------
 
 You can run these examples manually using either command-line parameters or the interactive Q&A interface.
 
 Single Trajectory Analysis
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Using Command Line Parameters:**
 
@@ -94,7 +94,7 @@ Single Trajectory Analysis
     pdflatex analysis.tex
 
 Multiple Trajectory Analysis
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Using Command Line Parameters:**
 
@@ -134,7 +134,7 @@ Multiple Trajectory Analysis
     pdflatex analysis.tex
 
 Output and Results
-----------------
+------------------
 
 After running the analysis, you'll get several output files:
 
@@ -162,7 +162,7 @@ The PDF report includes:
 * Statistical summary of results
 
 Smart Proposal Feature
---------------------
+----------------------
 
 A key feature demonstrated in this example is the "smart proposal" system, which:
 
@@ -174,7 +174,7 @@ A key feature demonstrated in this example is the "smart proposal" system, which
 This feature is especially useful for complex systems with many atom types, as it identifies the most scientifically relevant analyses based on the chemical composition.
 
 Technical Notes
--------------
+---------------
 
 * The diffusion coefficients are calculated by fitting the MSD curve in the time range 10-30 ps
 * For comparative analyses, the plots are automatically overlaid with different colors for easy comparison

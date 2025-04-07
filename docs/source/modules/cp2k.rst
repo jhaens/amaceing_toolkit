@@ -7,7 +7,7 @@ Overview
 The CP2K module is a core component of the aMACEing toolkit designed to facilitate the creation of CP2K input files through a user-friendly interface. It allows users to generate correctly formatted CP2K input files for various types of simulations without requiring extensive knowledge of CP2K's input syntax.
 
 Capabilities
------------
+------------
 
 The CP2K module supports the creation of input files for the following calculation types:
 
@@ -19,14 +19,14 @@ Geometry Optimization (GEO_OPT)
 * Options for printing forces during optimization
 
 Cell Optimization (CELL_OPT)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Optimizes both atomic positions and cell parameters
 * Supports various symmetry constraints (cubic, triclinic, etc.)
 * Customizable convergence settings
 
 Molecular Dynamics (MD)
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 * Supports different ensembles (NVE, NVT, NPT_F, NPT_I)
 * Configurable timestep, temperature, and run length
@@ -34,14 +34,14 @@ Molecular Dynamics (MD)
 * Customizable output frequency for forces and velocities
 
 Reference Trajectory Recalculation (REFTRAJ)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Recomputes energies and forces along an existing trajectory
 * Configurable stride for processing only specific frames
 * Options for forces and velocities output
 
 Single Point Energy Calculation (ENERGY)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Quick energy evaluation without geometry changes
 * Uses high accuracy SCF settings
@@ -52,7 +52,7 @@ Usage
 The CP2K module can be used in two ways:
 
 Q&A Session
-~~~~~~~~~~
+~~~~~~~~~~~
 
 Start an interactive Q&A session with:
 
@@ -74,7 +74,7 @@ The system will then generate:
 - A log file documenting your choices
 
 Command-line Usage
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 Create input files directly with a single command:
 
@@ -108,7 +108,7 @@ For MD:
    Do **NOT** use double quotes inside the dictionary. Also do **NOT** use commas inside of lists in the dictionary.
 
 Output Files
------------
+------------
 
 The module generates:
 
@@ -118,18 +118,10 @@ The module generates:
 * For MD with equilibration, additional equilibration input and runscript files
 
 Technical Details
----------------
+-----------------
 
 * Exchange-correlation functionals: Supports PBE, BLYP and others with optional D3 dispersion correction
 * Basis sets: MOLOPT basis sets used by default
 * SCF: OT method with DIIS minimizer and FULL_SINGLE_INVERSE preconditioner
 * MD ensembles: Supports NVT, NPT_F (flexible cell), NPT_I (isotropic cell)
 * For MD simulations, global thermostats are used for production, massive thermostats for equilibration
-
-API Reference
------------
-
-.. automodule:: amaceing_toolkit.workflow.cp2k_input_writer
-   :members:
-   :undoc-members:
-   :show-inheritance:
