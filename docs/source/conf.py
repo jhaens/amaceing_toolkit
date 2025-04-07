@@ -27,3 +27,7 @@ try:
     print(f"Successfully imported amaceing_toolkit: {amaceing_toolkit.__file__}")
 except ImportError as e:
     print(f"IMPORT ERROR: {e}")
+
+
+# -- Project information -----------------------------------------------------
+project = 'amaceing_toolkit'

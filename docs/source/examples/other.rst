@@ -1,4 +1,4 @@
-CsH2PO4 Example
+Other Example
 ===============
 
 Overview
