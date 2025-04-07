@@ -1,0 +1,2 @@
+Input file created with the following configuration:
+{'project_name': 'mace_project', 'coord_file': '../../data/4koh_92h2o.xyz', 'pbc_list': '[14.2067 14.2067 14.2067]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '15', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ase_traj': 'y'}

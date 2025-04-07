@@ -1,0 +1,2 @@
+Input file created with the following configuration:
+"{'project_name': 'abc', 'coord_file': '../../data/dft_energy.xyz', 'pbc_list': '[20.8196 20.8196 20.8196]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n'}"

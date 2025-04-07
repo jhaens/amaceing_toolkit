@@ -1,0 +1,6 @@
+Please download the trajectories from the following links:
+    # KOH1: https://cloud.tu-ilmenau.de/s/wDRecAYSpPxXiZk/download/koh1.xyz
+    # KOH2: https://cloud.tu-ilmenau.de/s/wRCLg2pBwbCpN6p/download/koh2.xyz
+You can use wget:
+wget https://cloud.tu-ilmenau.de/s/wDRecAYSpPxXiZk/download/koh1.xyz
+wget https://cloud.tu-ilmenau.de/s/wRCLg2pBwbCpN6p/download/koh2.xyz

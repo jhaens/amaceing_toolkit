@@ -1,0 +1,6 @@
+ase==3.24.0
+cycler==0.12.1
+mace_torch==0.3.10
+numpy==1.26.4
+scipy==1.13.0
+pybind11==2.13.6
