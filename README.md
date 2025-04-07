@@ -70,7 +70,7 @@ The package is available on GitHub and can be installed via pip.
     ```
     and now install the package itself. This can be done via:
     ```bash
-    pip install -e .
+    pip install .
     ```
 
 
