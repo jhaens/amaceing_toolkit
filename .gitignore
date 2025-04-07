@@ -12,6 +12,11 @@ build/
 wheelhouse/
 dist/
 __pycache__/
+docs/conf.py
+docs/make.bat
+docs/Makefile
+docs/source/_static/
+docs/source/_templates/
 #
 *.egg-info
 *.pyc
@@ -20,3 +25,4 @@ examples/how_to_add_example.txt
 src/amaceing_toolkit/default_configs/hpc_setup.txt
 src/amaceing_toolkit/runs/run_logger.log
 src/amaceing_toolkit/runs/finetuned_models.log
+.readthedocs.yaml
