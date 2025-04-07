@@ -261,8 +261,8 @@ bash /path/to/amaceing_toolkit/examples/analyzer/analyzer_test.sh
 The package also includes a run and model logger. This is a small tool to keep track of the runs you have done with the package. The logger is located in the folder `/amaceing_toolkit/src/amaceing_toolkit/runs/`. You can get an overview over the runs you have done and models you have fine-tuned with the package via the commands:
 
 ```bash
-amaceing_utils --logger=runs
-amaceing_utils --logger=models
+amaceing_utils --logger=run
+amaceing_utils --logger=model
 ```
 
 
