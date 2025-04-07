@@ -1,29 +1,29 @@
-# Configuration file for the Sphinx documentation builder.
-
+# At the top after imports
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../..'))
+import sphinx
 
-# -- Project information -----------------------------------------------------
-project = 'aMACEing Toolkit'
-copyright = '2025, Jonas Hänseroth'
-author = 'Jonas Hänseroth'
 
-# -- General configuration ---------------------------------------------------
+html_theme = "sphinx_rtd_theme"
+
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
-    'sphinx.ext.todo',
-    'sphinx.ext.mathjax',
+    'sphinx.ext.viewcode',
 ]
 
-templates_path = ['_templates']
-exclude_patterns = []
+# Add this debugging code
+package_path = os.path.abspath('../..')
+print(f"Package path: {package_path}")
+print(f"Python path: {sys.path}")
+print(f"Sphinx version: {sphinx.__version__}")
 
-# -- Options for HTML output -------------------------------------------------
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+sys.path.insert(0, os.path.abspath('../..'))
 
-# -- Extension configuration -------------------------------------------------
-todo_include_todos = True
+
+# Try to import your module to verify it works
+try:
+    import amaceing_toolkit
+    print(f"Successfully imported amaceing_toolkit: {amaceing_toolkit.__file__}")
+except ImportError as e:
+    print(f"IMPORT ERROR: {e}")

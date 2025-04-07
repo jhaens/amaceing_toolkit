@@ -1,11 +1,10 @@
-build:
-  os: ubuntu-24.04
-  tools:
-    python: "3.9"
+version: 2
 
 sphinx:
-   configuration: docs/source/conf.py
+  configuration: docs/source/conf.py
 
 python:
-   install:
+  install:
+    - method: pip
+      path: .
     - requirements: docs/source/requirements.txt

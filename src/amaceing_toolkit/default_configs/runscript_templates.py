@@ -18,9 +18,9 @@ def hpc_setup_form():
             path_to_program['cp2k'] = '/home/joha4087/programs/cp2k_easy/cp2k-2025.1/exe/local/cp2k.popt' 
             path_to_source_file['cp2k'] = '/home/joha4087/programs/cp2k_easy/source_cp2k_gcc_openmpi_by_jonas'
             path_to_program['mace'] = 'conda activate atk'                                             # to do add the conda env name
-            path_to_source_file['mace'] = '/home/joha4087/anaconda3/etc/profile.d/conda.sh'
+            path_to_source_file['mace'] = input('Enter the path to the source file of your conda: [/home/USER/anaconda3/etc/profile.d/conda.sh]')
             path_to_program['mattersim'] = 'conda activate atk_ms7n'                                           # to do add the conda env name
-            path_to_source_file['mattersim'] = '/home/joha4087/anaconda3/etc/profile.d/conda.sh'
+            path_to_source_file['mattersim'] = input('Enter the path to the source file of your conda: [/home/USER/anaconda3/etc/profile.d/conda.sh]')
             workload_manager = 'lsf'
         elif which_cluster == '2':
             cluster = 'batch6'

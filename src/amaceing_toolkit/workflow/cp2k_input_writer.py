@@ -102,7 +102,6 @@ def cp2k_form():
         pbc_list = [box_x, box_y, box_z]
     else:
         pbc_mat = np.loadtxt(box_cubic)
-        assert os.path.isfile(pbc_mat), "PBC file does not exist!"
         pbc_list = [pbc_mat[0,0], pbc_mat[1,1], pbc_mat[2,2]]
     
     # Configure GLOBAL and template usage

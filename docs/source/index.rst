@@ -29,10 +29,3 @@ aMACEing Toolkit is a Python package for the creation of input files for CP2K, M
    examples/4KOH_92H2O
    examples/analyzer_example
    examples/other
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
