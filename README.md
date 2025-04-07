@@ -3,8 +3,8 @@
 ## Table of Contents
 - [Description](#description)
 - [Installation](#installation)
-  - [(i) Installation via pip](#i-installation-via-pip)
-  - [(ii) Installation from source](#ii-installation-from-source)
+  - [(i) Installation from source](#i-installation-from-source)
+  - [(ii) Installation via pip](#ii-installation-via-pip)
 - [Getting started](#getting-started)
 - [Full list of the main functions](#full-list-of-the-main-functions)
   - [CP2K input creation](#cp2k-input-creation-amaceing_cp2k)
@@ -22,46 +22,10 @@
 This package is designed to help you with the creation of CP2K input files for MACE, MatterSim and SevenNet. It is a command line tool which allows you to create CP2K input files via a Q&A session. The package also includes a run and model logger to keep track of your runs and models. The package is designed to be easy to use and to help you get started with CP2K, MACE, MatterSim and SevenNet.
 
 ## Installation
+The package is available on GitHub and can be installed via pip.
 
-### (i) Installation via pip
-We recommend to use the installation via pip, when you are only interested in the use of MACE. This is the easiest way to install the package. The package is available on PyPI and can be installed via pip. (Please not that with this installation can't run MatterSim and SevenNet simulations via the toolkit directly. You will be able to only create input files for these packages. For this please use the installation from source.)
-
-1. Create a new virtual environment. Please create a new environment with the following command:
-
-    ```bash
-    conda create -n atk python=3.9          # create the environment
-    conda activate atk                      # activate the environment
-    ```
-
-2. Please look for the right PyTorch installation for your system. You can find the right command for your system here: https://pytorch.org/get-started/locally/. For example, if you are using a CUDA 12.4 you can install PyTorch 2.6.0 with the following command:
-
-    ```bash
-    pip install torch torchvision torchaudio
-    ```
-    If you are using a CPU only system, you can use the following command:
-
-    ```bash
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-    ```
-
-3. Install the package via pip:
-
-    ```bash
-    pip install amaceing_toolkit
-    ```
-
-    If everything worked fine, you should be able to run the following command:
-
-    ```bash
-    amaceing_cp2k --help
-    ```
-    and the following package should be installed: mace-torch
-    ```bash
-    pip show mace-torch
-    ```
-
-
-### (ii) Installation from source
+### (i) Installation from source
+**We recommend to use the installation from source. This is the most flexible way to install the package.**
 
 1. It is very strongly recommended to use a virtual environment for the installation of this package. This can be done via conda or venv. If you are using conda, please create a new environment with the following command:
 
@@ -152,6 +116,43 @@ We recommend to use the installation via pip, when you are only interested in th
 
     ```python
     import amaceing_cp2k from amaceing_toolkit
+    ```
+
+### (ii) Installation via pip
+This is the easiest way to install the package. The package is available on PyPI and can be installed via pip. (Please not that with this installation can't run MatterSim and SevenNet simulations via the toolkit directly. You will be able to only create input files for these packages. For this please use the installation from source.)
+
+1. Create a new virtual environment. Please create a new environment with the following command:
+
+    ```bash
+    conda create -n atk python=3.9          # create the environment
+    conda activate atk                      # activate the environment
+    ```
+
+2. Please look for the right PyTorch installation for your system. You can find the right command for your system here: https://pytorch.org/get-started/locally/. For example, if you are using a CUDA 12.4 you can install PyTorch 2.6.0 with the following command:
+
+    ```bash
+    pip install torch torchvision torchaudio
+    ```
+    If you are using a CPU only system, you can use the following command:
+
+    ```bash
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+    ```
+
+3. Install the package via pip:
+
+    ```bash
+    pip install amaceing_toolkit
+    ```
+
+    If everything worked fine, you should be able to run the following command:
+
+    ```bash
+    amaceing_cp2k --help
+    ```
+    and the following package should be installed: mace-torch
+    ```bash
+    pip show mace-torch
     ```
 
 ## Getting started
