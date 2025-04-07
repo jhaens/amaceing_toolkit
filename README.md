@@ -28,35 +28,35 @@ We recommend to use the installation via pip, when you are only interested in th
 
 1. Create a new virtual environment. Please create a new environment with the following command:
 
-    ```python
+    ```bash
     conda create -n atk python=3.9          # create the environment
     conda activate atk                      # activate the environment
     ```
 
 2. Please look for the right PyTorch installation for your system. You can find the right command for your system here: https://pytorch.org/get-started/locally/. For example, if you are using a CUDA 12.4 you can install PyTorch 2.6.0 with the following command:
 
-    ```python
+    ```bash
     pip install torch torchvision torchaudio
     ```
     If you are using a CPU only system, you can use the following command:
 
-    ```python
+    ```bash
     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
     ```
 
 3. Install the package via pip:
 
-    ```python
+    ```bash
     pip install amaceing_toolkit
     ```
 
     If everything worked fine, you should be able to run the following command:
 
-    ```python
+    ```bash
     amaceing_cp2k --help
     ```
     and the following package should be installed: mace-torch
-    ```python
+    ```bash
     pip show mace-torch
     ```
 
@@ -65,20 +65,20 @@ We recommend to use the installation via pip, when you are only interested in th
 
 1. It is very strongly recommended to use a virtual environment for the installation of this package. This can be done via conda or venv. If you are using conda, please create a new environment with the following command:
 
-    ```python
+    ```bash
     conda create -n atk python=3.9          # create the environment
     conda activate atk                      # activate the environment
     ```
 
 2. Please look for the right PyTorch installation for your system. You can find the right command for your system here: https://pytorch.org/get-started/locally/. For example, if you are using a CUDA 12.4 you can install PyTorch 2.6.0 with the following command:
 
-    ```python
+    ```bash
     pip install torch torchvision torchaudio
     ```
 
     If you are using a CPU only system, you can use the following command:
 
-    ```python
+    ```bash
     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
     ```
 
@@ -96,47 +96,47 @@ We recommend to use the installation via pip, when you are only interested in th
 
 4. To install the aMACEing_toolkit clone this git repository and use pip:
 
-    ```python
+    ```bash
     git clone https://github.com/jhaens/amaceing_toolkit.git
     cd amaceing_toolkit
     ```
     First install the requirements:
-    ```python
+    ```bash
     pip install -r requirements.txt
     ```
     and now install the package itself. This can be done via:
-    ```python
+    ```bash
     pip install -e .
     ```
 
 
     If everything worked fine, you should be able to run the following command:
 
-    ```python
+    ```bash
     amaceing_cp2k --help
     ```
     and the following package should be installed: mace-torch
-    ```python
+    ```bash
     pip show mace-torch
     ```
     
 5. OPTIONAL: If you want profit from a faster MACE installation, you can install the following packages:
 
-    ```python
+    ```bash
     pip install cuequivariance==0.1.0 cuequivariance-torch==0.1.0 cuequivariance-ops-torch-cu12==0.1.0
     ```
     Further informations concerning these packages are 
 
 6. In order to be able to use the package also with MatterSim and SevenNet you need to create a second environment. This can be done via the following command:
 
-    ```python
+    ```bash
     conda create -n atk_ms7n python=3.9    # create the environment
     conda activate atk_ms7n                # activate the environment
     ```
 
     Now you can install the package via:
 
-    ```python
+    ```bash
     pip install mattersim==1.1.2 sevenn==0.11.0
     ```
     The second environment is needed because the package mace and MatterSim/SevenNet have som conflicting dependencies:mace-torch depends on e3nn v0.4.4 and MatterSim/SevenNet depend on e3nn v0.5.0. 
@@ -160,7 +160,7 @@ This package is designed to be easy to use: via a Q&A you obtain a ready to use 
 
 The main functions available (until now) are the creation of MACE, MatterSim (, SevenNet) and CP2K input files. Also other useful small scripts are available via an third main function. These could be achieved via the following commands:
 
-```python
+```bash
 amaceing_cp2k # Starts Q&A session for cp2k input creation
 
 amaceing_mace # Starts Q&A session for mace-torch input creation
@@ -182,11 +182,11 @@ The package includes the following main functions. All of the functions can be r
 
 All of the functions include a extensive help function. You can get the help function via the command line with the following command:
 
-```python
+```bash
 amaceing_cp2k --help
 ```
 The syntax of the one-line commands is the same for all of the functions:
-```python
+```bash
 amaceing_<function> -rt="<run_type>" -c="{'project_name': 'first_test', 'pbc_list': '[10 10 10]', ...}"
 ```
 > [!IMPORTANT]
@@ -259,7 +259,7 @@ bash /path/to/amaceing_toolkit/examples/analyzer/analyzer_test.sh
 ## Run & Model logger
 The package also includes a run and model logger. This is a small tool to keep track of the runs you have done with the package. The logger is located in the folder `/amaceing_toolkit/src/amaceing_toolkit/runs/`. You can get an overview over the runs you have done and models you have fine-tuned with the package via the commands:
 
-```python
+```bash
 amaceing_utils --logger=runs
 amaceing_utils --logger=models
 ```
@@ -269,7 +269,7 @@ amaceing_utils --logger=models
 
 This package allows for the use of predefined input values. The setup of this values is done in the following files. There you can add your own preset values, change the default values and define whitch preset should be used in the main runs.
 
-```python
+```bash
 /path/to/amaceing_toolkit/src/amaceing_toolkit/default_configs/cp2k_config.py # Open and change the cp2k config file 
 
 /path/to/amaceing_toolkit/src/amaceing_toolkit/default_configs/mace_config.py # Open and change the mace config file 
@@ -281,7 +281,7 @@ This package allows for the use of predefined input values. The setup of this va
 
 The different calculation programs are sometimes using data which is stored in dictionary files (e.g. basis sets, xc functionals, atomic energies), these can be found in the same folder. If needed please insert here the required data.
 
-```python
+```bash
 /path/to/amaceing_toolkit/src/amaceing_toolkit/default_configs/cp2k_kind_data.py # Open and add data to the basis set and xc functional file 
 
 /path/to/amaceing_toolkit/src/amaceing_toolkit/default_configs/mace_e0s.py # Open and add data to the atomic energies file
