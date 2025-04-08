@@ -65,6 +65,7 @@ This guides you through:
 5. Setting calculation-specific parameters
 
 The system will then generate:
+
 - Python script for the selected calculation
 - Configuration file for fine-tuning (if applicable)
 - A runscript for executing the calculation on CPU or GPU

@@ -1,15 +1,16 @@
-Other Example
+Other Examples
 ===============
 
 Overview
 --------
 
-This example is equivalent to the 4KOH_92H2O example in terms of setup and functionality. It demonstrates the capabilities of the aMACEing toolkit for performing various types of calculations, including:
+The other examples are equivalent to the 4KOH_92H2O example in terms of setup and functionality. It demonstrates the capabilities of the aMACEing toolkit for performing various types of input generations, including:
 
-* Geometry optimization
-* Molecular dynamics simulations
-* Reference trajectory recalculation
-* Energy calculations
+* CP2K input generation
+* MACE input generation
+* MatterSim input generation
+* SevenNet input generation
+* Utils functions
 
 For more details on the 4KOH_92H2O example and its setup, please refer to the documentation here:
 

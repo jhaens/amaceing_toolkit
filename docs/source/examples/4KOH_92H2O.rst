@@ -24,6 +24,16 @@ The example is organized with the following directory structure:
     4KOH_92H2O_333K/
     ├── data/
     │   ├── system.xyz            # Initial structure file
+    │   ├── pbc                   # Cell vectors file
+    │   ├── train_file.xyz        # Training file (including positions, energies, forces)
+    │   ├── train_file2.xyz       # Second training file (including positions, energies, forces)
+    │   ├── system.model          # Small fined-tuned model file
+    │   ├── dft_energies.xyz      # Postion and energies file of short dft md 
+    │   ├── dft_forces.xyz        # Force file of short dft md
+    │   ├── mace_energies.xyz     # Position and energies file of short mace md
+    │   ├── mace_forces.xyz       # Force file of short mace md
+    │   ├── trajectory.traj       # ASE trajectory file
+    │   ├── mace_input.log        # Log file of an aMACEing_mace run
     │   └── ref_trajectory.xyz    # Reference trajectory for recalculation
     ├── cp2k_test.sh              # CP2K examples script
     ├── mace_test.sh              # MACE examples script

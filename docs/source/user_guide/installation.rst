@@ -48,7 +48,7 @@ Installation from Source
        git clone https://github.com/jhaens/amaceing_toolkit.git
        cd amaceing_toolkit
        pip install -r requirements.txt
-       pip install -e .
+       pip install .
 
 5. **Optional: Install additional packages for faster MACE**:
 
@@ -102,3 +102,13 @@ After installation, verify with:
 
     amaceing_cp2k --help
     pip show mace-torch
+
+4. **Optional: Install MatterSim and SevenNet**:
+
+    If you want to use the pip-package with MatterSim and SevenNet, install them in a separate environment:
+    
+    .. code-block:: bash
+
+        conda create -n atk_ms7n python=3.9
+        conda activate atk_ms7n
+        pip install mattersim==1.1.2 sevenn==0.11.0

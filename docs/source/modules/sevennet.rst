@@ -60,6 +60,7 @@ This guides you through:
 5. Setting calculation-specific parameters
 
 The system will then generate:
+
 - Python script for the selected calculation
 - A runscript for executing the calculation
 - A log file documenting your choices
@@ -112,7 +113,10 @@ Foundation Models
 
 The module supports various foundation models:
 
-* **latest**: Latest available SevenNet model
+* **7net-mf-ompa**: (recommended) multi-fidelity model trained on Materials Project data, Alexandria data and Meta Open Materials 2024 data
+* **7net-omat**: model trained on Meta Open Materials 2024 data
+* **7net-l3i5**: model trained on Materials Project data (increased maximum spherical harmonics degree to 3)
+* **7net-0**: model trained on Materials Project data (default model)
 * **custom**: User-provided model path or model from the model logger
 
 Technical Details

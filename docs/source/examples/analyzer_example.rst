@@ -119,13 +119,14 @@ Multiple Trajectory Analysis
     # - Enter path to PBC file: ../data/pbc_koh1
     # - Timestep in fs: 50.0
     # - How many trajectories: 2
+    # - What should be the key for this trajectory: koh1
     #
     # For the second trajectory:
-    # - What should be the key for this trajectory: koh2
     # - Trajectory file: ../data/koh2.xyz
     # - Is the box cubic? pbc
     # - Enter path to PBC file: ../data/pbc_koh2
     # - Timestep in fs: 50.0
+    # - What should be the key for this trajectory: koh2
     #
     # Continue with analysis selection as in the single trajectory example
     #
@@ -139,27 +140,31 @@ Output and Results
 After running the analysis, you'll get several output files:
 
 **Data Files:**
-* ``rdf_*.csv`` - Radial distribution function data
-* ``msd_*.csv`` - Mean square displacement data
-* ``smsd_*.csv`` - Single-particle mean square displacement data (if selected)
-* ``overview_diffcoeff.csv`` - Summary of calculated diffusion coefficients
-* ``diff_coeff_*.csv`` - Diffusion coefficients for individual atom types
+
+- ``rdf_*.csv``: Radial distribution function data
+- ``msd_*.csv``: Mean square displacement data
+- ``smsd_*.csv``: Single-particle mean square displacement data (if selected)
+- ``overview_diffcoeff.csv``: Summary of calculated diffusion coefficients
+- ``diff_coeff_*.csv``: Diffusion coefficients for individual atom types
 
 **Visualization:**
-* ``rdf_*_plot.pdf`` - RDF plots for different atom pairs
-* ``msd_*_plot.pdf`` - MSD plots with diffusion coefficient fits
-* ``smsd_*_plot.pdf`` - Single-particle MSD plots (if selected)
+
+- ``rdf_*_plot.pdf``: RDF plots for different atom pairs
+- ``msd_*_plot.pdf``: MSD plots with diffusion coefficient fits
+- ``smsd_*_plot.pdf``: Single-particle MSD plots (if selected)
 
 **LaTeX Report:**
-* ``analysis.tex`` - LaTeX source for the comprehensive report
-* ``analysis.pdf`` - Final PDF report with all analyses and results
-* ``img_dir/`` - Directory containing all plots for the report
+
+- ``analysis.tex``: LaTeX source for the comprehensive report
+- ``analysis.pdf``: Final PDF report with all analyses and results
+- ``img_dir/``: Directory containing all plots for the report
 
 The PDF report includes:
-* Analysis details and directory structure
-* Diffusion coefficient tables (if MSD analysis was performed)
-* RDF, MSD, and sMSD plots with captions
-* Statistical summary of results
+
+- Analysis details and directory structure
+- Diffusion coefficient tables (if MSD analysis was performed)
+- RDF, MSD, and sMSD plots with captions
+- Statistical summary of results
 
 Smart Proposal Feature
 ----------------------

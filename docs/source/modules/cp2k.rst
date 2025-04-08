@@ -69,6 +69,7 @@ This guides you through:
 5. Configuring optional settings
 
 The system will then generate:
+
 - The CP2K input file
 - A runscript for executing the calculation
 - A log file documenting your choices
