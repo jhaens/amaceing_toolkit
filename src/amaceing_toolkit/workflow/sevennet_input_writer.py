@@ -14,10 +14,9 @@ from .utils import ask_for_float_int
 from .utils import ask_for_int
 from .utils import ask_for_yes_no
 from .utils import ask_for_yes_no_pbc
-from .utils import create_dataset
-from .utils import e0_wrapper
 from .utils import frame_counter
 from .utils import extract_frames
+from .utils import xyz_reader
 from amaceing_toolkit.runs.run_logger import run_logger1
 from amaceing_toolkit.default_configs import configs_sevennet
 from amaceing_toolkit.default_configs import mattersim_runscript
@@ -38,7 +37,8 @@ def atk_sevennet():
         parser.add_argument("-rt", "--run_type", type=str, help="[OPTIONAL] Which type of calculation do you want to run? ('MD', 'MULTI_MD', 'FINETUNE', 'RECALC')", required=False)
         parser.add_argument("-c", "--config", type=str, help=textwrap.dedent("""[OPTIONAL] Dictionary with the configuration:\n 
         \033[1m MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'foundation_model' : '7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH', 'modal': 'None/mpa/oma24' 'dispersion_via_ase': 'y/n', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
-        \033[1m MULTI_MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'foundation_model' : '['7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH' ...]', 'modal': ['None/mpa/oma24' ...]', 'dispersion_via_ase': '['y/n' ...]', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
+        \033[1m MULTI_MD \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'foundation_model' : '['7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH' ...]', 'modal': ['None/mpa/oma24' ...]', 'dispersion_via_ase': '['y/n' ...]', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
+        \033[1m FINETUNE \033[0m: "{'project_name': 'NAME', 'foundation_model': '7net-0', 'train_data_path': 'FILE', 'batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT'}"\n]
         \033[1m RECALC \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[FLOAT FLOAT FLOAT]', foundation_model' : '7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH', 'modal': 'None/mpa/oma24', 'dispersion_via_ase': 'y/n'}'\n" """), required=False)
         args = parser.parse_args()
         if args.config != ' ':
@@ -46,8 +46,6 @@ def atk_sevennet():
                 if args.run_type == 'MULTI_MD':
                     input_config = string_to_dict_multi(args.config)
                     write_input(input_config, args.run_type)
-                elif args.run_type == 'FINETUNE':
-                    print('No support of FINETUNE yet!')
                 else:
                     input_config = string_to_dict(args.config)
                     write_input(input_config, args.run_type)
@@ -76,13 +74,16 @@ def atk_sevennet():
                 # Log the model
                 if args.run_type == 'FINETUNE':
                     
-                    name_of_model = f"{input_config['project_name']}.model"
-                    location = os.path.join(os.getcwd(), input_config['save_path'], name_of_model)
+                    name_of_model = f"checkpoint_{input_config['project_name']}.pth"
+                    location = os.path.join(os.getcwd(), name_of_model)
 
-                    model_logger(location, input_config['project_name'], input_config['load_model_path'], '', input_config['lr'], True)
+                    model_logger(location, input_config['project_name'], input_config['foundation_model'], '', input_config['lr'], True)
 
             except KeyError:
                 print("The dictionary is not in the right format. Please check the help page.")
+                # Print the error message
+                print("Error: ", sys.exc_info()[1])
+
     else:
         sevennet_form()
     
@@ -131,7 +132,7 @@ def sevennet_form():
     run_type_dict = {'1': 'MD', '2': 'MULTI_MD', '3': 'FINETUNE', '4': 'RECALC'}
     run_type = ' '
     while run_type not in ['1', '2', '3', '4','']:
-        run_type = input("Which type of calculation do you want to run? (1=MD, 2=MULTI_MD, 3=FINETUNE(NOT SUPPORTED/WIP), 4=RECALC): " + "[" + sevennet_config['run_type'] + "]: ")
+        run_type = input("Which type of calculation do you want to run? (1=MD, 2=MULTI_MD, 3=FINETUNE, 4=RECALC): " + "[" + sevennet_config['run_type'] + "]: ")
         if run_type not in ['1', '2', '3', '4','']:
             print("Invalid input! Please enter '1', '2', '3' or '4'.")
     if run_type == '':
@@ -148,11 +149,12 @@ def sevennet_form():
 
     # Ask for the fine-tune settings 
     if run_type == 'FINETUNE':
+        print("! CAUTION: You can NOT use training files from MACE or MatterSim, please recreate them with this tool !")
         dataset_needed = ask_for_yes_no("Do you want to create a training dataset from a force & a position file (y) or did you define it already (n)?", 'y')
         if dataset_needed == 'y':
             print("Creating the training dataset...")
             path_to_training_file = dataset_creator(coord_file, pbc_list, run_type, sevennet_config)      
-            
+
         else: 
             # The given file is the training file
             path_to_training_file = coord_file
@@ -217,23 +219,23 @@ def sevennet_form():
                 input_config = config_wrapper(False, run_type, sevennet_config, coord_file, pbc_list, project_name)
 
     if run_type == 'FINETUNE':
-        #input_config['train_data_path'] = review_training_file(input_config['train_data_path'])
+        # Write the input file
+        write_input(input_config, run_type)
 
-        #finetune_config = crt_config(input_config)
-        
-        #write_runscript(input_config, run_type)
+        # Write the runscript
+        write_runscript(input_config, run_type) 
 
+        # Write the configuration to a log file
         write_log(input_config)
 
+        # Log the run
         run_logger1(run_type,os.getcwd())
 
         # Log the model
-        loc_of_execution = os.getcwd()
-        loc_of_model = input_config['save_path']
-        name_of_model = f"{input_config['project_name']}.model"
-        location = os.path.join(loc_of_execution, loc_of_model, name_of_model)
+        name_of_model = f"checkpoint_{input_config['project_name']}.pth"
+        location = os.path.join(os.getcwd(), name_of_model)
 
-        model_logger(location, input_config['project_name'], input_config['load_model_path'], '', input_config['lr'])
+        model_logger(location, input_config['project_name'], input_config['foundation_model'], '', input_config['lr'])
     
     elif run_type == 'RECALC':
         
@@ -268,8 +270,12 @@ def sevennet_form():
         run_logger1(run_type,os.getcwd())
 
             
-    # Citations of SevenNet (until now not necessary)
-    # sevennet_citations()
+    # Citations of SevenNet 
+    if 'foundation_model' in input_config.keys():
+        sevenet_citations(input_config['foundation_model'])
+    else:
+        sevenet_citations()
+
 
 def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_list, project_name, path_to_training_file="", e0_dict={}):
 
@@ -309,19 +315,14 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_list, pro
                             'timestep': sevennet_config[run_type]['timestep'],
                             'log_interval': sevennet_config[run_type]['log_interval'],
                             'print_ase_traj': sevennet_config[run_type]['print_ase_traj']}
-        elif run_type == 'FINETUNE': #WIP
+        elif run_type == 'FINETUNE': 
             input_config = {'project_name': project_name,
+                            'foundation_model': sevennet_config[run_type]['foundation_model'],
                             'train_data_path': path_to_training_file, 
-                            'device': sevennet_config[run_type]['device'],
-                            'force_loss_ratio': sevennet_config[run_type]['force_loss_ratio'],
-                            'load_model_path': sevennet_config[run_type]['load_model_path'],
                             'batch_size': sevennet_config[run_type]['batch_size'],
-                            'save_checkpoint': sevennet_config[run_type]['save_checkpoint'],
-                            'ckpt_interval': sevennet_config[run_type]['ckpt_interval'],
                             'epochs': sevennet_config[run_type]['epochs'],
                             'seed': sevennet_config[run_type]['seed'],
-                            'lr': sevennet_config[run_type]['lr'], 
-                            'save_path': sevennet_config[run_type]['save_path']}
+                            'lr': sevennet_config[run_type]['lr']}
         elif run_type == 'RECALC':
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
@@ -407,35 +408,26 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_list, pro
                             'print_ase_traj': print_ase_traj}
 
 
-        elif run_type == 'FINETUNE': #WIP
-            
-            foundation_model = foundation_model_code(ask_for_foundational_model(sevennet_config, run_type))
+        elif run_type == 'FINETUNE':
+            print("")
+            print("! Fine-tuning only implemented for the model 7net-0/SevenNet-0 (11Jul2024) !")
+            print("")
+            foundation_model = ''
+            while foundation_model != '7net-0':
+                foundation_model = ask_for_foundational_model(sevennet_config, run_type)
             batch_size = ask_for_int("What is the batch size?", sevennet_config[run_type]['batch_size'])
-            device = ''
-            while device not in ['cuda', 'cpu']:
-                device = input("What is the device? (cuda/cpu) [" + sevennet_config[run_type]['device'] + "]: ")
-                if device == '':
-                    device = sevennet_config[run_type]['device']
             epochs = ask_for_int("What is the maximum number of epochs?", sevennet_config[run_type]['epochs'])
             seed = ask_for_int("What is the seed?", sevennet_config[run_type]['seed'])
             lr = ask_for_float_int("What is the learning rate?", sevennet_config[run_type]['lr'])
-            save_path = input("What is the directory for the model? [" + sevennet_config[run_type]['save_path'] + "]: ")
-            if dir == '':
-                dir = sevennet_config[run_type]['dir']
 
 
             input_config = {'project_name': project_name,
+                            'foundation_model': foundation_model,
                             'train_data_path': path_to_training_file, 
-                            'device': device,
-                            'force_loss_ratio': sevennet_config[run_type]['force_loss_ratio'],
-                            'load_model_path': foundation_model,
-                            'batch_size': batch_size,
-                            'save_checkpoint': sevennet_config[run_type]['save_checkpoint'],
-                            'ckpt_interval': sevennet_config[run_type]['ckpt_interval'],
                             'epochs': epochs,
+                            'batch_size': batch_size,
                             'seed': seed,
-                            'lr': lr, 
-                            'save_path': save_path
+                            'lr': lr
                             }
 
             
@@ -523,6 +515,115 @@ np.savetxt("md_runtime.txt", [runtime])
 # Write the final coordinates
 write('{input_config['project_name']}_restart.traj', atoms)
 
+# INPUT WRITTEN BY AMACEING_TOOLKIT on {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+"""
+    
+    elif run_type == 'FINETUNE':
+
+        return r"""
+import os
+import torch
+import yaml
+import sevenn 
+import sevenn.util as util
+from sevenn.train.graph_dataset import SevenNetGraphDataset
+from torch_geometric.loader import DataLoader
+from sevenn.train.trainer import Trainer
+import torch.optim.lr_scheduler as scheduler
+from copy import deepcopy
+from sevenn.error_recorder import ErrorRecorder
+from sevenn.logger import Logger
+import random
+from torch.utils.data import Subset
+
+"""+f"""
+# Define variables
+modelname= "{input_config['project_name']}"
+trainingfile = "{input_config['train_data_path']}"
+batchsize = {int(input_config['batch_size'])}
+learningrate = {float(input_config['lr'])}
+epochs = {int(input_config['epochs'])}
+foundationmodel = "{input_config['foundation_model']}"
+forceerrorweightratio = 100.0
+trainfraction = 0.8
+random.seed({int(input_config['seed'])})
+"""+r"""
+
+# Load foundation model
+sevennet_model_path = util.pretrained_name_to_path(foundationmodel)
+model, config = util.model_from_checkpoint(sevennet_model_path)
+
+
+# Preprocess train data
+train_data = trainingfile
+cutoff = config['cutoff'] 
+working_dir = os.getcwd()
+dataset = SevenNetGraphDataset(cutoff=cutoff, root=working_dir, files=train_data, processed_name='train.pt')
+
+
+# Load preprocessed data
+num_dataset = len(dataset)
+num_train = int(num_dataset * trainfraction)
+num_valid = num_dataset - num_train
+
+indices = list(range(num_dataset))
+random.shuffle(indices)
+
+train_indices = indices[:num_train]
+valid_indices = indices[num_train:num_train + num_valid]
+
+train_dataset = Subset(dataset, train_indices)
+valid_dataset = Subset(dataset, valid_indices)
+
+#dataset = dataset.shuffle()
+train_loader = DataLoader(train_dataset, batch_size=batchsize, shuffle=True)
+valid_loader = DataLoader(valid_dataset, batch_size=batchsize)
+
+
+# Set up fine-tuning
+config.update({
+    'optimizer': 'adam',
+    'optim_param': {'lr': learningrate},
+    'scheduler': 'linearlr',
+    'scheduler_param': {'start_factor': 1.0, 'total_iters': 10, 'end_factor': 0.0001},
+    'is_ddp': False,  # Multi-GPU option
+    'force_loss_weight': forceerrorweightratio # Energy loss weight is 1.0
+})
+trainer = Trainer.from_config(model, config)
+
+
+# Set up recorder
+train_recorder = ErrorRecorder.from_config(config)
+valid_recorder = deepcopy(train_recorder)
+
+
+# Start training with logger
+valid_best = float('inf')
+total_epoch = epochs
+
+logger = Logger()
+logger.screen = True
+logger.file = f'log_{modelname}.log'  
+
+# Open the file in write mode
+with open(os.path.join(working_dir, logger.file), 'w') as log_file:
+    with logger:
+        logger.greeting()  
+        for epoch in range(1, total_epoch + 1): 
+            logger.timer_start('epoch')
+            logger.writeline(f'Epoch {epoch}/{total_epoch}  Learning rate: {trainer.get_lr():.6f}')
+            trainer.run_one_epoch(train_loader, is_train=True, error_recorder=train_recorder)
+            trainer.run_one_epoch(valid_loader, is_train=False, error_recorder=valid_recorder)
+            trainer.scheduler_step()
+            train_err = train_recorder.epoch_forward()  # return averaged error over one epoch
+            valid_err = valid_recorder.epoch_forward()
+            logger.bar()
+            logger.write_full_table([train_err, valid_err], ['Train', 'Valid'])
+            logger.timer_end('epoch', message=f'Epoch {epoch} elapsed')
+
+
+trainer.write_checkpoint(os.path.join(working_dir, f'checkpoint_{modelname}.pth'), config=config, epoch=total_epoch) 
+"""+f"""
 # INPUT WRITTEN BY AMACEING_TOOLKIT on {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
 
@@ -731,7 +832,7 @@ def dataset_creator(coord_file, pbc_list, run_type, sevennet_config):
     assert os.path.isfile(force_file), "Force file does not exist!"
 
     # Create the training dataset
-    path_to_training_file = create_dataset(coord_file, force_file, pbc_list)
+    path_to_training_file = create_7n_dataset(coord_file, force_file, pbc_list)
     return path_to_training_file
 
 
@@ -780,7 +881,11 @@ def write_input(input_config, run_type):
             print(f"Input file {file_name} created in multi_md_run{i}.")
     
     elif run_type == 'FINETUNE':
-        print("No input file needed for the finetuning.")
+        input_text = create_input(input_config, run_type)
+        file_name = 'finetune_sevennet.py'
+        with open(file_name, 'w') as output:
+            output.write(input_text)
+        print(f"Input file {file_name} created.")
         
 
     elif run_type == 'RECALC':
@@ -794,7 +899,7 @@ def write_runscript(input_config,run_type, finetune_config=""):
     """
     Write runscript for SevenNet calculations: default runscript for SevenNet is in the default_configs/runscript_templates.py
     """
-    run_type_inp_names = {'MD': 'md_sevennet.py', 'MULTI_MD': 'md_sevennet.py', 'FINETUNE': '', 'RECALC': 'recalc_sevennet.py'}
+    run_type_inp_names = {'MD': 'md_sevennet.py', 'MULTI_MD': 'md_sevennet.py', 'FINETUNE': 'finetune_sevennet.py', 'RECALC': 'recalc_sevennet.py'}
     if run_type == 'MULTI_MD':
         for i in range(len(input_config['foundation_model'])):
             with open(f'multi_md_run{i}/gpu_script.job', 'w') as output:
@@ -808,6 +913,10 @@ def write_runscript(input_config,run_type, finetune_config=""):
             # Change the runscript to be executable
             os.system(f'chmod +x multi_md_run{i}/runscript.sh')
     else: 
+        # Change run_type from 'FINETUNE' to 'MD' because MatterSim uses other command for FINETUNE
+        if run_type == 'FINETUNE':
+            run_type = 'MD'
+            run_type_inp_names[run_type] = 'finetune_sevennet.py'
         with open('gpu_script.job', 'w') as output:
             output.write(mattersim_runscript(input_config['project_name'], run_type_inp_names[run_type], run_type)[0])
         print("Runscript created: " + mattersim_runscript(input_config['project_name'], run_type_inp_names[run_type], run_type)[1])
@@ -912,3 +1021,33 @@ def sevenet_citations(foundation_model = ""):
         pass
 
 
+
+def create_7n_dataset(coord_file, force_file, pbc_list):
+    """
+    Function to create the training dataset out of the force and position files
+    """
+   
+    # Read the coordinate file
+    atoms = xyz_reader(coord_file)[0]
+    positions  = xyz_reader(coord_file)[1]
+    energies = xyz_reader(coord_file)[2]
+    forces = xyz_reader(force_file)[1]
+
+    # Set the pbc string
+    lattice = f"{pbc_list[0]} 0.0 0.0 0.0 {pbc_list[1]} 0.0 0.0 0.0 {pbc_list[2]}"
+
+    # Rescale the forces (ASE uses eV/Angstrom)
+    forces *= 51.4221
+
+    # Rescale the energies (ASE uses eV)
+    energies *= 27.2114
+
+    # Write the dataset file
+    filename = 'dataset.xyz'
+    with open(filename, 'w') as f:
+        for i in range(0, positions.shape[0]):
+            f.write(f"{len(atoms)}\n")
+            f.write(f"energy={energies[i]:.8f} pbc=\"T T T\" Lattice=\"{lattice}\" Properties=species:S:1:pos:R:3:forces:R:3:Z:I:1\n")
+            for j in range(0, positions.shape[1]):
+                f.write('%s %f %f %f %f %f %f \n' % (atoms[j], positions[i,j,0], positions[i,j,1], positions[i,j,2], forces[i,j,0], forces[i,j,1], forces[i,j,2]))
+    return filename   

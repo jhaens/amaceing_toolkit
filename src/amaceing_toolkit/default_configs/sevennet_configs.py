@@ -33,6 +33,14 @@ def configs_sevennet(config_name):
         'log_interval': 100,
         'print_ase_traj': 'y'
       },
+      'FINETUNE' : {
+        'foundation_model': '7net-0',
+        'batch_size': 4,
+        'epochs': 100,
+        'seed': 1,
+        'force_file': 'force.xyz',
+        'lr': 0.01
+      },
       'RECALC' : {
         'foundation_model': '7net-mf-ompa',
         'modal': 'mpa',

@@ -41,6 +41,7 @@ def configs_mattersim(config_name):
         'epochs': 200,
         'seed': 1,
         'lr': 1e-2,
+        'force_file': 'force.xyz',
         'save_path': 'MatterSim_models'
       },   
       'RECALC' : {

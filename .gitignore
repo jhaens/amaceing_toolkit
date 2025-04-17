@@ -11,6 +11,7 @@ examples/CsH2PO4/utils/
 build/
 wheelhouse/
 dist/
+tutorials/
 __pycache__/
 docs/conf.py
 docs/make.bat
@@ -26,3 +27,4 @@ src/amaceing_toolkit/default_configs/hpc_setup.txt
 src/amaceing_toolkit/runs/run_logger.log
 src/amaceing_toolkit/runs/finetuned_models.log
 .readthedocs.yaml
+.gitignore
