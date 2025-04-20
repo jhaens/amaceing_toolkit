@@ -103,7 +103,7 @@ The package is available on GitHub and can be installed via pip.
     ```bash
     pip install mattersim==1.1.2 sevenn==0.11.0
     ```
-    The second environment is needed because the package mace and MatterSim/SevenNet have som conflicting dependencies:mace-torch depends on e3nn v0.4.4 and MatterSim/SevenNet depend on e3nn v0.5.0. 
+    The second environment is needed because the package mace and MatterSim/SevenNet have som conflicting dependencies:mace-torch depends on e3nn v0.4.4 and MatttuningerSim/SevenNet depend on e3nn v0.5.0. 
     It is also possible to use other names for the environments, but please make sure to change the names in the script `/amaceing_toolkit/src/amaceing_toolkit/default_config/runscript_templates.py` and `/amaceing_toolkit/src/amaceing_toolkit/default_config/hpc_setup.txt`. The names are used in the runscript generation.
 
 
@@ -222,7 +222,7 @@ The MatterSim input creation is designed to be easy to use. You can create a Mat
 The SevenNet input creation is designed to be easy to use. You can create a SevenNet input file for different types of projects. The following types are available:
 - Molecular dynamics
 - Multi-configuration molecular dynamics
-- SOON: Fine-tuning of a foundation model 
+- Fine-tuning of a foundation model (only 7net-0)
 - Recalculation of a reference trajectory
 
 ### Analyzer: amaceing_ana
@@ -308,7 +308,7 @@ Not implemented yet, but planned:
 - [x] Analyzer
 - [ ] Implement rotation autocorrelation function
 - [x] Visualization of Analyzer results
-- [ ] SevenNet Fine-tuning
+- [x] SevenNet Fine-tuning
 - [ ] Web-API to monitor the runs
 - [ ] More examples
 - [ ] Support of other workload managers (Contributions are welcome!)

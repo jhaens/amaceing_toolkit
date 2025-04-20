@@ -27,15 +27,19 @@ Multi-Configuration Molecular Dynamics (MULTI_MD)
 * Uses the same simulation settings for consistent comparison
 * Creates organized directory structure for each run
 
+Fine-tuning of Foundation Models (FINETUNE)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Fine-tunes SevenNet foundation models with custom datasets
+* Configurable training parameters (learning rate, batch size, etc.)
+* Support for both CPU and GPU training
+
 Reference Trajectory Recalculation (RECALC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Recomputes energies and forces along an existing trajectory
 * Useful for evaluating model performance on reference trajectories
 * Outputs energies and forces for comparison with reference data
-
-.. note::
-   Fine-tuning of foundation models with SevenNet will be implemented in the near future.
 
 Usage
 -----
@@ -88,6 +92,12 @@ For MULTI_MD:
 
     amaceing_sevennet -rt="MULTI_MD" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 10 10]', 'foundation_model': '['latest' 'custom']', 'temperature': '300', 'thermostat': 'Langevin', 'nsteps': '10000', 'timestep': '0.5', 'write_interval': '10', 'log_interval': '10', 'print_ase_traj': 'y'}"
 
+For FINETUNE:
+
+.. code-block:: bash
+
+    amaceing_sevennet -rt="FINETUNE" -c="{'project_name': 'NAME', 'foundation_model': '7net-0', 'train_data_path': 'FILE', 'batch_size': 'INT', 'epochs': '200', 'seed': '1', 'lr': '0.01'}"
+
 For RECALC:
 
 .. code-block:: bash
@@ -96,6 +106,7 @@ For RECALC:
 
 .. note::
    Do **NOT** use double quotes inside the dictionary. Also do **NOT** use commas inside of lists in the dictionary.
+
 
 Output Files
 ------------
@@ -116,7 +127,7 @@ The module supports various foundation models:
 * **7net-mf-ompa**: (recommended) multi-fidelity model trained on Materials Project data, Alexandria data and Meta Open Materials 2024 data
 * **7net-omat**: model trained on Meta Open Materials 2024 data
 * **7net-l3i5**: model trained on Materials Project data (increased maximum spherical harmonics degree to 3)
-* **7net-0**: model trained on Materials Project data (default model)
+* **7net-0**: model trained on Materials Project data (default model, only model available for fine-tuning)
 * **custom**: User-provided model path or model from the model logger
 
 Technical Details
