@@ -3,6 +3,9 @@ Welcome to aMACEing Toolkit's documentation!
 
 aMACEing Toolkit is a Python package for the creation of input files for CP2K, MACE-torch, MatterSim, and SevenNet as well as the post-processing and evaluation of these simulations.
 
+GitHub repository: `aMACEing Toolkit GitHub <https://github.com/jhaens/amaceing_toolkit>`_
+PyPI package: `aMACEing Toolkit PyPI <https://pypi.org/project/amaceing-toolkit/>`_
+
 .. toctree::
    :maxdepth: 2
    :caption: User Guide
@@ -29,12 +32,3 @@ aMACEing Toolkit is a Python package for the creation of input files for CP2K, M
    examples/4KOH_92H2O
    examples/analyzer_example
    examples/other
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Links
-
-      `GitHub <https://github.com/jhaens/amaceing_toolkit>`_
-      `PyPI <https://pypi.org/project/amaceing-toolkit/>`_
-
-
