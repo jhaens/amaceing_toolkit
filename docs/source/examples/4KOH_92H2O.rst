@@ -27,6 +27,7 @@ The example is organized with the following directory structure:
     │   ├── pbc                   # Cell vectors file
     │   ├── train_file.xyz        # Training file (including positions, energies, forces)
     │   ├── train_file2.xyz       # Second training file (including positions, energies, forces)
+    │   ├── train_file_7net.xyz   # Training file with 7net-Keywords (including positions, energies, forces)
     │   ├── system.model          # Small fined-tuned model file
     │   ├── dft_energies.xyz      # Postion and energies file of short dft md 
     │   ├── dft_forces.xyz        # Force file of short dft md
@@ -496,6 +497,21 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Print ASE trajectory: y
     cd ../..
 
+    # For fine-tuning
+    mkdir -p sevennet/FINETUNE
+    cd sevennet/FINETUNE
+    amaceing_sevennet
+    # Then answer the prompts:
+    # - Run type: FINETUNE
+    # - Project name: 4koh_92h2o_ft
+    # - Training data path: ../../data/train_file_7net.xyz
+    # - Foundation model: 7net-0
+    # - Batch size: 4
+    # - Epochs: 200
+    # - Random seed: 1
+    # - Learning rate: 0.01
+    cd ../..
+
     # For reference trajectory recalculation
     mkdir -p sevennet/RECALC
     cd sevennet/RECALC
@@ -525,6 +541,10 @@ After running these examples, each calculation will generate appropriate Python 
     │   │   └── runscript.sh
     │   ├── md_sevennet_2/          # Directory for second configuration
     │   └── sevennet_input.log
+    ├── FINETUNE/
+    │   ├── finetune_sevennet.py    # Fine-tuning script
+    │   ├── gpu_script.job          # GPU runscript
+    │   └── sevennet_input.log  
     └── RECALC/
         ├── recalc_sevennet.py      # Script for trajectory recalculation
         ├── runscript.sh            # Runscript
