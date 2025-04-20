@@ -29,3 +29,12 @@ aMACEing Toolkit is a Python package for the creation of input files for CP2K, M
    examples/4KOH_92H2O
    examples/analyzer_example
    examples/other
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Links
+
+      `GitHub <https://github.com/jhaens/amaceing_toolkit>`_
+      `PyPI <https://pypi.org/project/amaceing-toolkit/>`_
+
+
