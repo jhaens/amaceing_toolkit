@@ -1,5 +1,11 @@
 # aMACEing_toolkit
 
+![GitHub Release](https://img.shields.io/github/v/release/jhaens/amaceing_toolkit)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/jhaens/amaceing_toolkit)
+[![Documentation Status](https://app.readthedocs.org/projects/amaceing-toolkit/badge/)](https://amaceing-toolkit.readthedocs.io/en/latest/)
+<!--- [![arXiv](https://img.shields.io/badge/arXiv-<INDEX>-<COLOR>.svg)](https://arxiv.org/abs/<INDEX>) -->
+
+
 ## Table of Contents
 - [Description](#description)
 - [Installation](#installation)
