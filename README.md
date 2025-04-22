@@ -27,6 +27,16 @@
 ## Description
 This package is designed to help you with the creation of CP2K input files for MACE, MatterSim and SevenNet. It is a command line tool which allows you to create CP2K input files via a Q&A session. The package also includes a run and model logger to keep track of your runs and models. The package is designed to be easy to use and to help you get started with CP2K, MACE, MatterSim and SevenNet.
 
+## Documentation
+The documentation is available on [ReadTheDocs](https://amaceing-toolkit.readthedocs.io/en/latest/). The documentation includes a detailed description of the package, the installation instructions and the usage instructions. The documentation is still under construction and will be updated in the future.
+
+## Tutorials
+The tutorials are Notebooks in the folder `/amaceing_toolkit/tutorials/`. The tutorials are designed to help you get started with the package and to show you how to use the package for different types of projects. The tutorials are still under construction and will be updated in the future. 
+
+The Notebooks are also hosted on Google Colab:
+- [atk_nbA](https://colab.research.google.com/drive/17sz84cj8PTPJPxAjs4IHuFamNq2g5mBM?usp=sharing)
+- more coming soon...
+
 ## Installation
 The package is available on GitHub and can be installed via pip.
 

@@ -44,7 +44,7 @@ echo ----------------------------
 echo Testing input file generation: RECALC
 mkdir -p RECALC
 cd RECALC
-amaceing_mace --run_type="RECALC" --config="{'project_name': '25koh_50h2o', 'coord_file': '../../data/dft_energies.xyz', 'pbc_list': '[14.2067 14.2067 14.2067]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n'}"
+amaceing_mace --run_type="RECALC" --config="{'project_name': '4koh_92h2o', 'coord_file': '../../data/dft_energies.xyz', 'pbc_list': '[14.2067 14.2067 14.2067]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n'}"
 cd ..
 echo ----------------------------
 echo ============================
