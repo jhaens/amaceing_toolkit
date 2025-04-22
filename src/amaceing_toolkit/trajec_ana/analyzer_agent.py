@@ -380,8 +380,7 @@ def ana_form():
         
     else:
         # Refine the smart proposal
-        msd_list, rdf_pairs = edit_smart_proposal(avail_atomtypes)
-        smsd_list = []
+        msd_list, rdf_pairs, smsd_list = edit_smart_proposal(avail_atomtypes)
 
     # only one analysis:
     if len(analyses) == 1:
@@ -673,7 +672,7 @@ def visualizer(plot_plan, analyses_names, analyses, d_eval=False):
                 # Read the sMSD data
                 datax, datay = smsd_loader()
                 plotter_multi(ana_type, atom_type, datax, datay, "")
-                filenames.append("smsd_" + str(atom_type) + "_plot.pdf")
+                filenames.append("smsd_" + str(atom_type) + "__plot.pdf") # Double underscore because of nameing convention: smsd_H_ana1_plot.pdf, but for one analysis ana1 = ""
         else:
             print("Invalid analysis type.")
             exit()
@@ -787,7 +786,8 @@ def plotter_multi(ana_type, atomtype, datax, datay, text, dcoeff_fit=[]):
         if ana_type == "smsd":
             # Color gradient for smsd
             colors = color_grad_smsd(no_datasets)
-            plt.plot(datax[i][0], datay[i][0], color=colors[i])
+            # only each 20 th line
+            plt.plot(datax[i][0][::20], datay[i][0][::20], color=colors[i], linestyle='-', label="-")
         else:
             plt.plot(datax[i], datay[i], label=text[i])
         if dcoeff_fit != []:
@@ -1049,6 +1049,7 @@ def edit_smart_proposal(atom_types):
     """
     
     msd_list, rdf_pairs = smart_proposal(atom_types)
+    smsd_list = []
 
     # ask for refinement
     print("The following analyses are proposed:")
@@ -1114,6 +1115,19 @@ def edit_smart_proposal(atom_types):
                     print("Atom " + str(atom) + " added to the proposed atoms.")
         else:
             print("No atoms added to the proposed atoms.")
+        add_smsd = ask_for_yes_no("Do you want to add specific smsd atoms? (y/n)", "n")
+        if add_smsd == "y":
+            add_atoms = input("Please enter the atoms you want to add (e.g. O, H, Si): ")
+            add_atoms = add_atoms.split(",")
+            for atom in add_atoms:
+                atom = atom.strip()
+                if atom in smsd_list:
+                    print("Atom " + str(atom) + " is already in the proposed atoms.")
+                else:
+                    smsd_list.append(atom)
+                    print("Atom " + str(atom) + " added to the proposed atoms.")
+        else:
+            print("No atoms added to the proposed atoms.")
     else:
         print("No refinement done.")
 
@@ -1121,8 +1135,9 @@ def edit_smart_proposal(atom_types):
     print("The following analyses are proposed:")
     print("Mean square displacement (msd) of the following atoms: " + str(msd_list))
     print("Radial distribution function (rdf) of the following pairs: " + str(rdf_pairs))
+    print("Single particle mean square displacement (smsd) of the following atoms: " + str(smsd_list))
     print("")
-    return msd_list, rdf_pairs
+    return msd_list, rdf_pairs, smsd_list
 
 def path_checker(path):
     """

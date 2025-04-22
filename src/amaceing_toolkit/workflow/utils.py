@@ -35,24 +35,32 @@ def cite_amaceing_toolkit():
     ┌
     │ If you use aMACEing_toolkit in your research, please cite the following publication:
     │
-    │ Jonas Hänseroth, Christian Dreßler.  A Python package for a fast and easy workflow of molecular dynamics simulations with MACE and CP2K,
-    │ Journal, 111 (111), 1111, https://google.com, 2025. 
-    │
-    │ BibTeX:
-    │ @article{haenseroth2025_amaceing_toolkit,
-    │   doi = {111/1111},
-    │   url = {https://google.com},
-    │   year = {2025},
-    │   publisher = {Publisher},
-    │   volume = {111},
-    │   number = {111},
-    │   pages = {111},
-    │   author = {Hänseroth, Jonas and Dreßler, Christian},
-    │   title = {aMACEing_toolkit: A Python package for a fast and easy workflow of molecular dynamics simulations with MACE and CP2K},
-    │   journal = {Journal}
-    │ }
+    │ PREPRINT AVAILABLE SOON!
     └
     """
+    # print(
+    # r"""
+    # ┌
+    # │ If you use aMACEing_toolkit in your research, please cite the following publication:
+    # │
+    # │ Jonas Hänseroth, Christian Dreßler.  A Python package for a fast and easy workflow of molecular dynamics simulations with MACE and CP2K,
+    # │ Journal, 111 (111), 1111, https://google.com, 2025. 
+    # │
+    # │ BibTeX:
+    # │ @article{haenseroth2025_amaceing_toolkit,
+    # │   doi = {111/1111},
+    # │   url = {https://google.com},
+    # │   year = {2025},
+    # │   publisher = {Publisher},
+    # │   volume = {111},
+    # │   number = {111},
+    # │   pages = {111},
+    # │   author = {Hänseroth, Jonas and Dreßler, Christian},
+    # │   title = {aMACEing_toolkit: A Python package for a fast and easy workflow of molecular dynamics simulations with MACE and CP2K},
+    # │   journal = {Journal}
+    # │ }
+    # └
+    # """
     )
 
 def atk_utils():
