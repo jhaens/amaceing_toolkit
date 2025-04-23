@@ -154,11 +154,15 @@ def atk_analyzer():
             filenames = visualizer_multi(plot_plan, ana_names, analyses, d_eval)
             if len(msd_list) != 0:
                 # Create the diffusion coefficient table
-                dcoef_data_file = "overview_diffcoeff.csv"
-                msd_table = tab_writer(dcoef_data_file)
+                try: 
+                    dcoef_data_file = "overview_diffcoeff.csv"
+                    msd_table = tab_writer(dcoef_data_file)
+                except FileNotFoundError:
+                    msd_table = ""
             else:
                 msd_table = ""
-            crt_manuscript(filenames, msd_table, smsd_table="")
+            smsd_table = ""
+            crt_manuscript(filenames, msd_table, smsd_table)
 
 
     else:
@@ -541,16 +545,22 @@ def ana_form():
 
         # Create the optional tables
         if len(msd_list) != 0:
-            # Create the diffusion coefficient table
-            dcoef_data_file = "overview_diffcoeff.csv"
-            msd_table = tab_writer(dcoef_data_file)
+            # Create the diffusion coefficient table if msd was evaluated
+            try:    
+                dcoef_data_file = "overview_diffcoeff.csv"
+                msd_table = tab_writer(dcoef_data_file)
+            except FileNotFoundError:
+                msd_table = ""
         else:
             msd_table = ""
 
-        if len(msd_list) != 0:
-            # Create the sMSD table         
-            smsd_data_file = "overview_smsd.csv"
-            smsd_table = tab_writer(smsd_data_file)
+        if len(smsd_list) != 0:
+            # Create the sMSD table if smsd was evaluated
+            try: 
+                smsd_data_file = "overview_smsd.csv"
+                smsd_table = tab_writer(smsd_data_file)
+            except FileNotFoundError:
+                smsd_table = ""        
             
         else: 
             smsd_table = ""

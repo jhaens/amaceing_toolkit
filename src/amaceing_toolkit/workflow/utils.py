@@ -185,10 +185,11 @@ def atk_utils():
             start_cp2k = ask_for_yes_no("Do you want to run the CP2K calculation for the error evaluation now?", 'y')
             if start_cp2k == 'y':
                 from amaceing_toolkit.default_configs import available_functionals
-                log_file = input("What is the name of the log file of the MACE calculation? ['mace_input.log'] ")
-                if log_file == '':
-                    log_file = 'mace_input.log'
-                assert os.path.isfile(log_file), "Log file of the MACE calculation does not exist!"
+                #log_file = input("What is the name of the log file of the MACE calculation? ['mace_input.log'] ")
+                #if log_file == '':
+                #    log_file = 'mace_input.log'
+                #assert os.path.isfile(log_file), "Log file of the MACE calculation does not exist!"
+                log_file = ''
                 xc_functional = input(f"Which XC functional do you want to use for the CP2K calculation? {available_functionals()}: ")
 
                 # Run the preparation
@@ -266,7 +267,7 @@ def atk_utils():
             mace_model = ['mace_mp', 'small']
             foundation_model = ' '
             while foundation_model not in ['mace_off', 'mace_anicc', 'mace_mp', '']:
-                foundation_model = input(f"What is the foundational model? ('mace_off', 'mace_anicc', 'mace_mp') [{mace_model[0]}]: ")
+                foundation_model = input(f"Which MACE foundational model do you want to use? ('mace_off', 'mace_anicc', 'mace_mp') [{mace_model[0]}]: ")
                 if foundation_model not in ['mace_off', 'mace_anicc', 'mace_mp', '']:
                     print("Invalid input! Please enter 'mace_off', 'mace_anicc' or 'mace_mp'.")
             if foundation_model == '':
@@ -274,7 +275,7 @@ def atk_utils():
             if foundation_model in ['mace_off', 'mace_mp']:
                 model_size = ' '
                 while model_size not in ['small', 'medium', 'large', '']:
-                    model_size = input(f"What is the model size? ('small', 'medium', 'large') [{mace_model[1]}]: ")
+                    model_size = input(f"Choose the model size: ('small', 'medium', 'large') [{mace_model[1]}]: ")
                     if model_size not in ['small', 'medium', 'large', '']:
                         print("Invalid input! Please enter 'small', 'medium', or 'large'.")
                 if model_size == '':
@@ -286,7 +287,7 @@ def atk_utils():
             mattersim_model = 'large'
             foundation_model = ' '
             while foundation_model not in ['small', 'large', 'custom', '']:
-                foundation_model = input(f"What is the foundational model? ('small', 'large') [{mattersim_model}]: ")
+                foundation_model = input(f"Which MatterSim foundational model do you want to use? ('small', 'large') [{mattersim_model}]: ")
                 if foundation_model not in ['small', 'large', '']:
                     print("Invalid input! Please enter 'small' or 'large'.")
             if foundation_model == '':
@@ -298,7 +299,7 @@ def atk_utils():
             foundation_model_dict = {1: '7net-mf-ompa', 2: '7net-omat', 3: '7net-l3i5', 4: '7net-0'}
             foundation_model = ' '
             while foundation_model not in ['1', '2', '3', '4', '']:
-                foundation_model = input(f"What is the foundational model? (1=7net-mf-ompa, 2=7net-omat, 3=7net-l3i5, 4=7net-0): [{sevennet_model[0]}]: ")
+                foundation_model = input(f"Which SevenNet foundational model do you want to use? (1=7net-mf-ompa, 2=7net-omat, 3=7net-l3i5, 4=7net-0): [{sevennet_model[0]}]: ")
                 if foundation_model not in ['1', '2', '3', '4', '']:
                     print("Invalid input! Please enter '1', '2', '3', or '4'.")
             if foundation_model == '':
@@ -412,9 +413,9 @@ def run_prepare_eval_error(traj_file, each_nth_frame, start_cp2k, log_file="", x
     # Initialize the CP2K run
     if start_cp2k == 'y':
         # Read the log file
-        with open(log_file) as f:
-            lines = f.readlines()
-        input_mace = string_to_dict(lines[-1])
+        #with open(log_file) as f:
+        #    lines = f.readlines()
+        #input_mace = string_to_dict(lines[-1])
 
         run_type = "REFTRAJ"
         config_dict = {'project_name': 'eval_run', 'ref_traj': '../mace_coord.xyz', 'pbc_list': f'[{pbc_list[0]} {pbc_list[1]} {pbc_list[2]}]', 'nsteps': f'{coord.shape[0]}', 'stride': '1', 'print_velocities': 'OFF', 'print_forces': 'ON', 'xc_functional': xc_functional, 'cp2k_newer_than_2023x': 'y'}
@@ -446,7 +447,7 @@ def run_prepare_eval_error(traj_file, each_nth_frame, start_cp2k, log_file="", x
         # Print the relevant commands
         print("Please run the following commands to evaluate the error:")
         print("1. Create the CP2K input file to obtain the ground truth energy and forces:")
-        print("""amaceing_cp2k --run_type="ENERGY" --config="{'project_name' : 'NAME', 'ref_traj' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'xc_functional' : 'PBE(_SR)/BLYP(_SR)'}" """)
+        print("""amaceing_cp2k --run_type="REFTRAJ" --config="{'project_name' : 'NAME', 'ref_traj' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'nsteps': 'INT', 'stride': '1', 'print_velocities': 'OFF', 'print_forces': 'ON', 'xc_functional': PBE(_SR)/BLYP(_SR), 'cp2k_newer_than_2023x': 'y'}" """)
         print("2. Run the CP2K calculation on your HPC.")
         print("3. Run the following command to evaluate the error:")
         print("amaceing_utils and choose EVAL_ERROR")
@@ -897,6 +898,8 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
     """
     Function to recalc an AIMD trajectory with different ML packages
     """
+    nn_dict ={'mace': 0, 'mattersim': 0, 'sevennet': 0}
+
     # Check if the reference trajectory is a relative path (add ../)
     if ref_traj[0] == '.':
         ref_traj = f'../{ref_traj}'
@@ -908,6 +911,8 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
         os.mkdir(nn)
         os.chdir(nn)
 
+        print("""\n\n\n STARTING THE RECALCULATION OF THE REFERENCE TRAJECTORY WITH """+ f"{nn}"+"""\n\n\n""")
+
         if nn == 'mace':
 
             command = r"""amaceing_mace --run_type="RECALC" --config="{ """+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mace_model[0]}', 'model_size': '{mace_model[1]}', 'dispersion_via_mace': 'n'"""+r"""}" """
@@ -915,20 +920,36 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
             print("Creating directory for MACE benchmark and recalcing the reference trajectory...")
         
         elif nn == 'mattersim':
-
-            command = r"""amaceing_mattersim --run_type="RECALC" --config="{"""+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mattersim_model}', 'dispersion_via_ase': 'n'"""+r"""}" """
-
-            print("Creating directory for Mattersim benchmark and recalcing the reference trajectory...")
-
-        elif nn == 'sevennet':
-
-            command = r"""amaceing_sevennet --run_type="RECALC" --config="{"""+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{sevennet_model[0]}', 'modal': '{sevennet_model[1]}', 'dispersion_via_ase': 'n'"""+r"""}" """
             
-            print("Creating directory for SevenNet benchmark and recalcing the reference trajectory...")
+            try: 
+                import mattersim
+                command = r"""amaceing_mattersim --run_type="RECALC" --config="{"""+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mattersim_model}', 'dispersion_via_ase': 'n'"""+r"""}" """
+                print("Creating directory for Mattersim benchmark and recalcing the reference trajectory...")
+            except ModuleNotFoundError:
+                print("Mattersim is currently not installed (in this environment). Please install it first or change to the respective environment.")
+                print("The MatterSim Run can be run via: ")
+                print("""amaceing_mattersim --run_type="RECALC" --config="{"""+f"project_name: benchmark, coord_file: {ref_traj}, pbc_list: {pbc_data}, foundation_model: {mattersim_model}, dispersion_via_ase: n"+"""}" """)
+                command = "FAIL"
+        
+        elif nn == 'sevennet':
+            
+            try:
+                import sevenn
+                command = """amaceing_sevennet --run_type="RECALC" --config="{"""+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{sevennet_model[0]}', 'modal': '{sevennet_model[1]}', 'dispersion_via_ase': 'n'"""+r"""}" """
+                print("Creating directory for SevenNet benchmark and recalcing the reference trajectory...")
+            except ModuleNotFoundError:
+                print("SevenNet is currently not installed (in this environment). Please install it first or change to the respective environment.")
+                print("The SevenNet Run can be run via: ")
+                print("""amaceing_sevennet --run_type="RECALC" --config="{"""+f"'project_name': benchmark, 'coord_file': {ref_traj}, 'pbc_list': {pbc_data}, 'foundation_model': {sevennet_model[0]}, 'modal': {sevennet_model[1]}, 'dispersion_via_ase': n"+"""}" """)
+                command = "FAIL"
 
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-        process.wait()
+        if command != "FAIL":
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+            process.wait()
+        
         os.chdir('..')
+
+
 
     # Run directly the EVAL_ERROR workflow
     # Check if the reference force file is a relative path (add ../)
@@ -942,11 +963,18 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
 
     for nn in ['mace', 'mattersim', 'sevennet']:
         os.chdir(nn)
-        print(f"Running the EVAL_ERROR workflow for {nn}...")
+        print("""\n"""+f"Running the EVAL_ERROR workflow for {nn}..." + """\n""")
 
         # Run the EVAL_ERROR workflow
-        run_eval_error([ref_traj, force_file, f'energies_recalc_with_{nn}_model_benchmark', f'forces_recalc_with_{nn}_model_benchmark.xyz'])
-        
+        try: 
+            # Check if energy file exists
+            os.path.isfile(f'energies_recalc_with_{nn}_model_benchmark.xyz')
+            run_eval_error([ref_traj, force_file, f'energies_recalc_with_{nn}_model_benchmark', f'forces_recalc_with_{nn}_model_benchmark.xyz'])
+        except:
+            print(f"The automatic evaluation of the {nn} run could not done, because the recalcuation did not start. Please run the recalculation first.")
+            print("The EVAL_ERROR Run can be run via: ")
+            print("""amaceing_utils --run_type="EVAL_ERROR" --config="{"""+f"""'ener_filename_ground_truth': '{ref_traj}', 'force_filename_ground_truth': '{force_file}', 'ener_filename_compare': 'energies_recalc_with_{nn}_model_benchmark', 'force_filename_compare': 'forces_recalc_with_{nn}_model_benchmark.xyz'"""+r"""}" """)
+
         os.chdir('..')
 
 

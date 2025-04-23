@@ -66,8 +66,8 @@ Usage examples:
 
 .. code-block:: bash
 
-    amaceing_utils -l=models  # Shows fine-tuned models
-    amaceing_utils -l=runs    # Shows run history
+    amaceing_utils -l=model  # Shows fine-tuned models
+    amaceing_utils -l=run    # Shows run history
 
 Usage
 -----
@@ -122,8 +122,8 @@ To view logger information:
 
 .. code-block:: bash
 
-    amaceing_utils -l=models  # Shows fine-tuned models
-    amaceing_utils -l=runs    # Shows run history
+    amaceing_utils -l=model  # Shows fine-tuned models
+    amaceing_utils -l=run    # Shows run history
 
 Output and File Structure
 -------------------------

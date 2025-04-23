@@ -35,7 +35,7 @@ The tutorials are Notebooks in the folder `/amaceing_toolkit/tutorials/`. The tu
 
 The Notebooks are also hosted on Google Colab:
 - [atk_nbA](https://colab.research.google.com/drive/17sz84cj8PTPJPxAjs4IHuFamNq2g5mBM?usp=sharing)
-- more coming soon...
+- [atk_nbB](https://colab.research.google.com/drive/1laGokzPIKxsPjj3GXn383Cu22Fq_ihb2?usp=sharing)
 
 ## Installation
 The package is available on GitHub and can be installed via pip.

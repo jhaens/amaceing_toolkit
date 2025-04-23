@@ -9,6 +9,8 @@ PyPI package: `aMACEing Toolkit PyPI <https://pypi.org/project/amaceing-toolkit/
 
 Tutorial Notebook A: `aMACEing Toolkit Tutorial Notebook A <https://colab.research.google.com/drive/17sz84cj8PTPJPxAjs4IHuFamNq2g5mBM?usp=sharing>`_
 
+Tutorial Notebook B: `aMACEing Toolkit Tutorial Notebook B <https://colab.research.google.com/drive/1laGokzPIKxsPjj3GXn383Cu22Fq_ihb2?usp=sharing>`_
+
 .. toctree::
    :maxdepth: 2
    :caption: User Guide
