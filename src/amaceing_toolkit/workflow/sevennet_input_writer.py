@@ -410,10 +410,10 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_list, pro
 
         elif run_type == 'FINETUNE':
             print("")
-            print("! Fine-tuning only implemented for the model 7net-0/SevenNet-0 (11Jul2024) !")
+            print("! Fine-tuning only implemented for the models 7net-0/SevenNet-0 (11Jul2024) and 7net-l3i5/SevenNet-l3i5 (12Dec2024) !")
             print("")
             foundation_model = ''
-            while foundation_model != '7net-0':
+            while foundation_model not in ['7net-0', '7net-l3i5']:
                 foundation_model = ask_for_foundational_model(sevennet_config, run_type)
             batch_size = ask_for_int("What is the batch size?", sevennet_config[run_type]['batch_size'])
             epochs = ask_for_int("What is the maximum number of epochs?", sevennet_config[run_type]['epochs'])
@@ -1047,7 +1047,7 @@ def create_7n_dataset(coord_file, force_file, pbc_list):
     with open(filename, 'w') as f:
         for i in range(0, positions.shape[0]):
             f.write(f"{len(atoms)}\n")
-            f.write(f"energy={energies[i]:.8f} pbc=\"T T T\" Lattice=\"{lattice}\" Properties=species:S:1:pos:R:3:forces:R:3:Z:I:1\n")
+            f.write(f"energy={energies[i]:.8f} pbc=\"T T T\" Lattice=\"{lattice}\" Properties=species:S:1:pos:R:3:forces:R:3\n")
             for j in range(0, positions.shape[1]):
                 f.write('%s %f %f %f %f %f %f \n' % (atoms[j], positions[i,j,0], positions[i,j,1], positions[i,j,2], forces[i,j,0], forces[i,j,1], forces[i,j,2]))
     return filename   
