@@ -33,7 +33,7 @@ def configs_mattersim(config_name):
       },
       'FINETUNE' : {
         'device': 'cuda',
-        'force_loss_ratio': 10.0,
+        'force_loss_ratio': 100.0,
         'load_model_path': 'small',
         'batch_size': 5,
         'save_checkpoint': 'y',

@@ -410,7 +410,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
 
         elif run_type == 'FINETUNE':
             
-            foundation_model = foundation_model_code(ask_for_foundational_model(mattersim_config, run_type))
+            foundation_model = ask_for_foundational_model(mattersim_config, run_type)
             batch_size = ask_for_int("What is the batch size?", mattersim_config[run_type]['batch_size'])
             device = ''
             while device not in ['cuda', 'cpu']:
@@ -713,9 +713,9 @@ def crt_config(input_config):
     """
     Function to create the config file for the finetuning
     """
-    truefalse_dict = {'y': True, 'n': False}
+    truefalse_dict = {'y': '--save_checkpoint', 'n': ''}
     # Create the config file
-    config = f""" --load_model_path {input_config['load_model_path']} --train_data_path {input_config['train_data_path']} --device {input_config['device']} --force_loss_ratio {input_config['force_loss_ratio']} --batch_size {input_config['batch_size']} --save_checkpoint {truefalse_dict[input_config['save_checkpoint']]} --ckpt_interval {input_config['ckpt_interval']} --epochs {input_config['epochs']} --seed {input_config['seed']} --lr {input_config['lr']} --save_path {input_config['save_path']}"""
+    config = f""" --load_model_path {foundation_model_code(input_config['load_model_path'])} --train_data_path {input_config['train_data_path']} --device {input_config['device']} --force_loss_ratio {input_config['force_loss_ratio']} --batch_size {input_config['batch_size']} {truefalse_dict[input_config['save_checkpoint']]} --ckpt_interval {input_config['ckpt_interval']} --epochs {input_config['epochs']} --seed {input_config['seed']} --lr {input_config['lr']} --save_path {input_config['save_path']}"""
     return config
 
 
