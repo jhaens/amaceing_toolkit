@@ -265,6 +265,9 @@ def mattersim_runscript(project_name, input_file_name, run_type, finetune_config
     resources_cpu = resource_setup_pyML('intermediate') 
     resources_gpu = resource_setup_pyML('gpu')
 
+    conda_sitepackage_dir = path_to_source_file.split("/etc/profile.d/conda.sh")[0]
+    conda_sitepackage_dir = conda_sitepackage_dir + "/envs/atk_ms7n/lib/python3.9/site-packages/mattersim"
+
     if run_type == 'FINETUNE':
         if workload_manager == 'lsf':
             return f"""#!/bin/bash
@@ -272,7 +275,7 @@ def mattersim_runscript(project_name, input_file_name, run_type, finetune_config
 source {path_to_source_file}
 {path_to_program}
 
-torchrun --nproc_per_node={resources_gpu[0]} /home/joha4087/anaconda3/envs/mattersim/lib/python3.9/site-packages/mattersim/training/finetune_mattersim.py {finetune_config} > {project_name}.out
+torchrun --nproc_per_node={resources_gpu[0]} {conda_sitepackage_dir}/training/finetune_mattersim.py {finetune_config} > {project_name}.out
 
 """, f"Start the calculation with 'batch.{resources_gpu[0]}gpu gpu_script.job'", f"""#!/bin/sh
 # CPU runscript
@@ -288,7 +291,7 @@ torchrun --nproc_per_node={resources_gpu[0]} /home/joha4087/anaconda3/envs/matte
 source {path_to_source_file}
 {path_to_program}
 
-torchrun --nproc_per_node={resources_cpu[0]} /home/joha4087/anaconda3/envs/mattersim/lib/python3.9/site-packages/mattersim/training/finetune_mattersim.py {finetune_config} > {project_name}.out
+torchrun --nproc_per_node={resources_cpu[0]} {conda_sitepackage_dir}/training/finetune_mattersim.py {finetune_config} > {project_name}.out
 """, "Start the calculation with 'bsub < runscript.sh'"
     
         elif workload_manager == 'slurm':           # WIP please check the slurm script for your hpc
@@ -305,7 +308,7 @@ torchrun --nproc_per_node={resources_cpu[0]} /home/joha4087/anaconda3/envs/matte
 source {path_to_source_file}
 {path_to_program}
 
-torchrun --nproc_per_node={resources_gpu[0]} {path_to_program}/src/mattersim/training/finetune_mattersim.py {finetune_config} > {project_name}.out
+torchrun --nproc_per_node={resources_gpu[0]} {conda_sitepackage_dir}/training/finetune_mattersim.py {finetune_config} > {project_name}.out
 source {path_to_source_file}
 """, f"Start the calculation with 'sbatch runscript.sh'", f"""#!/bin/bash
 # CPU runscript
@@ -320,7 +323,7 @@ source {path_to_source_file}
 source {path_to_source_file}
 {path_to_program}
 
-torchrun --nproc_per_node={resources_cpu[0]} /home/joha4087/anaconda3/envs/mattersim/lib/python3.9/site-packages/mattersim/training/finetune_mattersim.py {finetune_config} > {project_name}.out
+torchrun --nproc_per_node={resources_cpu[0]} {conda_sitepackage_dir}/training/finetune_mattersim.py {finetune_config} > {project_name}.out
 """, "Start the calculation with 'sbatch runscript.sh'"
         
     
