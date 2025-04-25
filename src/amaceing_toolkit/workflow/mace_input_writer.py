@@ -479,7 +479,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
             
             foundation_model, model_size = ask_for_foundational_model(mace_config, run_type)
             dispersion_via_mace = ask_for_yes_no("Do you want to include dispersion via MACE? (y/n)", mace_config[run_type]['dispersion_via_mace'])
-            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): [" + mace_config[run_type]['thermostat'] +"] ")
+            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mace_config[run_type]['thermostat'])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
             temperature = ask_for_float_int("What is the temperature in Kelvin?", mace_config[run_type]['temperature'])
@@ -521,7 +521,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
                 foundation_model.append(foundation_model_tmp)
                 model_size.append(model_size_tmp)
                 dispersion_via_mace.append(dispersion_via_mace_tmp)
-            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): [" + mace_config[run_type]['thermostat'] +"] ")
+            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mace_config[run_type]['thermostat'])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
             temperature = ask_for_float_int("What is the temperature in Kelvin?", mace_config[run_type]['temperature'])
@@ -1002,13 +1002,14 @@ def foundation_model_path(foundation_model, dispersion_via_mace, model_size = ""
             model_size = 'small'
         return f"mace_mp(model='{model_size}' {dispersion_corr(dispersion_via_mace)} {is_cuequivariance_installed()})" 
     else:
-        use_saved_model = ask_for_yes_no("Do you want to use a saved model? (y/n)", 'n')
-        if use_saved_model == 'y':
+        # Check if the foundation_model is a file path
+        if np.logical_and(os.path.isfile(foundation_model),foundation_model.endswith('.model')):
+            return f"mace_mp(model='{foundation_model}' {dispersion_corr(dispersion_via_mace)})"
+        else: 
+            print("Here are the available models (previously logged models):")
             show_models()
             path_to_custom_model = get_model(ask_for_int("What is the number of the model you want to use? ", 1))
-        else:
-            path_to_custom_model = input("What is the path to the custom model? ")
-        return f"mace_mp(model='{path_to_custom_model}' {dispersion_corr(dispersion_via_mace)})"
+            return f"mace_mp(model='{path_to_custom_model}' {dispersion_corr(dispersion_via_mace)})"
 
 def foundation_model_finetune_config(foundation_model, model_size = ""):
     """

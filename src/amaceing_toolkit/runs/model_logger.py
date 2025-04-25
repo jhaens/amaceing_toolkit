@@ -82,6 +82,7 @@ def get_model(no_model):
     """
     Get the model that is saved in the finetuned_models.log file
     """
+    no_model = int(no_model)
     try:
         # Get the path of the current script
         script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -89,6 +90,8 @@ def get_model(no_model):
         # Read the finetuned_models.log file
         with open(os.path.join(script_directory, 'finetuned_models.log'), 'r') as f:
             for i, line in enumerate(f):
+                # Convert i to int
+                i = int(i)
                 if i == no_model:
                     folder = line.split('::')[4]
                     name = line.split('::')[2]

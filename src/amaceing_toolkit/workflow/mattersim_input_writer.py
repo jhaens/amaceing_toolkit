@@ -341,7 +341,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
             
             foundation_model = ask_for_foundational_model(mattersim_config, run_type)
             dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mattersim_config[run_type]['dispersion_via_ase'])
-            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): [" + mattersim_config[run_type]['thermostat'] +"] ")
+            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mattersim_config[run_type]['thermostat'])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
             temperature = ask_for_float_int("What is the temperature in Kelvin?", mattersim_config[run_type]['temperature'])
@@ -380,7 +380,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
                 dispersion_via_ase_tmp = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mattersim_config[run_type]['dispersion_via_ase'])
                 foundation_model.append(foundation_model_tmp)
                 dispersion_via_ase.append(dispersion_via_ase_tmp)
-            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): [" + mattersim_config[run_type]['thermostat'] +"] ")
+            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mattersim_config[run_type]['thermostat'])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
             temperature = ask_for_float_int("What is the temperature in Kelvin?", mattersim_config[run_type]['temperature'])
