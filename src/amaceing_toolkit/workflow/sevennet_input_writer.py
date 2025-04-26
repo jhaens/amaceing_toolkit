@@ -433,13 +433,14 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_list, pro
             
         elif run_type == 'RECALC':
             
-            foundation_model = ask_for_foundational_model(sevennet_config, run_type)
+            foundation_model, modal = ask_for_foundational_model(sevennet_config, run_type)
             dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", sevennet_config[run_type]['dispersion_via_ase'])
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_list,
                             'foundation_model': foundation_model,
+                            'modal': modal,
                             'dispersion_via_ase': dispersion_via_ase}
     return input_config
 
@@ -461,14 +462,14 @@ from ase.io.trajectory import Trajectory
 from ase.io import write
 from ase.io import read
 from ase.md import MDLogger
-{foundation_model_code(input_config['foundation_model'])}
+{foundation_model_code(input_config['dispersion_via_ase'])}
 {thermostat_code(input_config)[0]}
 
 # Set the device
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load the foundation model
-sevennet_calc = {foundation_model_path(input_config['foundation_model'], input_config['modal'], input_config['dispersion_via_ase'])}, device=device)
+sevennet_calc = {foundation_model_path(input_config['foundation_model'], input_config['modal']), input_config['dispersion_via_ase']}, device=device)
 print("Loading of SevenNet model completed: {input_config['foundation_model']} model")
 
 # Load the coordinates (take care if it is the first start or a restart)
@@ -637,7 +638,7 @@ from ase import units
 from ase.io.trajectory import Trajectory
 from ase.io import write
 from ase.io import read
-{foundation_model_code(input_config['foundation_model'])}
+{foundation_model_code(input_config['dispersion_via_ase'])}
 
 # Set the device
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -766,7 +767,6 @@ def ask_for_foundational_model(sevennet_config, run_type):
                 modal = 'oma24'
         else: 
             modal = '' # no modal for the other models
-            foundation_model = foundation_model_dict[int(foundation_model)]
         
     return foundation_model, modal
 
@@ -774,37 +774,35 @@ def foundation_model_path(foundation_model, modal, dispersion_via_ase):
     """
     Function to return the path to the foundation model
     """
+    # Set the calculator
+    if dispersion_via_ase == 'y':
+        model_code = "SevenNetD3Calculator"
+    else:
+        model_code = "SevenNetCalculator"
+
+    # Set the model
     if foundation_model in ['7net-mf-ompa', '7net-omat', '7net-l3i5', '7net-0']:
         if foundation_model in ['7net-omat', '7net-l3i5']:
-            model_code = f"""SevenNetCalculator(model='{foundation_model}', {dispersion_corr(dispersion_via_ase)}""" # in input file follows ... device=device)
+            model_code = model_code + f"""(model='{foundation_model}' """ # in input file follows ... device=device)
         elif foundation_model == '7net-mf-ompa':
             if modal == 'oma24':
-                model_code = f"""SevenNetCalculator(model='{foundation_model}', modal='oma24', {dispersion_corr(dispersion_via_ase)}"""
+                model_code = model_code + f"""(model='{foundation_model}', modal='oma24' """
             else:
-                model_code = f"""SevenNetCalculator(model='{foundation_model}', modal='mpa', {dispersion_corr(dispersion_via_ase)}""" # in input file follows ... device=device)
+                model_code = model_code + f"""(model='{foundation_model}', modal='mpa' """ # in input file follows ... device=device)
         elif foundation_model == '7net-0':
-            model_code = f"""SevenNetD3Calculator(model='{foundation_model}' """ # in input file follows ... device=device)
+            model_code = model_code + f"""(model='{foundation_model}' """ # in input file follows ... device=device)
     else:
         # Custom model
-        model_code = f"""SevenNetCalculator(model={foundation_model}, {dispersion_corr(dispersion_via_ase)}""" # in input file follows ... device=device)
+        model_code = model_code + f"""(model={foundation_model} """ # in input file follows ... device=device)
     return model_code
 
-def foundation_model_code(foundation_model):
+def foundation_model_code(dispersion_corr):
     """
     Function to return the import statement for the foundation model
     """
-    if foundation_model in ["""'7net-mf-ompa', modal='mpa'""", """'7net-mf-ompa', modal='oma24'""", '7net-omat', '7net-l3i5', '7net-0']:
-        if foundation_model == '7net-mf-ompa':
-            import_model = 'from sevenn.calculator import SevenNetCalculator'
-        elif foundation_model == '7net-omat':
-            import_model = 'from sevenn.calculator import SevenNetCalculator'
-        elif foundation_model == '7net-l3i5':
-            import_model = 'from sevenn.calculator import SevenNetCalculator'
-        else:
-            # 7net-0
-            import_model = 'from sevenn.calculator import SevenNetD3Calculator'
+    if dispersion_corr == 'y':
+        import_model = 'from sevenn.calculator import SevenNetD3Calculator'
     else:
-        # Custom model
         import_model = 'from sevenn.calculator import SevenNetCalculator'
     return import_model
 
