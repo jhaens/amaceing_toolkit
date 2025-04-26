@@ -923,12 +923,12 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
             
             try: 
                 import mattersim
-                command = r"""amaceing_mattersim --run_type="RECALC" --config="{"""+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mattersim_model}', 'dispersion_via_ase': 'n'"""+r"""}" """
+                command = r"""amaceing_mattersim --run_type="RECALC" --config="{"""+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mattersim_model}'"""+r"""}" """
                 print("Creating directory for Mattersim benchmark and recalcing the reference trajectory...")
             except ModuleNotFoundError:
                 print("Mattersim is currently not installed (in this environment). Please install it first or change to the respective environment.")
                 print("The MatterSim Run can be run via: ")
-                print("""amaceing_mattersim --run_type="RECALC" --config="{"""+f"project_name: benchmark, coord_file: {ref_traj}, pbc_list: {pbc_data}, foundation_model: {mattersim_model}, dispersion_via_ase: n"+"""}" """)
+                print("""amaceing_mattersim --run_type="RECALC" --config="{"""+f"project_name: benchmark, coord_file: {ref_traj}, pbc_list: {pbc_data}, foundation_model: {mattersim_model}"+"""}" """)
                 command = "FAIL"
         
         elif nn == 'sevennet':

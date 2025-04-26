@@ -469,7 +469,7 @@ from ase.md import MDLogger
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load the foundation model
-sevennet_calc = {foundation_model_path(input_config['foundation_model'], input_config['modal']), input_config['dispersion_via_ase']}, device=device)
+sevennet_calc = {foundation_model_path(input_config['foundation_model'], input_config['modal'], input_config['dispersion_via_ase'])}, device=device)
 print("Loading of SevenNet model completed: {input_config['foundation_model']} model")
 
 # Load the coordinates (take care if it is the first start or a restart)
