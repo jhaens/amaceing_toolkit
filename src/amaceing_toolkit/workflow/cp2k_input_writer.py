@@ -254,6 +254,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
             print_forces = ask_for_yes_no("Do you want to print the forces? (y/n)", cp2k_config['GEO_OPT']['print_forces'])
             print_forces = onoff_dict[print_forces]
             
+            print(f"Available exchange-correlation functionals: {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['GEO_OPT']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['GEO_OPT']['xc_functional']
@@ -281,6 +282,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
                 elif symmetry != 'CUBIC' and symmetry != 'TRICLINIC' and symmetry != 'NONE' and symmetry != 'MONOCLINIC' and symmetry != 'ORTHORHOMBIC' and symmetry != 'TETRAGONAL' and symmetry != 'TRIGONAL' and symmetry != 'HEXAGONAL':
                     print("Invalid input. Please enter a valid symmetry: CUBIC, NONE, TRICLINIC, TETRAGONAL, MONOCLINIC, TRIGONAL, HEXAGONAL, ORTHOROMBIC.")
             
+            print(f"Available exchange-correlation functionals: {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['CELL_OPT']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['CELL_OPT']['xc_functional']
@@ -319,6 +321,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
             print_velocities = ask_for_yes_no("Do you want to print the velocities? (y/n)", cp2k_config['MD']['print_velocities'])
             print_velocities = onoff_dict[print_velocities]
 
+            print(f"Available exchange-correlation functionals: {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['MD']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['MD']['xc_functional']
@@ -354,6 +357,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
             print_velocities = ask_for_yes_no("Do you want to print the velocities? (y/n)", cp2k_config['REFTRAJ']['print_velocities'])
             print_velocities = onoff_dict[print_velocities]
 
+            print(f"Available exchange-correlation functionals: {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['REFTRAJ']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['MD']['xc_functional']
@@ -370,6 +374,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
             
         elif run_type == 'ENERGY':
 
+            print(f"Available exchange-correlation functionals: {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['ENERGY']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['ENERGY']['xc_functional']
