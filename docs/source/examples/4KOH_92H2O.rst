@@ -331,7 +331,6 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Coordinate file: ../../data/system.xyz
     # - Cell dimensions: 14.2067 14.2067 14.2067
     # - Foundation model: large
-    # - Use dispersion via ASE: n
     # - Temperature: 300
     # - Pressure: 1.0
     # - Thermostat: Langevin
@@ -354,10 +353,8 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Number of configurations: 2
     # - For Configuration 1:
     #   - Foundation model: small
-    #   - Use dispersion via ASE: n
     # - For Configuration 2:
     #   - Foundation model: large
-    #   - Use dispersion via ASE: n
     # - Temperature: 300
     # - Pressure: 1.0
     # - Thermostat: Langevin
@@ -398,7 +395,6 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Coordinate file: ../../data/dft_energies.xyz
     # - Cell dimensions: 14.2067 14.2067 14.2067
     # - Foundation model: large
-    # - Use dispersion via ASE: n
     cd ../..
 
 After running these examples, each calculation will generate appropriate Python scripts, configuration files, and runscripts. The file structure will include:

@@ -9,7 +9,7 @@ def configs_mattersim(config_name):
       'use_default_input': 'y',
       'MD' : {
         'foundation_model': 'large',
-        'dispersion_via_ase': 'n',
+        #'dispersion_via_ase': 'n',
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -21,7 +21,7 @@ def configs_mattersim(config_name):
       },
       'MULTI_MD' : {
         'foundation_model': ['small', 'large'],
-        'dispersion_via_ase': ['n', 'n'],
+        #'dispersion_via_ase': ['n', 'n'],
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -46,7 +46,7 @@ def configs_mattersim(config_name):
       },   
       'RECALC' : {
         'foundation_model': 'large',
-        'dispersion_via_ase': 'n'
+        #'dispersion_via_ase': 'n'
       },
     },
 

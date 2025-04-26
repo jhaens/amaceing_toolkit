@@ -753,6 +753,7 @@ def ask_for_foundational_model(sevennet_config, run_type):
         # Check if input is int
         if foundation_model.isdigit():
             foundation_model = get_model(int(foundation_model))
+        modal = ''
     else:
         if foundation_model == '':
             foundation_model = sevennet_config[run_type]['foundation_model']
@@ -793,7 +794,7 @@ def foundation_model_path(foundation_model, modal, dispersion_via_ase):
             model_code = model_code + f"""(model='{foundation_model}' """ # in input file follows ... device=device)
     else:
         # Custom model
-        model_code = model_code + f"""(model={foundation_model} """ # in input file follows ... device=device)
+        model_code = model_code + f"""(model='{foundation_model}' """ # in input file follows ... device=device)
     return model_code
 
 def foundation_model_code(dispersion_corr):

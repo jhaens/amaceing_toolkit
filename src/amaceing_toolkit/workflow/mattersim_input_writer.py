@@ -292,7 +292,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
                             'coord_file': coord_file, 
                             'pbc_list': pbc_list,
                             'foundation_model': mattersim_config[run_type]['foundation_model'],
-                            'dispersion_via_ase': mattersim_config[run_type]['dispersion_via_ase'],
+                            #'dispersion_via_ase': mattersim_config[run_type]['dispersion_via_ase'],
                             'temperature': mattersim_config[run_type]['temperature'],
                             'pressure': mattersim_config[run_type]['pressure'],
                             'thermostat': mattersim_config[run_type]['thermostat'],
@@ -306,7 +306,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
                             'coord_file': coord_file, 
                             'pbc_list': pbc_list,
                             'foundation_model': mattersim_config[run_type]['foundation_model'], # List
-                            'dispersion_via_ase': mattersim_config[run_type]['dispersion_via_ase'], # List
+                            #'dispersion_via_ase': mattersim_config[run_type]['dispersion_via_ase'], # List
                             'temperature': mattersim_config[run_type]['temperature'],
                             'pressure': mattersim_config[run_type]['pressure'],
                             'thermostat': mattersim_config[run_type]['thermostat'],
@@ -332,15 +332,15 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_list,
-                            'foundation_model': mattersim_config[run_type]['foundation_model'],
-                            'dispersion_via_ase': mattersim_config[run_type]['dispersion_via_ase']}
+                            'foundation_model': mattersim_config[run_type]['foundation_model']}
+                            #'dispersion_via_ase': mattersim_config[run_type]['dispersion_via_ase']}
             
     # Ask user for input data
     else:
         if run_type == 'MD': 
             
             foundation_model = ask_for_foundational_model(mattersim_config, run_type)
-            dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mattersim_config[run_type]['dispersion_via_ase'])
+            #dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mattersim_config[run_type]['dispersion_via_ase'])
             thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mattersim_config[run_type]['thermostat'])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
@@ -359,7 +359,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
                             'coord_file': coord_file, 
                             'pbc_list': pbc_list,
                             'foundation_model': foundation_model,
-                            'dispersion_via_ase': dispersion_via_ase,
+                            #'dispersion_via_ase': dispersion_via_ase,
                             'temperature': temperature,
                             'pressure': pressure,
                             'thermostat': thermostat,
@@ -374,12 +374,12 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
             
             no_runs = ask_for_int("How many MD runs do you want to perform?")
             foundation_model = []
-            dispersion_via_ase = []
+            #dispersion_via_ase = []
             for i in range(no_runs):
                 foundation_model_tmp = ask_for_foundational_model(mattersim_config, run_type)
-                dispersion_via_ase_tmp = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mattersim_config[run_type]['dispersion_via_ase'])
+                #dispersion_via_ase_tmp = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mattersim_config[run_type]['dispersion_via_ase'])
                 foundation_model.append(foundation_model_tmp)
-                dispersion_via_ase.append(dispersion_via_ase_tmp)
+                #dispersion_via_ase.append(dispersion_via_ase_tmp)
             thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mattersim_config[run_type]['thermostat'])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
@@ -443,13 +443,13 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
         elif run_type == 'RECALC':
             
             foundation_model = ask_for_foundational_model(mattersim_config, run_type)
-            dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mattersim_config[run_type]['dispersion_via_ase'])
+            #dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mattersim_config[run_type]['dispersion_via_ase'])
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_list,
-                            'foundation_model': foundation_model,
-                            'dispersion_via_ase': dispersion_via_ase}
+                            'foundation_model': foundation_model}
+                            #'dispersion_via_ase': dispersion_via_ase}
     return input_config
 
 
@@ -477,7 +477,7 @@ from mattersim.forcefield import MatterSimCalculator
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load the foundation model
-mattersim_calc = MatterSimCalculator({foundation_model_path(input_config['foundation_model'], input_config['dispersion_via_ase'])}, device=device)
+mattersim_calc = MatterSimCalculator({foundation_model_path(input_config['foundation_model'])}, device=device)
 print("Loading of MatterSim model completed: {input_config['foundation_model']} model")
 
 # Load the coordinates (take care if it is the first start or a restart)
@@ -543,7 +543,7 @@ from ase.io import read
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load the foundation model
-mattersim_calc = MatterSimCalculator({foundation_model_path(input_config['foundation_model'], input_config['dispersion_via_ase'])}, device=device)
+mattersim_calc = MatterSimCalculator({foundation_model_path(input_config['foundation_model'])}, device=device)
 print("Loading of MatterSim model completed: {input_config['foundation_model']} model")
 
 # Load the reference trajectory
@@ -606,7 +606,7 @@ num_interval = 100
 dyn = NPT(atoms, {float(input_config['timestep'])}*units.fs, temperature_K = temperature_K, externalstress = pressure_b*units.bar, ttime = ttime*units.fs, pfactor = pfactor*units.GPa*(units.fs**2))
 """
 
-def foundation_model_path(foundation_model, dispersion_via_ase):
+def foundation_model_path(foundation_model):
     """
     Function to return the path to the foundation model
     """
@@ -618,7 +618,8 @@ def foundation_model_path(foundation_model, dispersion_via_ase):
     else:
         # Custom model
         model_code = foundation_model
-    return f"""load_path="{model_code}", {dispersion_corr(dispersion_via_ase)}"""
+    #return f"""load_path="{model_code}", {dispersion_corr(dispersion_via_ase)}"""
+    return f"""load_path="{model_code}" """
 
 def foundation_model_code(foundation_model):
     """
