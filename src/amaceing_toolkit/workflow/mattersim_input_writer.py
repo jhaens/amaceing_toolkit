@@ -225,9 +225,6 @@ def mattersim_form():
         input_config['train_data_path'] = review_training_file(input_config['train_data_path'])
 
         finetune_config = crt_config(input_config)
-
-        print(finetune_config)
-
         
         write_runscript(input_config, run_type, finetune_config)
 
@@ -420,9 +417,10 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
             epochs = ask_for_int("What is the maximum number of epochs?", mattersim_config[run_type]['epochs'])
             seed = ask_for_int("What is the seed?", mattersim_config[run_type]['seed'])
             lr = ask_for_float_int("What is the learning rate?", mattersim_config[run_type]['lr'])
+            save_path = ''
             save_path = input("What is the directory for the model? [" + mattersim_config[run_type]['save_path'] + "]: ")
-            if dir == '':
-                dir = mattersim_config[run_type]['dir']
+            if save_path == '':
+                save_path = mattersim_config[run_type]['save_path']
 
 
             input_config = {'project_name': project_name,

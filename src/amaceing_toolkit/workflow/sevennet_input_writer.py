@@ -414,7 +414,7 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_list, pro
             print("")
             foundation_model = ''
             while foundation_model not in ['7net-0', '7net-l3i5']:
-                foundation_model = ask_for_foundational_model(sevennet_config, run_type)
+                foundation_model, modal = ask_for_foundational_model(sevennet_config, run_type)
             batch_size = ask_for_int("What is the batch size?", sevennet_config[run_type]['batch_size'])
             epochs = ask_for_int("What is the maximum number of epochs?", sevennet_config[run_type]['epochs'])
             seed = ask_for_int("What is the seed?", sevennet_config[run_type]['seed'])
