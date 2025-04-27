@@ -15,6 +15,7 @@ from .workflow.utils import e0_wrapper
 from .workflow.utils import extract_frames
 from .runs.run_logger import run_logger1
 from .runs.run_logger import show_runs
+from .runs.run_logger import export_run_logs
 from .runs.model_logger import model_logger
 from .runs.model_logger import get_model
 from .runs.model_logger import show_models

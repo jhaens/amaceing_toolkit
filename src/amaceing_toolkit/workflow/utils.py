@@ -78,9 +78,9 @@ def atk_utils():
         \033[1m EXTRACT_XYZ \033[0m: "{'coord_file': 'traj.xyz', 'each_nth_frame': 10}"\n
         \033[1m MACE_CITATIONS \033[0m: "{'log_file': 'xxx_input.log'}" 
         \033[1m BENCHMARK \033[0m: "{'mode': 'MD/RECALC', 'coord_file': 'PATH', 'pbc_list': '[FLOAT FLOAT FLOAT]', 'force_nsteps': 'INT/PATH', 'mace_model': '['mace_mp/...' 'small/...']', 'mattersim_model': 'small/large', 'sevennet_model': '['7net-mf-ompa/...' 'mpa/oma24/None']'}" """))
-        parser.add_argument('-l','--logger', type=str, help='[OPTIONAL] Shows the logger output of the model_logger or the run_logger: "model" or "run".')
+        parser.add_argument('-l','--logger', type=str, help='[OPTIONAL] Shows the logger output of the model_logger or the run_logger: "model" or "run"/"runexport".')
         args = parser.parse_args()
-        if args.logger == 'model' or args.logger == 'run':
+        if args.logger in ['model', 'run', 'runexport']:
             if args.logger == 'model':
                 from amaceing_toolkit.runs.model_logger import show_models
                 show_models()
@@ -88,6 +88,10 @@ def atk_utils():
             elif args.logger == 'run':
                 from amaceing_toolkit.runs.run_logger import show_runs
                 show_runs()
+                exit()
+            elif args.logger == 'runexport':
+                from amaceing_toolkit.runs.run_logger import export_run_logs
+                export_run_logs()
                 exit()
         if args.config != ' ':
             try:

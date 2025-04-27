@@ -281,6 +281,12 @@ amaceing_utils --logger=run
 amaceing_utils --logger=model
 ```
 
+If you want to export the run logger to a pdf file, you can use the following command:
+
+```bash
+amaceing_utils --logger=runexport
+```
+
 
 ## Configuration of default values for input files
 

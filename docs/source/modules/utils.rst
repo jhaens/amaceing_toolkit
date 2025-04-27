@@ -61,13 +61,15 @@ Logger Access
 * Displays summaries of previous calculations
 * Lists available fine-tuned models
 * Helps track project history and available resources
+* Facilitates export of run logs to PDF format for documentation (only the last 50 runs)
 
 Usage examples:
 
 .. code-block:: bash
 
-    amaceing_utils -l=model  # Shows fine-tuned models
-    amaceing_utils -l=run    # Shows run history
+    amaceing_utils -l=model      # Shows fine-tuned models
+    amaceing_utils -l=run        # Shows run history
+    amaceing_utils -l=runexport  # Export the run logger to a pdf
 
 Usage
 -----
@@ -122,8 +124,9 @@ To view logger information:
 
 .. code-block:: bash
 
-    amaceing_utils -l=model  # Shows fine-tuned models
-    amaceing_utils -l=run    # Shows run history
+    amaceing_utils -l=model      # Shows fine-tuned models
+    amaceing_utils -l=run        # Shows run history
+    amaceing_utils -l=runexport  # Export the run logger to a pdf
 
 Output and File Structure
 -------------------------
