@@ -307,8 +307,37 @@ std::vector<std::vector<float>> matrix_inverse(const std::vector<std::vector<flo
 //## PBC_DIST FUNCTION ##
 //#######################
 
-// Function to calculate the distance between two atoms with PBC
+// Function to calculate the distance between two atoms with PBC: WITHOUT RELATIVE COORDINATES
 std::vector<std::vector<float>> pbc_dist_norm(const std::vector<std::vector<float>>& coords1,
+    const std::vector<std::vector<float>>& coords2,
+    const std::vector<std::vector<float>>& pbc) {
+
+    // Initialize the 2D array to store the norm of the distances
+    std::vector<std::vector<float>> norm_distance(coords1.size(), std::vector<float>(coords2.size(), 0.0f));
+
+    for (int j = 0; j < coords1.size(); ++j) {
+        for (int k = 0; k < coords2.size(); ++k) {
+
+            // Calculate the distance vector first
+
+            std::vector<float> distance_vector(3, 0.0f);
+            for (int dim = 0; dim < 3; ++dim) {
+                distance_vector[dim] = coords1[j][dim] - coords2[k][dim];
+
+                // Apply periodic boundary conditions using modulo
+                distance_vector[dim] = distance_vector[dim] - pbc[dim][dim] * round(distance_vector[dim] / pbc[dim][dim]);
+            }
+
+            // Calculate the norm of the distance
+            norm_distance[j][k] = sqrt(pow(distance_vector[0], 2) + pow(distance_vector[1], 2) + pow(distance_vector[2], 2));
+        }
+    }
+    return norm_distance;
+}
+
+
+// Function to calculate the distance between two atoms with PBC
+std::vector<std::vector<float>> pbc_dist_norm_old(const std::vector<std::vector<float>>& coords1,
     const std::vector<std::vector<float>>& coords2,
     const std::vector<std::vector<float>>& pbc) {
 
