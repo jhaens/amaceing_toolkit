@@ -42,7 +42,8 @@ def configs_mattersim(config_name):
         'seed': 1,
         'lr': 1e-2,
         'force_file': 'force.xyz',
-        'save_path': 'MatterSim_models'
+        'save_path': 'MatterSim_models',
+        'early_stopping': 'n'
       },   
       'RECALC' : {
         'foundation_model': 'large',

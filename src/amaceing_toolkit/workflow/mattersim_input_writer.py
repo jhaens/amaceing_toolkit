@@ -324,7 +324,8 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
                             'epochs': mattersim_config[run_type]['epochs'],
                             'seed': mattersim_config[run_type]['seed'],
                             'lr': mattersim_config[run_type]['lr'], 
-                            'save_path': mattersim_config[run_type]['save_path']}
+                            'save_path': mattersim_config[run_type]['save_path'],
+                            'early_stopping': mattersim_config[run_type]['early_stopping']}
         elif run_type == 'RECALC':
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
@@ -421,6 +422,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
             save_path = input("What is the directory for the model? [" + mattersim_config[run_type]['save_path'] + "]: ")
             if save_path == '':
                 save_path = mattersim_config[run_type]['save_path']
+            early_stopping = ask_for_yes_no("Do you want to allow early stopping? (y/n)", mattersim_config[run_type]['early_stopping'])
 
 
             input_config = {'project_name': project_name,
@@ -434,8 +436,8 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
                             'epochs': epochs,
                             'seed': seed,
                             'lr': lr, 
-                            'save_path': save_path
-                            }
+                            'save_path': save_path,
+                            'early_stopping': early_stopping}
 
             
         elif run_type == 'RECALC':
@@ -713,8 +715,9 @@ def crt_config(input_config):
     Function to create the config file for the finetuning
     """
     truefalse_dict = {'y': '--save_checkpoint', 'n': ''}
+    early_stopping_dict = {'y': '', 'n': '--early_stop_patience 1000'}
     # Create the config file
-    config = f""" --load_model_path {foundation_model_code(input_config['load_model_path'])} --train_data_path {input_config['train_data_path']} --device {input_config['device']} --force_loss_ratio {input_config['force_loss_ratio']} --batch_size {input_config['batch_size']} {truefalse_dict[input_config['save_checkpoint']]} --ckpt_interval {input_config['ckpt_interval']} --epochs {input_config['epochs']} --seed {input_config['seed']} --lr {input_config['lr']} --save_path {input_config['save_path']}"""
+    config = f""" --load_model_path {foundation_model_code(input_config['load_model_path'])} --train_data_path {input_config['train_data_path']} --device {input_config['device']} --force_loss_ratio {input_config['force_loss_ratio']} --batch_size {input_config['batch_size']} {truefalse_dict[input_config['save_checkpoint']]} --ckpt_interval {input_config['ckpt_interval']} --epochs {input_config['epochs']} {early_stopping_dict[input_config['early_stopping']]} --seed {input_config['seed']} --lr {input_config['lr']} --save_path {input_config['save_path']}"""
     return config
 
 
