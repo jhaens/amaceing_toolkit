@@ -315,8 +315,8 @@ std::vector<std::vector<float>> pbc_dist_norm(const std::vector<std::vector<floa
     // Initialize the 2D array to store the norm of the distances
     std::vector<std::vector<float>> norm_distance(coords1.size(), std::vector<float>(coords2.size(), 0.0f));
 
-    for (int j = 0; j < coords1.size(); ++j) {
-        for (int k = 0; k < coords2.size(); ++k) {
+    for (size_t j = 0; j < coords1.size(); ++j) {
+        for (size_t k = 0; k < coords2.size(); ++k) {
 
             // Calculate the distance vector first
 

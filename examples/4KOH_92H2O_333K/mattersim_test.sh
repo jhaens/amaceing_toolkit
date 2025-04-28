@@ -20,7 +20,7 @@ echo ----------------------------
 echo Testing input file generation: FINETUNE
 mkdir -p FINETUNE
 cd FINETUNE
-amaceing_mattersim --run_type="FINETUNE" --config="{'project_name': '4koh_92h2o_ft', 'train_data_path': '../../data/train_file_ms.xyz', 'device': 'cuda', 'force_loss_ratio': 100.0, 'load_model_path': 'small', 'batch_size': 5, 'save_checkpoint': 'y', 'ckpt_interval': 25, 'epochs': 2, 'seed': 1, 'lr': 0.01, 'save_path': 'MatterSim_models'}"
+amaceing_mattersim --run_type="FINETUNE" --config="{'project_name': '4koh_92h2o_ft', 'train_data_path': '../../data/train_file_ms.xyz', 'device': 'cuda', 'force_loss_ratio': 100.0, 'load_model_path': 'small', 'batch_size': 5, 'save_checkpoint': 'y', 'ckpt_interval': 25, 'epochs': 2, 'seed': 1, 'lr': 0.01, 'save_path': 'MatterSim_models', 'early_stopping': 'n'}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: RECALC

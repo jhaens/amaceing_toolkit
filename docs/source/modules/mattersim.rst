@@ -98,7 +98,7 @@ For FINETUNE:
 
 .. code-block:: bash
 
-    amaceing_mattersim -rt="FINETUNE" -c="{'project_name': 'NAME', 'train_data_path': 'FILE', 'device': 'cuda', 'force_loss_ratio': '1.0', 'load_model_path': 'small', 'batch_size': '5', 'save_checkpoint': 'y', 'ckpt_interval': '25', 'epochs': '50', 'seed': '42', 'lr': '1e-4', 'save_path': 'models'}"
+    amaceing_mattersim -rt="FINETUNE" -c="{'project_name': 'NAME', 'train_data_path': 'FILE', 'device': 'cuda', 'force_loss_ratio': '1.0', 'load_model_path': 'small', 'batch_size': '5', 'save_checkpoint': 'y', 'ckpt_interval': '25', 'epochs': '50', 'seed': '42', 'lr': '1e-4', 'save_path': 'models', 'early_stopping': 'n'}"
 
 For RECALC:
 
