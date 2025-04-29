@@ -731,9 +731,15 @@ def review_training_file(path_to_training_file):
     try:
         filedata = filedata.replace('REF_Force', 'forces')
         filedata = filedata.replace('REF_TotEnergy', 'energy')
+        path_to_training_file = path_to_training_file.replace('.xyz', '_trainset.xyz')
     except:
-        print("Please check the force and energy keywords yourself ('forces', 'energy').")
-    path_to_training_file = path_to_training_file.replace('.xyz', '_trainset.xyz')
+        try:
+            filedata = filedata.replace('force', 'forces')
+            filedata = filedata.replace('TotEnergy', 'energy')
+            path_to_training_file = path_to_training_file.replace('.xyz', '_trainset.xyz')
+        except:
+            print("Please check the force and energy keywords yourself ('forces', 'energy').")
+    
     # Write the file out again
     with open(path_to_training_file, 'w') as file:
         file.write(filedata)
