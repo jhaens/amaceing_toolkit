@@ -114,6 +114,17 @@ The package is available on GitHub and can be installed via pip.
     conda activate atk_ms7n                # activate the environment
     ```
 
+    Install PyTorch:
+
+    ```bash
+    pip install torch torchvision torchaudio
+    ```
+    If you are using a CPU only system, you can use the following command:
+
+    ```bash
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+    ```
+
     Now you can install the package via:
 
     ```bash

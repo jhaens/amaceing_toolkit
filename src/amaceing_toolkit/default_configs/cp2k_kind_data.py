@@ -147,6 +147,12 @@ def kind_data_functionals(functional):
     BASIS_SET DZVP-MOLOPT-SR-GTH-q14
     POTENTIAL GTH-PBE-q14
 &END KIND
+
+&KIND Ga
+    BASIS_SET DZVP-MOLOPT-SR-GTH-q13
+    POTENTIAL GTH-PBE-q13
+&END KIND
+
 #KIND DATA from kind_data.py (PBE Functional)
         """
 
@@ -293,6 +299,12 @@ def kind_data_functionals(functional):
     BASIS_SET DZVP-MOLOPT-SR-GTH-q14
     POTENTIAL GTH-PBE-q14
 &END KIND
+
+&KIND Ga
+    BASIS_SET DZVP-MOLOPT-SR-GTH-q13
+    POTENTIAL GTH-PBE-q13
+&END KIND
+
 #KIND DATA from kind_data.py (PBE Functional)
         """
 

@@ -111,4 +111,8 @@ After installation, verify with:
 
         conda create -n atk_ms7n python=3.9
         conda activate atk_ms7n
+        # Install PyTorch for CUDA 12.4
+        pip install torch torchvision torchaudio
+        # Or for CPU-only systems
+        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
         pip install mattersim==1.1.2 sevenn==0.11.0
