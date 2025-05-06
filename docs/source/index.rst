@@ -32,6 +32,12 @@ Tutorial Notebook B: `aMACEing Toolkit Tutorial Notebook B <https://colab.resear
 
 .. toctree::
    :maxdepth: 2
+   :caption: API Reference
+
+   api_reference/index
+
+.. toctree::
+   :maxdepth: 2
    :caption: Examples
 
    examples/4KOH_92H2O

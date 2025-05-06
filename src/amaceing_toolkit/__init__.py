@@ -20,6 +20,16 @@ from .runs.model_logger import model_logger
 from .runs.model_logger import get_model
 from .runs.model_logger import show_models
 
+# Import API functions
+from .workflow import cp2k_api
+from .workflow import mace_api
+from .workflow import utils_api
+from .workflow import mattersim_api
+from .workflow import sevennet_api
+from .workflow import analyzer_api
 
-__all__ = ["amaceing_cp2k", "amaceing_mace", "amaceing_utils", "amaceing_ana", "amaceing_mattersim", "amaceing_sevennet"]
+
+__all__ = ["amaceing_cp2k", "amaceing_mace", "amaceing_utils", "amaceing_ana", 
+           "amaceing_mattersim", "amaceing_sevennet", "cp2k_api", "mace_api",
+           "utils_api", "mattersim_api", "sevennet_api", "analyzer_api"]
 

@@ -3,6 +3,7 @@
 ![GitHub Release](https://img.shields.io/github/v/release/jhaens/amaceing_toolkit)
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/jhaens/amaceing_toolkit)
 [![Documentation Status](https://app.readthedocs.org/projects/amaceing-toolkit/badge/)](https://amaceing-toolkit.readthedocs.io/en/latest/)
+[![Presentation](https://img.shields.io/badge/Presentation-PDF-green)](https://cloud.tu-ilmenau.de/s/oYzns2qkKNYLS3L)
 <!--- [![arXiv](https://img.shields.io/badge/arXiv-<INDEX>-<COLOR>.svg)](https://arxiv.org/abs/<INDEX>) -->
 
 
