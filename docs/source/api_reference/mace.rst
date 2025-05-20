@@ -24,7 +24,7 @@ Function Reference
        config = {
            'project_name': 'test_md',
            'coord_file': 'system.xyz',
-           'pbc_list': [14.0, 14.0, 14.0],
+           'pbc_list': [14.0, 0, 0, 0, 14.0, 0, 0, 0, 14.0],
            'foundation_model': 'mace_mp',
            'model_size': 'small',
            'dispersion_via_mace': 'n',
@@ -76,7 +76,7 @@ MD
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': 'mace_off/mace_anicc/mace_mp/PATH',
        'model_size': 'small/medium/large/none',
        'dispersion_via_mace': 'y/n',
@@ -98,7 +98,7 @@ MULTI_MD
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': ['NAME/PATH', 'NAME/PATH', ...],
        'model_size': ['small/medium/large/none', 'small/medium/large/none', ...],
        'dispersion_via_mace': ['y/n', 'y/n', ...],
@@ -120,7 +120,7 @@ GEO_OPT
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'max_iter': INT,
        'foundation_model': 'NAME/PATH',
        'model_size': 'small/medium/large/none',
@@ -135,7 +135,7 @@ CELL_OPT
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'max_iter': INT,
        'foundation_model': 'NAME/PATH',
        'model_size': 'small/medium/large/none',
@@ -199,7 +199,7 @@ RECALC
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': 'NAME/PATH',
        'model_size': 'small/medium/large/none',
        'dispersion_via_mace': 'y/n'

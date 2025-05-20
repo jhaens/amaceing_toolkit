@@ -216,7 +216,7 @@ amaceing_cp2k --help
 ```
 The syntax of the one-line commands is the same for all of the functions:
 ```bash
-amaceing_<function> -rt="<run_type>" -c="{'project_name': 'first_test', 'pbc_list': '[10 10 10]', ...}"
+amaceing_<function> -rt="<run_type>" -c="{'project_name': 'first_test', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', ...}"
 ```
 > [!IMPORTANT]
 > Please do **NOT** use **double quotes inside the dictionary**. Also do **NOT** use **commas inside of lists** in the dictionary. The dictionary is passed as a string and double quotes are not allowed. 
@@ -338,14 +338,15 @@ Not implemented yet, but planned:
 
 - [x] Second example system
 - [x] Test SevenNet implementation
-- [ ] Support for non-orthorhombic systems
+- [x] Support for non-orthorhombic systems
 - [x] Analyzer
-- [ ] Implement rotation autocorrelation function
+- [x] Implement vector autocorrelation function
 - [x] Visualization of Analyzer results
 - [x] SevenNet Fine-tuning
+- [x] More examples
 - [ ] Web-API to monitor the runs
-- [ ] More examples
 - [ ] Support of other workload managers (Contributions are welcome!)
+- [ ] ...
 
 
 

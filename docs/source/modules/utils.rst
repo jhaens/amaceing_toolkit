@@ -118,7 +118,7 @@ For benchmarking:
 
 .. code-block:: bash
 
-    amaceing_utils -rt="BENCHMARK" -c="{'mode': 'MD', 'coord_file': 'coord.xyz', 'pbc_list': '[10 10 10]', 'force_nsteps': '20000', 'mace_model': '['mace_mp' 'small']', 'mattersim_model': 'small', 'sevennet_model': '['7net-mf-ompa' 'mpa']'}"
+    amaceing_utils -rt="BENCHMARK" -c="{'mode': 'MD', 'coord_file': 'coord.xyz', 'pbc_list': '[10 0 0 0  10 0 0 0 10]', 'force_nsteps': '20000', 'mace_model': '['mace_mp' 'small']', 'mattersim_model': 'small', 'sevennet_model': '['7net-mf-ompa' 'mpa']'}"
 
 To view logger information:
 

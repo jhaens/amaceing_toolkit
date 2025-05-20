@@ -24,7 +24,7 @@ Function Reference
        config = {
            'project_name': 'test_md',
            'coord_file': 'system.xyz',
-           'pbc_list': [14.0, 14.0, 14.0],
+           'pbc_list': [14.0, 0, 0, 0, 14.0, 0, 0, 0, 14.0],
            'foundation_model': '7net-0',
            'modal': 'mpa',
            'temperature': '300',
@@ -48,7 +48,7 @@ MD
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': '7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH',
        'modal': 'mpa/oma24/None',
        'dispersion_via_ase': 'y/n',
@@ -70,7 +70,7 @@ MULTI_MD
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': ['PATH', 'PATH', ...],
        'modal': ['mpa/oma24/None', 'mpa/oma24/None', ...],
        'dispersion_via_ase': ['y/n', 'y/n', ...],
@@ -112,7 +112,7 @@ RECALC
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': '7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH',
        'modal': 'mpa/oma24/None',
        'dispersion_via_ase': 'y/n'

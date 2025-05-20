@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from amaceing_toolkit.workflow.utils import print_logo
 from amaceing_toolkit.workflow.utils import cite_amaceing_toolkit
 from amaceing_toolkit.workflow.utils import ask_for_float_int
+from amaceing_toolkit.workflow.utils import ask_for_non_cubic_pbc
 from amaceing_toolkit.workflow.utils import ask_for_int
 from amaceing_toolkit.workflow.utils import ask_for_yes_no
 from amaceing_toolkit.workflow.utils import ask_for_yes_no_pbc
@@ -81,8 +82,9 @@ def atk_analyzer():
         print(" ==> Radial distribution function of: " + str(rdf_pairs))
         print(" ==> Mean square displacement of: " + str(msd_list))
         print("")
-        # Do not calculate smsd via the one-line teriminal command
+        # Do not calculate smsd autocorrelation via the one-line teriminal command
         smsd_list = []
+        autocorr_pairs = []
 
         # Name the analyses
         ana_names = []
@@ -106,7 +108,7 @@ def atk_analyzer():
             start_time = datetime.datetime.now()
             print("Analysis started at: " + str(start_time.strftime("%H:%M:%S")))
             timestep[i] = float(timestep[i])  # Ensure timestep is explicitly cast to float
-            compute_analysis(coord_file[i], pbc[i], timestep[i], rdf_pairs, msd_list, smsd_list)
+            compute_analysis(coord_file[i], pbc[i], timestep[i], rdf_pairs, msd_list, smsd_list, autocorr_pairs)
             end_time = datetime.datetime.now()
             duration = end_time - start_time
             print("Analysis finished at: " + str(end_time.strftime("%H:%M:%S")) + " (duration: " + str(duration.total_seconds()) + " s)")
@@ -146,7 +148,7 @@ def atk_analyzer():
 
         if visualize == 'y':
             # Visualize the analysis
-            plot_plan = {'rdf': rdf_pairs, 'msd': msd_list, 'smsd': smsd_list}
+            plot_plan = {'rdf': rdf_pairs, 'msd': msd_list, 'smsd': smsd_list, 'autocorr': autocorr_pairs}
             # Create analyses dict
             analyses = {}
             for i in range(len(coord_file)):
@@ -201,11 +203,8 @@ def ana_form():
             np.savetxt(f'pbc_{i}.txt', np.array([[box_xyz, 0, 0], [0, box_xyz, 0], [0, 0, box_xyz]]))
             pbc = f'pbc_{i}.txt'  # Ensure the file name includes the extension
         elif box_cubic == 'n':
-            box_x = ask_for_float_int("What is the length of the box in the x-direction in Å?", str(10.0))
-            box_y = ask_for_float_int("What is the length of the box in the y-direction in Å?", str(10.0))
-            box_z = ask_for_float_int("What is the length of the box in the z-direction in Å?", str(10.0))
-            box_x, box_y, box_z = float(box_x), float(box_y), float(box_z)
-            np.savetxt(f'pbc_{i}.txt', np.array([[box_x, 0, 0], [0, box_y, 0], [0, 0, box_z]]))
+            pbc_mat = ask_for_non_cubic_pbc()
+            np.savetxt(f'pbc_{i}.txt', pbc_mat)
             pbc = f'pbc_{i}.txt'  # Ensure the file name includes the extension
         else:
             pbc_file = np.loadtxt(box_cubic)
@@ -250,6 +249,7 @@ def ana_form():
     rdf_pairs = []
     msd_list = []
     smsd_list = []
+    autocorr_pairs = []
 
     # Select the analysis type
     print("")
@@ -257,6 +257,7 @@ def ana_form():
     print("1. Radial distribution function")
     print("2. Mean square displacement")
     print("3. Single particle mean square displacement")
+    print("4. Vector-Autocorrelation function")
     print("")
 
     # Print the available atom types
@@ -285,11 +286,11 @@ def ana_form():
     classic_smart = ask_for_yes_no("Do you want to configure the whole analysis from scratch (y) or do you want to accept or refine the smart proposal (n) for the analysis?", "y")
     if classic_smart == "y":
 
-        ana_dict = {"1": "rdf", "2": "msd", "3": "smsd"}
+        ana_dict = {"1": "rdf", "2": "msd", "3": "smsd", "4": "autocorr"}
 
         end_ana = False
         while end_ana == False:
-            ana_type = ask_for_int("What type of analysis do you want to do? (1/2/3)", str(1))
+            ana_type = ask_for_int("What type of analysis do you want to do? (1/2/3/4)", str(1))
             if ana_type in ana_dict.keys():
                 ana_type = ana_dict[ana_type]
             else: 
@@ -363,6 +364,34 @@ def ana_form():
                     else:
                         smsd_list.append(atom)
                 print("You selected the following atom types for the single particle mean square displacement analysis: " + str(smsd_list))
+
+            elif ana_type == "autocorr":
+                print("You selected vector autocorrelation function analysis.")
+
+                # Ask for the pairs for the vector autocorrelation function
+                pair_str = input("What pairs do you want to analyze? (e.g. O-O, H-H, Si-H) [O-O]: ")
+                if pair_str == '':
+                    pair_str = "O-O"
+                pair_list = pair_str.split(",") 
+
+                # Setup the right syntax for the cpp analyzer: O-O, H-H, Si-H
+                for pair in pair_list:
+                    pair = pair.strip()
+                    if pair.split("-")[0] in avail_atomtypes and pair.split("-")[1] in avail_atomtypes:
+                        if "-" in pair:
+                            pair = pair.split("-")
+                            pair[0] = pair[0].strip()
+                            pair[1] = pair[1].strip()
+                            autocorr_pairs.append(pair)
+                        else:
+                            print(f"Invalid pair format for {pair}. Please use the format 'A-B'.")
+                            exit()
+                    elif "-" not in pair:
+                        print(f"Invalid pair format for {pair}. Please use the format 'A-B'.")
+                        exit()
+                    else:
+                        print(f"Invalid atom type {pair}. At least one of the atom types is not in the trajectory file.")
+                print("You selected the following pairs for the vector autocorrelation function analysis: " + str(autocorr_pairs))
             
             else:
                 print("Invalid analysis type. ")
@@ -380,11 +409,12 @@ def ana_form():
                 print("1. Radial distribution function")
                 print("2. Mean square displacement")
                 print("3. Single particle mean square displacement")
+                print("4. Vector-Autocorrelation function")
                 print("")
         
     else:
         # Refine the smart proposal
-        msd_list, rdf_pairs, smsd_list = edit_smart_proposal(avail_atomtypes)
+        msd_list, rdf_pairs, smsd_list, autocorr_pairs = edit_smart_proposal(avail_atomtypes)
 
     # only one analysis:
     if len(analyses) == 1:
@@ -392,7 +422,7 @@ def ana_form():
         print("")
         start_time = datetime.datetime.now()
         print("Analysis started at: " + str(start_time.strftime("%H:%M:%S")))
-        compute_analysis(coord_file, pbc, timestep, rdf_pairs, msd_list, smsd_list)
+        compute_analysis(coord_file, pbc, timestep, rdf_pairs, msd_list, smsd_list, autocorr_pairs)
         end_time = datetime.datetime.now()
         duration = end_time - start_time
         print("Analysis finished at: " + str(end_time.strftime("%H:%M:%S")) + " (duration: " + str(duration.total_seconds()) + " s)")
@@ -409,7 +439,7 @@ def ana_form():
             print("Starting analysis of " + str(analyses_names[key]) + "...")
             start_time = datetime.datetime.now()
             print("Analysis started at: " + str(start_time.strftime("%H:%M:%S")))
-            compute_analysis(coord_file, pbc, timestep, rdf_pairs, msd_list, smsd_list)
+            compute_analysis(coord_file, pbc, timestep, rdf_pairs, msd_list, smsd_list, autocorr_pairs)
             end_time = datetime.datetime.now()
             duration = end_time - start_time
             print("Analysis finished at: " + str(end_time.strftime("%H:%M:%S")) + " (duration: " + str(duration.total_seconds()) + " s) in folder " + str(analyses_names[key]))
@@ -535,7 +565,7 @@ def ana_form():
     # Ask for primitive visualization
     vis_ana = ask_for_yes_no("Do you want to visualize the analysis? (y/n)", "n")
     if vis_ana == "y":
-        plot_plan = {'rdf': rdf_pairs, 'msd': msd_list, 'smsd': smsd_list}
+        plot_plan = {'rdf': rdf_pairs, 'msd': msd_list, 'smsd': smsd_list, 'autocorr': autocorr_pairs}
 
         if len(analyses) == 1:
             filenames = visualizer(plot_plan, analyses_names, analyses, d_eval)
@@ -683,6 +713,13 @@ def visualizer(plot_plan, analyses_names, analyses, d_eval=False):
                 datax, datay = smsd_loader()
                 plotter_multi(ana_type, atom_type, datax, datay, "")
                 filenames.append("smsd_" + str(atom_type) + "__plot.pdf") # Double underscore because of nameing convention: smsd_H_ana1_plot.pdf, but for one analysis ana1 = ""
+        elif ana_type == "autocorr":
+            for pair in atom:
+                data = np.loadtxt(f"autocorr_{pair[0]}{pair[1]}.csv", delimiter=",", skiprows=1)
+                datax = data[:, 0]
+                datay = data[:, 1]
+                plotter1(ana_type, f"{pair[0]}{pair[1]}", datax, datay, analyses_names[0])
+                filenames.append(f"autocorr_{pair[0]}{pair[1]}_plot.pdf")
         else:
             print("Invalid analysis type.")
             exit()
@@ -741,6 +778,22 @@ def visualizer_multi(plot_plan, analyses_names, analyses, d_eval=False):
                     os.chdir("..")
                     plotter_multi(ana_type, atom_type, datax, datay, str(analyses_names[noa]))
                     filenames.append("smsd_" + str(atom_type) + "_" + str(analyses_names[noa]) + "_plot.pdf")
+        elif ana_type == "autocorr":
+            for pair in atom:
+                datax_list = []
+                datay_list = []
+                text_list = []
+                for noa in analyses.keys():
+                    os.chdir(str(analyses_names[noa]))
+                    data = np.loadtxt(f"autocorr_{pair[0]}{pair[1]}.csv", delimiter=",", skiprows=1)
+                    os.chdir("..")
+                    datax = data[:, 0]
+                    datay = data[:, 1]
+                    datax_list.append(datax)
+                    datay_list.append(datay)
+                    text_list.append(f"{analyses_names[noa]} ({pair[0]}{pair[1]})")
+                plotter_multi(ana_type, f"{pair[0]}{pair[1]}", datax_list, datay_list, text_list)
+                filenames.append(f"autocorr_{pair[0]}{pair[1]}_plot.pdf")
         else:
             print("Invalid analysis type.")
             exit()
@@ -823,6 +876,8 @@ def plot_labels(analysis):
         return "$\\tau$ [ps]", "MSD [$\mathrm{\AA}^2$]", "Mean Square Displacement (msd)"
     elif analysis == "smsd":
         return "$\\tau$ [ps]", "MSD [$\mathrm{\AA}^2$]", "Single Particle Mean Square Displacement (single-msd)"
+    elif analysis == "autocorr":
+        return "$\\tau$ [ps]", "ACF", "Vector Autocorrelation Function (autocorr)"
     else:
         print("Invalid analysis type.")
         exit()
@@ -1060,6 +1115,7 @@ def edit_smart_proposal(atom_types):
     
     msd_list, rdf_pairs = smart_proposal(atom_types)
     smsd_list = []
+    autocorr_pairs = []
 
     # ask for refinement
     print("The following analyses are proposed:")
@@ -1138,6 +1194,20 @@ def edit_smart_proposal(atom_types):
                     print("Atom " + str(atom) + " added to the proposed atoms.")
         else:
             print("No atoms added to the proposed atoms.")
+        add_autocorr = ask_for_yes_no("Do you want to add specific autocorr pairs? (y/n)", "n")
+        if add_autocorr == "y":
+            add_pairs = input("Please enter the pairs you want to add (e.g. O-O, H-H, Si-H): ")
+            add_pairs = add_pairs.split(",")
+            for pair in add_pairs:
+                pair = pair.strip()
+                pair = pair.split("-")
+                pair[0] = pair[0].strip()
+                pair[1] = pair[1].strip()
+                if pair in autocorr_pairs:
+                    print("Pair " + str(pair) + " is already in the proposed pairs.")
+                else:
+                    autocorr_pairs.append(pair)
+                    print("Pair " + str(pair) + " added to the proposed pairs.")
     else:
         print("No refinement done.")
 
@@ -1146,8 +1216,9 @@ def edit_smart_proposal(atom_types):
     print("Mean square displacement (msd) of the following atoms: " + str(msd_list))
     print("Radial distribution function (rdf) of the following pairs: " + str(rdf_pairs))
     print("Single particle mean square displacement (smsd) of the following atoms: " + str(smsd_list))
+    print("Autocorrelation function (autocorr) of the following pairs: " + str(autocorr_pairs))
     print("")
-    return msd_list, rdf_pairs, smsd_list
+    return msd_list, rdf_pairs, smsd_list, autocorr_pairs
 
 def path_checker(path):
     """

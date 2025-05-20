@@ -10,7 +10,8 @@ void compute_analysis(
     const float& timestep_md,
     const std::vector<std::vector<std::string>>& rdf_pairs,
     const std::vector<std::string>& msd_atoms,
-    const std::vector<std::string>& smsd_atoms);
+    const std::vector<std::string>& smsd_atoms,
+    const std::vector<std::vector<std::string>>& autocorr_pairs);
 
 int terminal_input(const std::vector<std::string>& args);
 

@@ -91,19 +91,19 @@ For GEO_OPT:
 
 .. code-block:: bash
 
-    amaceing_cp2k -rt="GEO_OPT" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 10 10]', 'max_iter': '200', 'print_forces': 'ON', 'xc_functional': 'PBE', 'cp2k_newer_than_2023x': 'y'}"
+    amaceing_cp2k -rt="GEO_OPT" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'max_iter': '200', 'print_forces': 'ON', 'xc_functional': 'PBE', 'cp2k_newer_than_2023x': 'y'}"
 
 For CELL_OPT:
 
 .. code-block:: bash
 
-    amaceing_cp2k -rt="CELL_OPT" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 10 10]', 'max_iter': '200', 'keep_symmetry': 'TRUE', 'symmetry': 'CUBIC', 'xc_functional': 'PBE', 'cp2k_newer_than_2023x': 'y'}"
+    amaceing_cp2k -rt="CELL_OPT" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'max_iter': '200', 'keep_symmetry': 'TRUE', 'symmetry': 'CUBIC', 'xc_functional': 'PBE', 'cp2k_newer_than_2023x': 'y'}"
 
 For MD:
 
 .. code-block:: bash
 
-    amaceing_cp2k -rt="MD" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 10 10]', 'ensemble': 'NVT', 'nsteps': '10000', 'timestep': '0.5', 'temperature': '300', 'print_forces': 'ON', 'print_velocities': 'ON', 'xc_functional': 'PBE', 'cp2k_newer_than_2023x': 'y'}"
+    amaceing_cp2k -rt="MD" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'ensemble': 'NVT', 'nsteps': '10000', 'timestep': '0.5', 'temperature': '300', 'print_forces': 'ON', 'print_velocities': 'ON', 'xc_functional': 'PBE', 'cp2k_newer_than_2023x': 'y'}"
 
 .. note::
    Do **NOT** use double quotes inside the dictionary. Also do **NOT** use commas inside of lists in the dictionary.

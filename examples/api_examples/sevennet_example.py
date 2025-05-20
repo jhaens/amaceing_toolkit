@@ -16,7 +16,7 @@ def main():
     md_config = {
         'project_name': 'system_md',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [19.8196, 19.8196, 19.8196],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': '7net-mf-ompa',
         'modal': 'mpa',
         'dispersion_via_ase': 'n',
@@ -40,7 +40,7 @@ def main():
     multi_md_config = {
         'project_name': 'system_multimd',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [19.8196, 19.8196, 19.8196],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': ['7net-0', '7net-mf-ompa'],
         'dispersion_via_ase': ['n', 'n'],
         'modal': ['', 'mpa'],
@@ -81,7 +81,7 @@ def main():
     recalc_config = {
         'project_name': 'system_recalc',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [19.8196, 19.8196, 19.8196],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': '7net-mf-ompa',
         'modal': 'mpa',
         'dispersion_via_ase': 'n'

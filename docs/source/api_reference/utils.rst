@@ -96,7 +96,7 @@ BENCHMARK
    {
        'mode': 'MD/RECALC',
        'coord_file': 'PATH',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'force_nsteps': INT,  # If mode is MD
        'force_nsteps': 'PATH',  # If mode is RECALC (path to force file)
        'mace_model': ['mace_mp/mace_off/mace_anicc', 'small/medium/large'],

@@ -17,7 +17,7 @@ def main():
     geo_opt_config = {
         'project_name': 'system_geoopt',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [14.2067, 14.2067, 14.2067],  # List directly, API handles formatting
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],  # List directly, API handles formatting
         'foundation_model': 'mace_mp',
         'model_size': 'small',
         'dispersion_via_mace': 'n',
@@ -34,7 +34,7 @@ def main():
     cell_opt_config = {
         'project_name': 'system_cellopt',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [14.2067, 14.2067, 14.2067],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'mace_mp',
         'model_size': 'small',
         'dispersion_via_mace': 'n',
@@ -51,7 +51,7 @@ def main():
     md_config = {
         'project_name': 'system_md',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [14.2067, 14.2067, 14.2067],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'mace_mp',
         'model_size': 'small',
         'dispersion_via_mace': 'n',
@@ -75,7 +75,7 @@ def main():
     multi_md_config = {
         'project_name': 'system_multimd',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [14.2067, 14.2067, 14.2067],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         # Lists can be passed directly as Python lists
         'foundation_model': ['mace_mp', 'mace_mp', 'mace_off'],
         'model_size': ['small', 'medium', 'small'],
@@ -153,7 +153,7 @@ def main():
     recalc_config = {
         'project_name': 'system_recalc',
         'coord_file': '../../../4KOH_92H2O_333K/data/dft_energies.xyz',
-        'pbc_list': [14.2067, 14.2067, 14.2067],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'mace_mp',
         'model_size': 'small',
         'dispersion_via_mace': 'n'

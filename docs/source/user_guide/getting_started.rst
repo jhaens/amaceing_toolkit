@@ -27,7 +27,7 @@ You can also use one-line commands for input creation:
 
 .. code-block:: bash
 
-    amaceing_<function> -rt="<run_type>" -c="{'project_name': 'test', 'pbc_list': '[10 10 10]', ...}"
+    amaceing_<function> -rt="<run_type>" -c="{'project_name': 'test', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', ...}"
 
 .. note::
    **Important**: Do **NOT** use double quotes or commas inside lists in the dictionary.

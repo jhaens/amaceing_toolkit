@@ -76,7 +76,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: GEO_OPT
     # - Project name: 4koh_92h2o_geoopt
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Max iterations: 10
     # - XC functional: BLYP
     # - Print forces: OFF
@@ -91,7 +91,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: MD
     # - Project name: 4koh_92h2o_md
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Ensemble: NVT
     # - Number of steps: 10
     # - Timestep: 0.5
@@ -167,7 +167,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: GEO_OPT
     # - Project name: 4koh_92h2o_geoopt
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: mace_mp
     # - Model size: small
     # - Use dispersion via MACE: n
@@ -182,7 +182,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: MD
     # - Project name: 4koh_92h2o_md
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: mace_mp
     # - Model size: small
     # - Use dispersion via MACE: n
@@ -204,7 +204,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: MULTI_MD
     # - Project name: 4koh_92h2o_multimd
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Number of configurations: 3
     # - For Configuration 1:
     #   - Foundation model: mace_mp
@@ -261,7 +261,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: RECALC
     # - Project name: 4koh_92h2o_recalc
     # - Coordinate file: ../../data/dft_energies.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: mace_mp
     # - Model size: small
     # - Use dispersion via MACE: n
@@ -329,7 +329,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: MD
     # - Project name: 4koh_92h2o_md
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: large
     # - Temperature: 300
     # - Pressure: 1.0
@@ -349,7 +349,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: MULTI_MD
     # - Project name: 4koh_92h2o_md
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Number of configurations: 2
     # - For Configuration 1:
     #   - Foundation model: small
@@ -393,7 +393,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: RECALC
     # - Project name: 4koh_92h2o_recalc
     # - Coordinate file: ../../data/dft_energies.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: large
     cd ../..
 
@@ -451,7 +451,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: MD
     # - Project name: 4koh_92h2o_md
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: 7net-mf-ompa
     # - Modal: mpa
     # - Use dispersion via ASE: n
@@ -473,7 +473,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: MULTI_MD
     # - Project name: 4koh_92h2o_md
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Number of configurations: 2
     # - For Configuration 1:
     #   - Foundation model: 7net-0
@@ -516,7 +516,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Run type: RECALC
     # - Project name: 4koh_92h2o_recalc
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: 7net-mf-ompa
     # - Modal: mpa
     # - Use dispersion via ASE: n
@@ -625,7 +625,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Function to use: BENCHMARK
     # - Benchmark mode: MD
     # - Coordinate file: ../../data/system.xyz
-    # - Cell dimensions: 14.2067 14.2067 14.2067
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Number of steps: 10
     # - MACE model to use: mace_mp
     # - MACE model size: small

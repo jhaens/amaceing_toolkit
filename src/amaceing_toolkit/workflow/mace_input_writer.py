@@ -14,6 +14,7 @@ from .utils import ask_for_float_int
 from .utils import ask_for_int
 from .utils import ask_for_yes_no
 from .utils import ask_for_yes_no_pbc
+from .utils import ask_for_non_cubic_pbc
 from .utils import create_dataset
 from .utils import e0_wrapper
 from .utils import frame_counter
@@ -39,18 +40,22 @@ def atk_mace():
         parser = argparse.ArgumentParser(description="Write input file for MACE runs and prepare them: (1) Via a short Q&A: NO arguments needed! (2) Directly from the command line with a dictionary: TWO arguments needed!", formatter_class=argparse.RawTextHelpFormatter)
         parser.add_argument("-rt", "--run_type", type=str, help="[OPTIONAL] Which type of calculation do you want to run? ('GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'FINETUNE', 'FINETUNE_MULTIHEAD','RECALC')", required=False)
         parser.add_argument("-c", "--config", type=str, help=textwrap.dedent("""[OPTIONAL] Dictionary with the configuration:\n 
-        \033[1m GEO_OPT \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n'}"\n
-        \033[1m CELL_OPT \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n'}"\n
-        \033[1m MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
-        \033[1m MULTI_MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'foundation_model' : '['NAME/PATH' ...]', 'model_size': '['small/medium/large/none' ...]', 'dispersion_via_mace': '['y/n' ...]', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
+        \033[1m GEO_OPT \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n'}"\n
+        \033[1m CELL_OPT \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n'}"\n
+        \033[1m MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
+        \033[1m MULTI_MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : '['NAME/PATH' ...]', 'model_size': '['small/medium/large/none' ...]', 'dispersion_via_mace': '['y/n' ...]', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
         \033[1m FINETUNE \033[0m: "{'project_name' : 'NAME', 'train_file': 'FILE', 'device': 'cuda/cpu', 'stress_weight': 'FLOAT', 'forces_weight': 'FLOAT', 'energy_weight': 'FLOAT', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'prevent_catastrophic_forgetting': 'y/n', 'batch_size': 'INT', 'valid_fraction': 'FLOAT', 'valid_batch_size': 'INT', 'max_num_epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT', 'xc_functional_of_dataset' : 'BLYP/PBE', 'dir': 'PATH'}"\n
         \033[1m FINETUNE_MULTIHEAD \033[0m: "{'project_name' : 'NAME', 'train_file': '['FILE' ...]', 'device': 'cuda/cpu', 'stress_weight': 'FLOAT', 'forces_weight': 'FLOAT', 'energy_weight': 'FLOAT', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'batch_size': 'INT', 'valid_fraction': 'FLOAT', 'valid_batch_size': 'INT', 'max_num_epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT', 'xc_functional_of_dataset' : '[BLYP(_SR)/PBE(_SR) ...]', 'dir': 'PATH'}"\n
-        \033[1m RECALC \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[FLOAT FLOAT FLOAT]', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n'}'\n" """), required=False)
+        \033[1m RECALC \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n'}'\n" """), required=False)
         args = parser.parse_args()
         if args.config != ' ':
             try:
                 if args.run_type == 'MULTI_MD':
                     input_config = string_to_dict_multi(args.config)
+                    if np.size(input_config['pbc_list']) == 3: # Keep compatibility with old input files
+                        input_config['pbc_list'] = np.array([[input_config['pbc_list'][0], 0, 0], [0, input_config['pbc_list'][1], 0], [0, 0, input_config['pbc_list'][2]]])
+                    else:
+                        input_config['pbc_list'] = np.array(input_config['pbc_list']).reshape(3,3)
                 elif args.run_type == 'FINETUNE':
                     input_config = string_to_dict(args.config)
                     input_config['E0s'] = e0_wrapper(e0s_functionals(input_config['xc_functional_of_dataset']), input_config['train_file'], input_config['xc_functional_of_dataset'])
@@ -62,6 +67,10 @@ def atk_mace():
                         input_config['E0s'][head] = e0_wrapper(e0s_functionals(input_config['xc_functional_of_dataset'][head]), input_config['train_file'][head], input_config['xc_functional_of_dataset'][head])
                 else:
                     input_config = string_to_dict(args.config)
+                    if np.size(input_config['pbc_list']) == 3: # Keep compatibility with old input files
+                        input_config['pbc_list'] = np.array([[input_config['pbc_list'][0], 0, 0], [0, input_config['pbc_list'][1], 0], [0, 0, input_config['pbc_list'][2]]])
+                    else:
+                        input_config['pbc_list'] = np.array(input_config['pbc_list']).reshape(3,3)
 
                 write_input(input_config, args.run_type)
             
@@ -134,15 +143,11 @@ def mace_form():
 
     if box_cubic == 'y':
         box_xyz = ask_for_float_int("What is the length of the box in Å?", str(10.0))
-        pbc_list = [box_xyz, box_xyz, box_xyz]
+        pbc_mat = np.array([[box_xyz, 0.0, 0.0],[0.0, box_xyz, 0.0],[0.0, 0.0, box_xyz]])
     elif box_cubic == 'n':
-        box_x = ask_for_float_int("What is the length of the box in the x-direction in Å?", str(10.0))
-        box_y = ask_for_float_int("What is the length of the box in the y-direction in Å?", str(10.0))
-        box_z = ask_for_float_int("What is the length of the box in the z-direction in Å?", str(10.0))
-        pbc_list = [box_x, box_y, box_z]
+        pbc_mat = ask_for_non_cubic_pbc()
     else:
         pbc_mat = np.loadtxt(box_cubic)
-        pbc_list = [pbc_mat[0,0], pbc_mat[1,1], pbc_mat[2,2]]
 
 
     # Ask the user for the run type
@@ -169,7 +174,7 @@ def mace_form():
         dataset_needed = ask_for_yes_no("Do you want to create a training dataset from a force & a position file (y) or did you define it already (n)?", 'y')
         if dataset_needed == 'y':
             print("Creating the training dataset...")
-            path_to_training_file = dataset_creator(coord_file, pbc_list, run_type, mace_config)      
+            path_to_training_file = dataset_creator(coord_file, pbc_mat, run_type, mace_config)      
             
         else: 
             # The given file is the training file
@@ -209,13 +214,13 @@ def mace_form():
             if dataset_needed == 'y':
                 print("Creating the training dataset...")
                 if head == 0:
-                    path_to_training_file_head = dataset_creator(coord_file, pbc_list, run_type, mace_config)     
+                    path_to_training_file_head = dataset_creator(coord_file, pbc_mat, run_type, mace_config)     
                 else: 
                     coord_file = input("What is the name of the xyz file which includes positions and energies? " +"[" + mace_config['coord_file'] + "]: ")
                     if coord_file == '':
                         coord_file = mace_config['coord_file']
                     assert os.path.isfile(coord_file), "Coordinate file does not exist!"
-                    path_to_training_file_head = dataset_creator(coord_file, pbc_list, run_type, mace_config) 
+                    path_to_training_file_head = dataset_creator(coord_file, pbc_mat, run_type, mace_config) 
             
             else: 
                 if head == 0:
@@ -254,9 +259,9 @@ def mace_form():
     use_default_input = ask_for_yes_no("Do you want to use the default input settings? (y/n)", mace_config['use_default_input'])
     if use_default_input == 'y':
         if run_type == 'FINETUNE' or run_type == 'FINETUNE_MULTIHEAD':
-            input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_list, project_name, path_to_training_file, e0_dict)
+            input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_mat, project_name, path_to_training_file, e0_dict)
         else:
-            input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_list, project_name)
+            input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_mat, project_name)
     else:
         small_changes = ask_for_yes_no("Do you want to make small changes to the default settings? (y/n)", "n")
         if small_changes == 'y':
@@ -291,15 +296,15 @@ def mace_form():
                 changing = dict_onoff[ask_for_yes_no("Do you want to change another setting? (y/n)", 'n')]
             
             if run_type == 'FINETUNE' or run_type == 'FINETUNE_MULTIHEAD':
-                input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_list, project_name, path_to_training_file, e0_dict)
+                input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_mat, project_name, path_to_training_file, e0_dict)
             else:
-                input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_list, project_name)
+                input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_mat, project_name)
 
         else: 
             if run_type == 'FINETUNE' or run_type == 'FINETUNE_MULTIHEAD':
-                input_config = config_wrapper(False, run_type, mace_config, coord_file, pbc_list, project_name, path_to_training_file, e0_dict)
+                input_config = config_wrapper(False, run_type, mace_config, coord_file, pbc_mat, project_name, path_to_training_file, e0_dict)
             else:
-                input_config = config_wrapper(False, run_type, mace_config, coord_file, pbc_list, project_name)
+                input_config = config_wrapper(False, run_type, mace_config, coord_file, pbc_mat, project_name)
 
     if run_type == 'RECALC':
         
@@ -348,7 +353,7 @@ def mace_form():
     #except KeyError:
     #    mace_citations()
 
-def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project_name, path_to_training_file="", e0_dict={}):
+def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_name, path_to_training_file="", e0_dict={}):
 
     """
     Wrapper function to create the input file
@@ -359,7 +364,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
         if run_type == 'GEO_OPT':
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list, 
+                            'pbc_list': pbc_mat, 
                             'foundation_model': mace_config[run_type]['foundation_model'],
                             'model_size': mace_config[run_type]['model_size'],
                             'dispersion_via_mace': mace_config[run_type]['dispersion_via_mace'],
@@ -367,7 +372,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
         elif run_type == 'CELL_OPT':  
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list, 
+                            'pbc_list': pbc_mat, 
                             'foundation_model': mace_config[run_type]['foundation_model'],
                             'model_size': mace_config[run_type]['model_size'],
                             'dispersion_via_mace': mace_config[run_type]['dispersion_via_mace'],
@@ -375,7 +380,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
         elif run_type == 'MD': 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': mace_config[run_type]['foundation_model'],
                             'model_size': mace_config[run_type]['model_size'],
                             'dispersion_via_mace': mace_config[run_type]['dispersion_via_mace'],
@@ -390,7 +395,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
         elif run_type == 'MULTI_MD': 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': mace_config[run_type]['foundation_model'], # List
                             'model_size': mace_config[run_type]['model_size'], # List
                             'dispersion_via_mace': mace_config[run_type]['dispersion_via_mace'], # List
@@ -440,7 +445,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
         elif run_type == 'RECALC':
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': mace_config[run_type]['foundation_model'],
                             'model_size': mace_config[run_type]['model_size'],
                             'dispersion_via_mace': mace_config[run_type]['dispersion_via_mace']}
@@ -455,7 +460,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list, 
+                            'pbc_list': pbc_mat, 
                             'foundation_model': foundation_model,
                             'model_size': model_size,
                             'dispersion_via_mace': dispersion_via_mace,
@@ -469,7 +474,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list, 
+                            'pbc_list': pbc_mat, 
                             'foundation_model': foundation_model,
                             'model_size': model_size,
                             'dispersion_via_mace': dispersion_via_mace,
@@ -495,7 +500,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': foundation_model,
                             'model_size': model_size,
                             'dispersion_via_mace': dispersion_via_mace,
@@ -537,7 +542,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': foundation_model, # List
                             'model_size': model_size, # List
                             'dispersion_via_mace': dispersion_via_mace, # List
@@ -623,7 +628,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_list, project
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': foundation_model,
                             'model_size': model_size,
                             'dispersion_via_mace': dispersion_via_mace}
@@ -776,7 +781,7 @@ atoms.calc = mace_calc
 
 # Set the temperature in Kelvin and initialize the velocities (only if it is the first start)
 temperature_K = {int(input_config['temperature'])}
-if os.path.isfile('restart.traj') == False:
+if os.path.isfile('{input_config['project_name']}.traj') == False:
     MaxwellBoltzmannDistribution(atoms, temperature_K = temperature_K) 
 
 
@@ -1039,11 +1044,11 @@ def dispersion_corr(dispersion_via_mace):
     else:
         return ", dispersion = False"
 
-def cell_matrix(pbc_list):
+def cell_matrix(pbc_mat):
     """
-    Function to return the box matrix from the pbc_list
+    Function to return the box matrix from the pbc_mat
     """
-    return f"""np.array([[{float(pbc_list[0])}, 0, 0], [0, {float(pbc_list[1])}, 0], [0, 0, {float(pbc_list[2])}]])"""
+    return f"""np.array([[{float(pbc_mat[0,0])}, {float(pbc_mat[0,1])}, {float(pbc_mat[0,2])}], [{float(pbc_mat[1,0])}, {float(pbc_mat[1,1])}, {float(pbc_mat[1,2])}], [{float(pbc_mat[2,0])}, {float(pbc_mat[2,1])}, {float(pbc_mat[2,2])}]])"""
 
 def write_traj_file(input_config):
     """
@@ -1284,13 +1289,13 @@ def write_log(input_config):
                 input_config_tmp['foundation_model'] = input_config['foundation_model'][i]
                 input_config_tmp['model_size'] = input_config['model_size'][i]
                 input_config_tmp['dispersion_via_mace'] = input_config['dispersion_via_mace'][i]
-                input_config_tmp['pbc_list'] = f'[{input_config["pbc_list"][0]} {input_config["pbc_list"][1]} {input_config["pbc_list"][2]}]'
+                input_config_tmp['pbc_list'] = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,2]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
                 output.write(f'"{input_config_tmp}"')  
     
     with open('mace_input.log', 'w') as output:
         output.write("Input file created with the following configuration:\n")
         try:  
-            input_config["pbc_list"] = f'[{input_config["pbc_list"][0]} {input_config["pbc_list"][1]} {input_config["pbc_list"][2]}]'
+            input_config["pbc_list"] = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,2]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
         except:
             pass
         if type(input_config['foundation_model']) == list:

@@ -24,7 +24,7 @@ Function Reference
        config = {
            'project_name': 'test_md',
            'coord_file': 'system.xyz',
-           'pbc_list': [14.0, 14.0, 14.0],
+           'pbc_list': [14.0, 0, 0, 0, 14.0, 0, 0, 0, 14.0],
            'foundation_model': 'large',
            'temperature': '300',
            'pressure': '1.0',
@@ -67,7 +67,7 @@ MULTI_MD
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': ['PATH', 'PATH', ...],
        'temperature': 'FLOAT',
        'pressure': 'FLOAT/None',
@@ -104,6 +104,6 @@ RECALC
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': 'small/large/PATH'
    }

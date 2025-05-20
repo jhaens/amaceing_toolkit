@@ -105,13 +105,13 @@ For GEO_OPT:
 
 .. code-block:: bash
 
-    amaceing_mace -rt="GEO_OPT" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 10 10]', 'max_iter': '200', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'y'}"
+    amaceing_mace -rt="GEO_OPT" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'max_iter': '200', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'y'}"
 
 For MD:
 
 .. code-block:: bash
 
-    amaceing_mace -rt="MD" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 10 10]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'y', 'temperature': '300', 'thermostat': 'Langevin', 'pressure': 'None', 'nsteps': '10000', 'timestep': '0.5', 'write_interval': '10', 'log_interval': '10', 'print_ase_traj': 'y'}"
+    amaceing_mace -rt="MD" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'y', 'temperature': '300', 'thermostat': 'Langevin', 'pressure': 'None', 'nsteps': '10000', 'timestep': '0.5', 'write_interval': '10', 'log_interval': '10', 'print_ase_traj': 'y'}"
 
 For FINETUNE:
 

@@ -115,4 +115,5 @@ After installation, verify with:
         pip install torch torchvision torchaudio
         # Or for CPU-only systems
         pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+        # Install the packages
         pip install mattersim==1.1.2 sevenn==0.11.0

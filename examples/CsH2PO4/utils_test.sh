@@ -32,13 +32,13 @@ echo ----------------------------
 echo Testing utils function: BENCHMARK1
 mkdir -p BENCHMARK
 cd BENCHMARK
-amaceing_utils --run_type="BENCHMARK" --config="{'mode': 'MD', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 19.8196 19.8196]', 'force_nsteps': '10', 'mace_model': '['mace_mp' 'small']', 'mattersim_model': 'large', 'sevennet_model': '['7net-mf-ompa' 'mpa']'}"
+amaceing_utils --run_type="BENCHMARK" --config="{'mode': 'MD', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'force_nsteps': '10', 'mace_model': '['mace_mp' 'small']', 'mattersim_model': 'large', 'sevennet_model': '['7net-mf-ompa' 'mpa']'}"
 cd ..
 echo ----------------------------
 echo Testing utils function: BENCHMARK2
 mkdir -p BENCHMARK_RECALC
 cd BENCHMARK_RECALC
-amaceing_utils --run_type="BENCHMARK" --config="{'mode': 'RECALC', 'coord_file': '../../data/dft_energies.xyz', 'pbc_list': '[19.8196 19.8196 19.8196]', 'force_nsteps': '../../data/dft_forces.xyz', 'mace_model': '['mace_mp' 'small']', 'mattersim_model': 'large', 'sevennet_model': '['7net-mf-ompa' 'mpa']'}"
+amaceing_utils --run_type="BENCHMARK" --config="{'mode': 'RECALC', 'coord_file': '../../data/dft_energies.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'force_nsteps': '../../data/dft_forces.xyz', 'mace_model': '['mace_mp' 'small']', 'mattersim_model': 'large', 'sevennet_model': '['7net-mf-ompa' 'mpa']'}"
 cd ..
 echo ----------------------------
 echo ============================

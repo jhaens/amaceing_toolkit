@@ -16,7 +16,7 @@ def main():
     md_config = {
         'project_name': 'system_md',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [19.8196, 19.8196, 19.8196],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'large',
         'temperature': '300',
         'pressure': '1.0',
@@ -38,7 +38,7 @@ def main():
     multi_md_config = {
         'project_name': 'system_multimd',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [19.8196, 19.8196, 19.8196],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': ['small', 'large'],  # Pass as Python list
         'temperature': '300',
         'pressure': '1.0',
@@ -83,7 +83,7 @@ def main():
     recalc_config = {
         'project_name': 'system_recalc',
         'coord_file': '../../../4KOH_92H2O_333K/data/dft_energies.xyz',
-        'pbc_list': [19.8196, 19.8196, 19.8196],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'large'
     }
     mattersim_api(run_type='RECALC', config=recalc_config)

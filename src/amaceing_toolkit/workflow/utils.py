@@ -77,7 +77,7 @@ def atk_utils():
         \033[1m PREPARE_EVAL_ERROR \033[0m: "{'traj_file': 'traj.traj', 'each_nth_frame': 200, 'start_cp2k': 'y/n', 'log_file': 'mace_input.log/None', 'xc_funtional': 'BLYP(_SR)/PBE(_SR)'}"\n
         \033[1m EXTRACT_XYZ \033[0m: "{'coord_file': 'traj.xyz', 'each_nth_frame': 10}"\n
         \033[1m MACE_CITATIONS \033[0m: "{'log_file': 'xxx_input.log'}" 
-        \033[1m BENCHMARK \033[0m: "{'mode': 'MD/RECALC', 'coord_file': 'PATH', 'pbc_list': '[FLOAT FLOAT FLOAT]', 'force_nsteps': 'INT/PATH', 'mace_model': '['mace_mp/...' 'small/...']', 'mattersim_model': 'small/large', 'sevennet_model': '['7net-mf-ompa/...' 'mpa/oma24/None']'}" """))
+        \033[1m BENCHMARK \033[0m: "{'mode': 'MD/RECALC', 'coord_file': 'PATH', 'pbc_list': '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'force_nsteps': 'INT/PATH', 'mace_model': '['mace_mp/...' 'small/...']', 'mattersim_model': 'small/large', 'sevennet_model': '['7net-mf-ompa/...' 'mpa/oma24/None']'}" """))
         parser.add_argument('-l','--logger', type=str, help='[OPTIONAL] Shows the logger output of the model_logger or the run_logger: "model" or "run"/"runexport".')
         args = parser.parse_args()
         if args.logger in ['model', 'run', 'runexport']:
@@ -129,7 +129,7 @@ def atk_utils():
 
         elif args.run_type == 'BENCHMARK':
 
-            pbc_list = f'[{input_config["pbc_list"][0]} {input_config["pbc_list"][1]} {input_config["pbc_list"][2]}]'
+            pbc_list = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
             if input_config['mode'] == 'MD':
                 setup_bechmark_dir(input_config['coord_file'], pbc_list, input_config['force_nsteps'], input_config['mace_model'], input_config['mattersim_model'], input_config['sevennet_model'])
             elif input_config['mode'] == 'RECALC':
@@ -565,7 +565,7 @@ def create_dataset(coord_file, force_file, pbc_list):
     forces = xyz_reader(force_file)[1]
 
     # Set the pbc string
-    lattice = f"{pbc_list[0]} 0.0 0.0 0.0 {pbc_list[1]} 0.0 0.0 0.0 {pbc_list[2]}"
+    lattice = f"{pbc_list[0,0]} {pbc_list[0,1]} {pbc_list[0,2]} {pbc_list[1,0]} {pbc_list[1,1]} {pbc_list[1,2]} {pbc_list[2,0]} {pbc_list[2,1]} {pbc_list[2,2]}"
 
     # Rescale the forces (ASE uses eV/Angstrom)
     forces *= 51.4221
@@ -1009,6 +1009,75 @@ def ask_for_float_int(question, default):
             elif value.isnumeric() == False:
                 print("Invalid input. Please enter a float or integer.")
     return value
+
+def ask_for_non_cubic_pbc():
+    """
+    Ask user for box length (orthogonal) or pbc vector (non-orthogonal) 
+    """
+    default = 10.0
+    dim_row_dict = {'x': 'first', 'y': 'second', 'z': 'third'}
+    # Build the box matrix
+    box_mat = np.zeros((3, 3))
+
+    for dim in ['x', 'y', 'z']:
+        question = f'What is the box length/vector in the {dim}-direction/{dim_row_dict[dim]} row in Å? ("20.0" or "20.0, 1.0, 0.7")'
+        value = ' '
+        value = input(question + " [" + str(default) + "]: ")
+        if value == '':
+            value = str(default)
+
+        # Check if the input is a float/int or a vector
+        if "," in value:
+            value = value.split(',')
+            value = [float(i) for i in value]
+            value = np.array(value)
+            if len(value) != 3:
+                print("Invalid input. Please enter a vector with 3 elements.")
+                value = ' '
+                while len(value) != 3:
+                    value_tmp = input(question + " [" + str(default) + "]: ")
+                    if value_tmp == '':
+                        value_tmp = str(default)
+                    if "," in value_tmp:
+                        value_tmp = value_tmp.split(',')
+                        value_tmp = [float(i) for i in value_tmp]
+                        value = np.array(value_tmp)
+                        if len(value) != 3:
+                            print("Invalid input. Please enter a vector with 3 elements.")
+            # Convert the orthogonal box length to a vector
+            if dim == 'x':
+                box_mat[0, :] = value
+            elif dim == 'y':
+                box_mat[1, :] = value
+            elif dim == 'z':
+                box_mat[2, :] = value
+
+        else:
+            if "." in value:
+                while np.logical_and(not value.split('.')[0].isnumeric(), not value.split('.')[1].isnumeric()):
+                    value = input(question + " [" + str(default) + "]: ")
+                    if value == '':
+                        value = str(default)
+                    elif value.isnumeric() == False:
+                        if value.split('.')[0].isnumeric() == False and value.split('.')[1].isnumeric() == False:
+                            print("Invalid input. Please enter a float or integer.")
+            else:
+                while not value.isnumeric():
+                    value = input(question + " [" + str(default) + "]: ")
+                    if value == '':
+                        value = str(default)
+                    elif value.isnumeric() == False:
+                        print("Invalid input. Please enter a float or integer.")
+                
+            # Convert the orthogonal box length to a vector
+            value= float(value)
+            if dim == 'x':
+                box_mat[0, :] = np.array([value, 0.0, 0.0])
+            elif dim == 'y':
+                box_mat[1, :] = np.array([0.0, value, 0.0])
+            elif dim == 'z':
+                box_mat[2, :] = np.array([0.0, 0.0, value])
+    return box_mat
 
 def ask_for_int(question, default):
     """

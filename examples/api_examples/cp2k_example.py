@@ -16,7 +16,7 @@ def main():
     geo_opt_config = {
         'project_name': 'system_geoopt',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [19.8196, 19.8196, 19.8196],  # List directly, API handles formatting
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],  # List directly, API handles formatting
         'max_iter': 10,
         'xc_functional': 'BLYP',
         'print_forces': 'OFF',
@@ -33,7 +33,7 @@ def main():
     cell_opt_config = {
         'project_name': 'system_cellopt',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [19.8196, 19.8196, 19.8196],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'max_iter': 10,
         'keep_symmetry': 'OFF',
         'symmetry': 'CUBIC',
@@ -51,7 +51,7 @@ def main():
     md_config = {
         'project_name': 'system_md',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
-        'pbc_list': [19.8196, 19.8196, 19.8196],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'ensemble': 'NVT',
         'nsteps': 10,
         'timestep': 0.5,
@@ -75,7 +75,7 @@ def main():
     reftraj_config = {
         'project_name': 'system_reftraj',
         'ref_traj': '../../../4KOH_92H2O_333K/data/ref_trajectory.xyz',
-        'pbc_list': [19.8196, 19.8196, 19.8196],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'nsteps': 10,
         'stride': 1,
         'print_forces': 'ON',
@@ -100,7 +100,7 @@ def main():
     energy_config = {
         'project_name': 'system_energy',
         'coord_file': 'coord.xyz',  # Uses the local copy we just created
-        'pbc_list': [19.8196, 19.8196, 19.8196],
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'xc_functional': 'BLYP',
         'cp2k_newer_than_2023x': 'y'
     }

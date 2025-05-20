@@ -11,6 +11,7 @@ from .workflow.utils import ask_for_float_int
 from .workflow.utils import ask_for_int
 from .workflow.utils import ask_for_yes_no
 from .workflow.utils import ask_for_yes_no_pbc
+from .workflow.utils import ask_for_non_cubic_pbc
 from .workflow.utils import e0_wrapper
 from .workflow.utils import extract_frames
 from .runs.run_logger import run_logger1

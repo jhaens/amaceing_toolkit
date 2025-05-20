@@ -13,6 +13,7 @@ from .utils import ask_for_float_int
 from .utils import ask_for_int
 from .utils import ask_for_yes_no
 from .utils import ask_for_yes_no_pbc
+from .utils import ask_for_non_cubic_pbc
 from amaceing_toolkit.runs.run_logger import run_logger1
 from amaceing_toolkit.default_configs import configs_cp2k
 from amaceing_toolkit.default_configs import kind_data_functionals 
@@ -31,15 +32,19 @@ def atk_cp2k():
         parser = argparse.ArgumentParser(description='Build CP2K input files: (1) Via a short Q&A: NO arguments needed! (2) Directly from the command line with a dictionary: TWO arguments needed!', formatter_class=argparse.RawTextHelpFormatter)
         parser.add_argument('-rt', '--run_type', type=str, help="[OPTIONAL] Which type of calculation do you want to run? ('GEO_OPT', 'CELL_OPT', 'MD', 'REFTRAJ', 'ENERGY')")
         parser.add_argument('-c', '--config', type=str, help=textwrap.dedent("""[OPTIONAL] Dictionary with the configuration:\n 
-        GEO_OPT: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'print_forces' : 'ON/OFF', 'xc_functional': 'PBE(_SR)/BLYP(_SR)', 'cp2k_newer_than_2023x' : 'y/n'}"\n
-        CELL_OPT: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'keep_symmetry' : 'TREU/FALSE', 'symmetry' : 'CUBIC/TRICLINIC/NONE/MONOCLINIC/ORTHORHOMBIC/TETRAGONAL/TRIGONAL/HEXAGONAL', 'xc_functional': 'PBE(_SR)/BLYP(_SR)', 'cp2k_newer_than_2023x' : 'y/n'}"\n
-        MD: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'ensemble' : 'NVE/NVT/NPT_F/NPT_I', 'nsteps' : 'INT', 'timestep' : 'FLOAT', 'temperature' : 'FLOAT', 'print_forces' : 'ON/OFF', 'print_velocities' : 'ON/OFF', 'xc_functional' : 'PBE(_SR)/BLYP(_SR)', 'cp2k_newer_than_2023x' : 'y/n'}"\n
-        REFTRAJ: "{'project_name' : 'NAME', 'ref_traj' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'nsteps' : 'INT', 'stride' : 'INT', 'print_forces' : 'ON/OFF', 'print_velocities' : 'ON/OFF', 'xc_functional' : 'PBE(_SR)/BLYP(_SR)', 'cp2k_newer_than_2023x' : 'y/n'}"\n 
-        ENERGY: "{'project_name' : 'NAME', 'ref_traj' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'xc_functional' : 'PBE(_SR)/BLYP(_SR)'}" """))
+        GEO_OPT: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'print_forces' : 'ON/OFF', 'xc_functional': 'PBE(_SR)/BLYP(_SR)', 'cp2k_newer_than_2023x' : 'y/n'}"\n
+        CELL_OPT: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'keep_symmetry' : 'TREU/FALSE', 'symmetry' : 'CUBIC/TRICLINIC/NONE/MONOCLINIC/ORTHORHOMBIC/TETRAGONAL/TRIGONAL/HEXAGONAL', 'xc_functional': 'PBE(_SR)/BLYP(_SR)', 'cp2k_newer_than_2023x' : 'y/n'}"\n
+        MD: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'ensemble' : 'NVE/NVT/NPT_F/NPT_I', 'nsteps' : 'INT', 'timestep' : 'FLOAT', 'temperature' : 'FLOAT', 'print_forces' : 'ON/OFF', 'print_velocities' : 'ON/OFF', 'xc_functional' : 'PBE(_SR)/BLYP(_SR)', 'cp2k_newer_than_2023x' : 'y/n'}"\n
+        REFTRAJ: "{'project_name' : 'NAME', 'ref_traj' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'nsteps' : 'INT', 'stride' : 'INT', 'print_forces' : 'ON/OFF', 'print_velocities' : 'ON/OFF', 'xc_functional' : 'PBE(_SR)/BLYP(_SR)', 'cp2k_newer_than_2023x' : 'y/n'}"\n 
+        ENERGY: "{'project_name' : 'NAME', 'ref_traj' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'xc_functional' : 'PBE(_SR)/BLYP(_SR)'}" """))
         args = parser.parse_args()
         if args.config != ' ':
             try:
                 input_config = string_to_dict(args.config)
+                if np.size(input_config['pbc_list']) == 3: # Keep compatibility with old input files
+                    input_config['pbc_list'] = np.array([[input_config['pbc_list'][0], 0, 0], [0, input_config['pbc_list'][1], 0], [0, 0, input_config['pbc_list'][2]]])
+                else:
+                    input_config['pbc_list'] = np.array(input_config['pbc_list']).reshape(3,3)
                 write_input(input_config, args.run_type)
         
                 with open('cp2k_input.log', 'w') as output:
@@ -94,15 +99,11 @@ def cp2k_form():
 
     if box_cubic == 'y':
         box_xyz = ask_for_float_int("What is the length of the box in Å?", str(10.0))
-        pbc_list = [box_xyz, box_xyz, box_xyz]
+        pbc_mat = np.array([[box_xyz, 0.0, 0.0],[0.0, box_xyz, 0.0],[0.0, 0.0, box_xyz]])
     elif box_cubic == 'n':
-        box_x = ask_for_float_int("What is the length of the box in the x-direction in Å?", str(10.0))
-        box_y = ask_for_float_int("What is the length of the box in the y-direction in Å?", str(10.0))
-        box_z = ask_for_float_int("What is the length of the box in the z-direction in Å?", str(10.0))
-        pbc_list = [box_x, box_y, box_z]
+        pbc_mat = ask_for_non_cubic_pbc()
     else:
         pbc_mat = np.loadtxt(box_cubic)
-        pbc_list = [pbc_mat[0,0], pbc_mat[1,1], pbc_mat[2,2]]
     
     # Configure GLOBAL and template usage
     run_type_dict = {'1': 'GEO_OPT', '2': 'CELL_OPT', '3': 'MD', '4': 'REFTRAJ', '5': 'ENERGY'}
@@ -125,7 +126,7 @@ def cp2k_form():
 
     use_default_input = ask_for_yes_no("Do you want to use the default input settings? (y/n)", cp2k_config['use_default_input'])
     if use_default_input == 'y':
-        input_config = config_wrapper(True, run_type, cp2k_config, coord_file, pbc_list, project_name)
+        input_config = config_wrapper(True, run_type, cp2k_config, coord_file, pbc_mat, project_name)
     else:
         small_changes = ask_for_yes_no("Do you want to make small changes to the default settings? (y/n)", "n")
         if small_changes == 'y':
@@ -159,11 +160,11 @@ def cp2k_form():
                 dict_onoff = {'y': True, 'n': False}
                 changing = dict_onoff[ask_for_yes_no("Do you want to change another setting? (y/n)", 'n')]
             
-            input_config = config_wrapper(True, run_type, cp2k_config, coord_file, pbc_list, project_name)
+            input_config = config_wrapper(True, run_type, cp2k_config, coord_file, pbc_mat, project_name)
 
 
         else: 
-            input_config = config_wrapper(False, run_type, cp2k_config, coord_file, pbc_list, project_name)
+            input_config = config_wrapper(False, run_type, cp2k_config, coord_file, pbc_mat, project_name)
 
     
     # Write the input file
@@ -187,7 +188,7 @@ def cp2k_form():
     run_logger1(run_type,os.getcwd())
 
 
-def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project_name):
+def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_name):
     """
     Create dictionary for create_input
     """
@@ -200,7 +201,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
         if run_type == 'GEO_OPT':
             input_config = {'project_name': project_name,
                             'coord_file': coord_file,
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'max_iter': cp2k_config['GEO_OPT']['max_iter'],
                             'print_forces': onoff_dict[cp2k_config['GEO_OPT']['print_forces']], 
                             'xc_functional': cp2k_config['GEO_OPT']['xc_functional'],
@@ -208,7 +209,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
         elif run_type == 'CELL_OPT':
             input_config = {'project_name': project_name,
                             'coord_file': coord_file,
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'max_iter': cp2k_config['CELL_OPT']['max_iter'],
                             'keep_symmetry': onoff_dict[cp2k_config['CELL_OPT']['keep_symmetry']],
                             'symmetry': cp2k_config['CELL_OPT']['symmetry'],
@@ -217,7 +218,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
         elif run_type == 'MD':
             input_config = {'project_name': project_name,
                             'coord_file': coord_file,
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'ensemble': cp2k_config['MD']['ensemble'],
                             'nsteps': cp2k_config['MD']['nsteps'],
                             'timestep': cp2k_config['MD']['timestep'],
@@ -232,7 +233,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
         elif run_type == 'REFTRAJ':
             input_config = {'project_name': project_name,
                             'ref_traj': coord_file,
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'nsteps': cp2k_config['REFTRAJ']['nsteps'],
                             'stride': cp2k_config['REFTRAJ']['stride'],
                             'print_forces': onoff_dict[cp2k_config['REFTRAJ']['print_forces']],
@@ -242,7 +243,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
         elif run_type == 'ENERGY':
             input_config = {'project_name': project_name,
                             'coord_file': coord_file,
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'xc_functional': cp2k_config['ENERGY']['xc_functional'],
                             'cp2k_newer_than_2023x': cp2k_config['cp2k_newer_than_2023x']}
             
@@ -261,7 +262,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
 
             input_config = {'project_name': project_name,
                             'coord_file': coord_file,
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'max_iter': max_iter,
                             'print_forces': print_forces, 
                             'xc_functional': xc_functional,
@@ -289,7 +290,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
             
             input_config = {'project_name': project_name,
                             'coord_file': coord_file,
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'max_iter': max_iter,
                             'keep_symmetry': keep_symmetry,
                             'symmetry': symmetry,
@@ -332,7 +333,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
                 equi_nsteps = ask_for_int("What is the number of steps for the equilibration run?", cp2k_config['MD']['equilibration_steps'])
             input_config = {'project_name': project_name,
                             'coord_file': coord_file,
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'ensemble': ensemble,
                             'nsteps': nsteps,
                             'timestep': timestep,
@@ -364,7 +365,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
 
             input_config = {'project_name': project_name,
                             'ref_traj': coord_file,
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'nsteps': nsteps,
                             'stride': stride,
                             'print_forces': print_forces,
@@ -381,7 +382,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_list, project
 
             input_config = {'project_name': project_name,
                             'coord_file': coord_file,
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'xc_functional': xc_functional,
                             'cp2k_newer_than_2023x': cp2k_config['cp2k_newer_than_2023x']}
     return input_config
@@ -475,7 +476,9 @@ def create_input(input_config, run_type, equi_prod=''):
     &END DFT
     &SUBSYS
         &CELL
-            ABC {input_config['pbc_list'][0]} {input_config['pbc_list'][1]} {input_config['pbc_list'][2]}
+            A {input_config['pbc_list'][0,0]} {input_config['pbc_list'][0,1]} {input_config['pbc_list'][0,2]}
+            B {input_config['pbc_list'][1,0]} {input_config['pbc_list'][1,1]} {input_config['pbc_list'][1,2]}
+            C {input_config['pbc_list'][2,0]} {input_config['pbc_list'][2,1]} {input_config['pbc_list'][2,2]}
             PERIODIC XYZ
         &END CELL
         &TOPOLOGY
@@ -560,7 +563,9 @@ def create_input(input_config, run_type, equi_prod=''):
     &END DFT
     &SUBSYS
         &CELL
-            ABC {input_config['pbc_list'][0]} {input_config['pbc_list'][1]} {input_config['pbc_list'][2]}
+            A {input_config['pbc_list'][0,0]} {input_config['pbc_list'][0,1]} {input_config['pbc_list'][0,2]}
+            B {input_config['pbc_list'][1,0]} {input_config['pbc_list'][1,1]} {input_config['pbc_list'][1,2]}
+            C {input_config['pbc_list'][2,0]} {input_config['pbc_list'][2,1]} {input_config['pbc_list'][2,2]}
             PERIODIC XYZ
             SYMMETRY {input_config['symmetry']}
         &END CELL
@@ -670,7 +675,9 @@ def create_input(input_config, run_type, equi_prod=''):
     &END DFT
     &SUBSYS
         &CELL
-            ABC {input_config['pbc_list'][0]} {input_config['pbc_list'][1]} {input_config['pbc_list'][2]}
+            A {input_config['pbc_list'][0,0]} {input_config['pbc_list'][0,1]} {input_config['pbc_list'][0,2]}
+            B {input_config['pbc_list'][1,0]} {input_config['pbc_list'][1,1]} {input_config['pbc_list'][1,2]}
+            C {input_config['pbc_list'][2,0]} {input_config['pbc_list'][2,1]} {input_config['pbc_list'][2,2]}
             PERIODIC XYZ
         &END CELL
         &TOPOLOGY
@@ -781,7 +788,9 @@ def create_input(input_config, run_type, equi_prod=''):
     &END DFT
     &SUBSYS
         &CELL
-            ABC {input_config['pbc_list'][0]} {input_config['pbc_list'][1]} {input_config['pbc_list'][2]}
+            A {input_config['pbc_list'][0,0]} {input_config['pbc_list'][0,1]} {input_config['pbc_list'][0,2]}
+            B {input_config['pbc_list'][1,0]} {input_config['pbc_list'][1,1]} {input_config['pbc_list'][1,2]}
+            C {input_config['pbc_list'][2,0]} {input_config['pbc_list'][2,1]} {input_config['pbc_list'][2,2]}
             PERIODIC XYZ
         &END CELL
         &TOPOLOGY
@@ -853,7 +862,9 @@ def create_input(input_config, run_type, equi_prod=''):
     &END DFT
     &SUBSYS
         &CELL
-            ABC {input_config['pbc_list'][0]} {input_config['pbc_list'][1]} {input_config['pbc_list'][2]}
+            A {input_config['pbc_list'][0,0]} {input_config['pbc_list'][0,1]} {input_config['pbc_list'][0,2]}
+            B {input_config['pbc_list'][1,0]} {input_config['pbc_list'][1,1]} {input_config['pbc_list'][1,2]}
+            C {input_config['pbc_list'][2,0]} {input_config['pbc_list'][2,1]} {input_config['pbc_list'][2,2]}
             PERIODIC XYZ
             MULTIPLE_UNIT_CELL  1 1 1
         &END CELL
@@ -937,7 +948,7 @@ def write_log(input_config):
     """
     with open('cp2k_input.log', 'w') as output:
         output.write("Input file created with the following configuration:\n") 
-        input_config["pbc_list"] = f'[{input_config["pbc_list"][0]} {input_config["pbc_list"][1]} {input_config["pbc_list"][2]}]'
+        input_config["pbc_list"] = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,2]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
         #input_config = str(input_config).replace("'", '')
         output.write(f"{input_config}")
 

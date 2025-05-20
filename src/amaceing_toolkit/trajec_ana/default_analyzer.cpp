@@ -1,9 +1,9 @@
 // Filename: default_analyzer.cpp
-// Description: [Analysis of default functions in a given xyz file -> MSD, RDF]
+// Description: [Analysis of default functions in a given xyz file -> MSD, RDF, sMSD, AUTOCORR]
 // Author: [Jonas Hänseroth]
 // Date: [31.03.2025]
 
-//How to run: ./analyzer_default coords.xyz pbc <timestep [fs]> <atom_types: MSD...H, RDF...H-H, sMSD...*H>
+//How to run: ./analyzer_default coords.xyz pbc <timestep [fs]> <atom_types: MSD...H, RDF...H-H, sMSD...*H, AUTOCORR...@H-H>
 
 
 #include <iostream>
@@ -14,6 +14,10 @@
 #include <cmath>
 #include <chrono> // For high resolution clock
 #include <tuple> 
+#include <stack> // For stack data structure
+#include <queue> // For queue data structure
+#include <unordered_set> // For unordered_set
+#include <algorithm> // For std::sort and std::find
 #include <numeric> // For std::partial_sum
 #include <omp.h>  // Include OpenMP header
 #include <unordered_map> // for atom masses list
@@ -198,7 +202,8 @@ void write_xyz(const string& filename, const vector<vector<vector<float>>>& coor
 void parse_atom_types(const std::vector<std::string>& args,
     std::vector<std::vector<std::string>>& rdf_pairs,
     std::vector<std::string>& msd_atoms,
-    std::vector<std::string>& smsd_atoms) {
+    std::vector<std::string>& smsd_atoms,
+    std::vector<std::vector<std::string>>& autocorr_pairs) {
 
     // Parse the command-line arguments to fill rdf_pairs and msd_atoms
     for (size_t i = 4; i < args.size(); ++i) {
@@ -208,6 +213,35 @@ void parse_atom_types(const std::vector<std::string>& args,
         if (arg[0] == '*') {
             std::string atom = arg.substr(1);
             smsd_atoms.push_back(atom);
+        }
+
+        // Check if first character is a "@" -> autocorr 
+        else if (arg[0] == '@') {
+            arg = arg.substr(1);
+            if (arg.size() == 3 && isalpha(arg[0]) && arg[1] == '-' && isalpha(arg[2])) {
+                std::string atom1 = arg.substr(0, 1);
+                std::string atom2 = arg.substr(2, 1);;
+                autocorr_pairs.push_back({atom1, atom2});
+            }
+            else if (arg.size() == 4 && isalpha(arg[0]) && isalpha(arg[1]) && arg[2] == '-' && isdigit(arg[3])) {          
+                std::string atom1 = arg.substr(0, 2);
+                std::string atom2 = arg.substr(3, 1);
+                autocorr_pairs.push_back({atom1, atom2});
+            }
+            else if (arg.size() == 4 && isalpha(arg[0]) && arg[1] == '-' && isalpha(arg[2]) && isalpha(arg[3])) {
+                std::string atom1 = arg.substr(0, 1);
+                std::string atom2 = arg.substr(2, 2);
+                autocorr_pairs.push_back({atom1, atom2});
+            }
+            else if (arg.size() == 5 && isalpha(arg[0]) && isalpha(arg[1]) && arg[2] == '-' && isdigit(arg[3]) && isdigit(arg[4])) {
+                std::string atom1 = arg.substr(0, 2);
+                std::string atom2 = arg.substr(3, 2);
+                autocorr_pairs.push_back({atom1, atom2});
+            }
+            else {
+            std::cerr << "Invalid atom type or pair: " << arg << std::endl;
+            exit(1);  // Exit on error
+            }
         }
 
         // Check if it's a pair of atoms including a - (3 to 5 digits) -> RDF
@@ -307,76 +341,335 @@ std::vector<std::vector<float>> matrix_inverse(const std::vector<std::vector<flo
 //## PBC_DIST FUNCTION ##
 //#######################
 
-// Function to calculate the distance between two atoms with PBC: WITHOUT RELATIVE COORDINATES
+// Function to decide if the pbc is ortho or not
+bool is_ortho(const std::vector<std::vector<float>>& pbc) {
+    // Check if the PBC matrix is orthogonal by checking if the off-diagonal elements are zero
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            if (i != j && pbc[i][j] != 0.0f) {
+                return false; // Not orthogonal
+            }
+        }
+    }
+    return true; // Orthogonal
+}
+
+
+// Function to calculate the distance between two atoms with PBC: ortho and non-ortho decision
 std::vector<std::vector<float>> pbc_dist_norm(const std::vector<std::vector<float>>& coords1,
     const std::vector<std::vector<float>>& coords2,
     const std::vector<std::vector<float>>& pbc) {
 
-    // Initialize the 2D array to store the norm of the distances
-    std::vector<std::vector<float>> norm_distance(coords1.size(), std::vector<float>(coords2.size(), 0.0f));
-
-    for (size_t j = 0; j < coords1.size(); ++j) {
-        for (size_t k = 0; k < coords2.size(); ++k) {
-
-            // Calculate the distance vector first
-
-            std::vector<float> distance_vector(3, 0.0f);
-            for (int dim = 0; dim < 3; ++dim) {
-                distance_vector[dim] = coords1[j][dim] - coords2[k][dim];
-
-                // Apply periodic boundary conditions using modulo
-                distance_vector[dim] = distance_vector[dim] - pbc[dim][dim] * round(distance_vector[dim] / pbc[dim][dim]);
-            }
-
-            // Calculate the norm of the distance
-            norm_distance[j][k] = sqrt(pow(distance_vector[0], 2) + pow(distance_vector[1], 2) + pow(distance_vector[2], 2));
-        }
-    }
-    return norm_distance;
-}
-
-
-// Function to calculate the distance between two atoms with PBC
-std::vector<std::vector<float>> pbc_dist_norm_old(const std::vector<std::vector<float>>& coords1,
-    const std::vector<std::vector<float>>& coords2,
-    const std::vector<std::vector<float>>& pbc) {
-
-    // Calculate the inverse of the PBC matrix
-    std::vector<std::vector<float>> inv_pbc = matrix_inverse(pbc);
+    // Check if the PBC matrix is orthogonal
+    bool is_ortho_pbc = is_ortho(pbc);
 
     // Initialize the 2D array to store the norm of the distances
     std::vector<std::vector<float>> norm_distance(coords1.size(), std::vector<float>(coords2.size(), 0.0f));
 
-    // Transform each coordinate using matrix-vector multiplication
-    std::vector<std::vector<float>> transformed_coords1(coords1.size(), std::vector<float>(3, 0.0f));
-    std::vector<std::vector<float>> transformed_coords2(coords2.size(), std::vector<float>(3, 0.0f));
+    if (is_ortho_pbc) {
+        // Use the orthogonal PBC distance calculation (no relative coordinates, 10 percent faster)
+        for (size_t j = 0; j < coords1.size(); ++j) {
+            for (size_t k = 0; k < coords2.size(); ++k) {
+                // Calculate the distance vector first
+                std::vector<float> distance_vector(3, 0.0f);
+                for (int dim = 0; dim < 3; ++dim) {
+                    distance_vector[dim] = coords1[j][dim] - coords2[k][dim];
 
-    for (size_t i = 0; i < coords1.size(); ++i) {
-        transformed_coords1[i] = matrix_vector_multiply(inv_pbc, coords1[i]);
-    }
-    for (size_t i = 0; i < coords2.size(); ++i) {
-        transformed_coords2[i] = matrix_vector_multiply(inv_pbc, coords2[i]);
-    }
-
-    // Calculate the relative distance between coord1 and coord2
-    for (size_t j = 0; j < transformed_coords1.size(); ++j) {
-        for (size_t k = 0; k < transformed_coords2.size(); ++k) {
-            std::vector<float> relative_coords(3, 0.0f);
-            for (int dim = 0; dim < 3; ++dim) {
-                relative_coords[dim] = transformed_coords1[j][dim] - transformed_coords2[k][dim];
-                relative_coords[dim] -= round(relative_coords[dim]);
+                    // Apply periodic boundary conditions using modulo
+                    distance_vector[dim] = distance_vector[dim] - pbc[dim][dim] * round(distance_vector[dim] / pbc[dim][dim]);
                 }
 
-            // Transform the relative coordinates back to real space
-            std::vector<float> real_coords = matrix_vector_multiply(pbc, relative_coords);
-            
-            // Calculate the norm of the distance
-            norm_distance[j][k] = sqrt(pow(real_coords[0], 2) + pow(real_coords[1], 2) + pow(real_coords[2], 2));
+                // Calculate the norm of the distance
+                norm_distance[j][k] = sqrt(pow(distance_vector[0], 2) + pow(distance_vector[1], 2) + pow(distance_vector[2], 2));
+            }
+        }
+
+
+    }
+    else {
+        // Use the non-orthogonal PBC distance calculation (relative coordinates)
+        // Calculate the inverse of the PBC matrix
+        std::vector<std::vector<float>> inv_pbc = matrix_inverse(pbc);
+
+        // Transform each coordinate using matrix-vector multiplication
+        std::vector<std::vector<float>> transformed_coords1(coords1.size(), std::vector<float>(3, 0.0f));
+        std::vector<std::vector<float>> transformed_coords2(coords2.size(), std::vector<float>(3, 0.0f));
+
+        for (size_t i = 0; i < coords1.size(); ++i) {
+            transformed_coords1[i] = matrix_vector_multiply(inv_pbc, coords1[i]);
+        }
+        for (size_t i = 0; i < coords2.size(); ++i) {
+            transformed_coords2[i] = matrix_vector_multiply(inv_pbc, coords2[i]);
+        }
+        
+        // Calculate the relative distance between coord1 and coord2
+        for (size_t j = 0; j < transformed_coords1.size(); ++j) {
+            for (size_t k = 0; k < transformed_coords2.size(); ++k) {
+                std::vector<float> relative_coords(3, 0.0f);
+                for (int dim = 0; dim < 3; ++dim) {
+                    relative_coords[dim] = transformed_coords1[j][dim] - transformed_coords2[k][dim];
+                    relative_coords[dim] -= round(relative_coords[dim]);
+                    }
+
+                // Transform the relative coordinates back to real space
+                std::vector<float> real_coords = matrix_vector_multiply(pbc, relative_coords);
+                
+                // Calculate the norm of the distance
+                norm_distance[j][k] = sqrt(pow(real_coords[0], 2) + pow(real_coords[1], 2) + pow(real_coords[2], 2));
+            }
         }
     }
 
     return norm_distance;
 }
+
+//############################
+//## NEXT NEIGHBOR FUNCTION ##
+//############################
+
+// Function to find nearest neighbors between two sets of atomic coordinates
+std::tuple<std::vector<int>, std::vector<float>> next_neighbor(
+    const std::vector<std::vector<float>>& atom_1,
+    const std::vector<std::vector<float>>& atom_2,
+    const std::vector<std::vector<float>>& pbc_mat) {
+    
+    // Calculate the distance matrix
+    std::vector<std::vector<float>> dist_list = pbc_dist_norm(atom_1, atom_2, pbc_mat);
+    
+    std::vector<int> nearest_indices(atom_1.size());
+    std::vector<float> min_distances(atom_1.size());
+    
+    // For each atom in atom_1, find closest atom in atom_2
+    for (size_t i = 0; i < atom_1.size(); ++i) {
+        float min_dist = std::numeric_limits<float>::max();
+        int min_idx = -1;
+        
+        for (size_t j = 0; j < atom_2.size(); ++j) {
+            if (dist_list[i][j] < min_dist) {
+                min_dist = dist_list[i][j];
+                min_idx = j;
+            }
+        }
+        
+        nearest_indices[i] = min_idx;
+        min_distances[i] = min_dist;
+    }
+    
+    return std::make_tuple(nearest_indices, min_distances);
+}
+
+//###################################
+//## MOLECULE RECOGNITION FUNCTION ##
+//###################################
+
+// Function to calculate the bond distances and find molecules via next-neighbor binning
+std::unordered_map<std::string, int> find_molecules_nextneighborbinning(const std::vector<std::vector<float>>& norm_distance,
+    const std::vector<std::string>& atoms) {
+    
+    // Get number of atoms
+    size_t num_atoms = atoms.size();
+    
+    // Initialize the bond graph using adjacency list for better cache locality
+    std::vector<std::vector<int>> bond_graph(num_atoms);
+    
+    // Identify unique atom pairs that appear in the system
+    std::unordered_map<std::string, std::vector<float>> pair_distances;
+    
+    // Collect distances for each atom pair type
+    for (size_t i = 0; i < num_atoms; ++i) {
+        for (size_t j = i + 1; j < num_atoms; ++j) {
+            std::string atom_pair = atoms[i] + "-" + atoms[j];
+            // Also add the reverse pair for easier lookup later
+            std::string reverse_pair = atoms[j] + "-" + atoms[i];
+            
+            // Add the distance to the appropriate pair list
+            pair_distances[atom_pair].push_back(norm_distance[i][j]);
+            pair_distances[reverse_pair].push_back(norm_distance[i][j]);
+        }
+    }
+    
+    // Determine cutoffs from distance distributions
+    std::unordered_map<std::string, float> dynamic_cutoffs;
+    std::vector<std::string> not_evaluated_bonds;
+    
+    // For each atom pair type, determine cutoff
+    for (auto& pair : pair_distances) {
+        const std::string& atom_pair = pair.first;
+        std::vector<float>& distances = pair.second;
+        
+        // Sort distances for this atom pair
+        std::sort(distances.begin(), distances.end());
+        
+        // Skip if too few data points
+        if (distances.size() < 10) {
+            not_evaluated_bonds.push_back(atom_pair);
+            continue;
+        }
+        
+        // Use histogram binning to find the gap between bonded and non-bonded
+        const int num_bins = 50;
+        const float min_dist = distances.front();
+        const float max_dist = std::min(3.0f, distances.back()); // Limit to reasonable bond distance
+        const float bin_width = (max_dist - min_dist) / num_bins;
+        
+        std::vector<int> histogram(num_bins, 0);
+        
+        // Fill histogram
+        for (float dist : distances) {
+            if (dist <= max_dist) {
+                int bin = static_cast<int>((dist - min_dist) / bin_width);
+                if (bin >= 0 && bin < num_bins) {
+                    histogram[bin]++;
+                }
+            }
+        }
+        
+        // Find first minimum in histogram (gap between first and second peak)
+        float cutoff = 0.0f;
+        bool found_first_peak = false;
+        bool found_valley = false;
+        
+        for (int i = 1; i < num_bins - 1; ++i) {
+            // Check if we found the first peak already
+            if (!found_first_peak && histogram[i-1] < histogram[i] && histogram[i] > histogram[i+1] && histogram[i] > histogram[i+2]) {
+                found_first_peak = true;
+                continue;
+            }
+
+            
+            // After finding first peak, look for a valley (local minimum)
+            if (found_first_peak && !found_valley && 
+                histogram[i-1] > histogram[i] && histogram[i] <= histogram[i+1] && histogram[i] <= histogram[i+2]) {
+                cutoff = min_dist + (i * bin_width);
+                cutoff += bin_width; // Add a buffer to the cutoff
+                found_valley = true;
+                break;
+            }
+        }
+        
+        // If no valley found or cutoff is too large, use a reasonable default, only override H-H cutoff if the found valley is larger than 1.0
+        if (atom_pair == "H-H" && cutoff > 1.0f) {
+            cutoff = 1.0f;
+        }
+        if (!found_valley || cutoff == 0.0f || cutoff > 2.1f) {
+            not_evaluated_bonds.push_back(atom_pair);
+            continue;
+        }
+        
+        dynamic_cutoffs[atom_pair] = cutoff;
+    }
+    
+    // Build the bond graph using the dynamic cutoffs
+    #pragma omp parallel for schedule(dynamic)
+    for (size_t i = 0; i < num_atoms; ++i) {
+        std::vector<int> neighbors;
+        
+        for (size_t j = i + 1; j < num_atoms; ++j) {
+            std::string pair_key = atoms[i] + "-" + atoms[j];
+            
+            // Skip if no cutoff determined for this pair
+            if (dynamic_cutoffs.find(pair_key) == dynamic_cutoffs.end()) {
+                continue;
+            }
+            
+            float cutoff = dynamic_cutoffs[pair_key];
+            
+            // Skip if no bond can exist
+            if (cutoff <= 0.0f) continue;
+            
+            // Check if atoms are bonded (distance is less than cutoff)
+            if (norm_distance[i][j] <= cutoff) {
+                neighbors.push_back(j);
+                
+                // Add symmetric bond (i to j already stored in neighbors)
+                #pragma omp critical
+                {
+                    bond_graph[j].push_back(i);
+                }
+            }
+        }
+        
+        // Store all neighbors found
+        #pragma omp critical
+        {
+            bond_graph[i].insert(bond_graph[i].end(), neighbors.begin(), neighbors.end());
+        }
+    }
+    
+    // Find connected components (molecules) using BFS traversal
+    std::vector<bool> visited(num_atoms, false);
+    std::vector<std::vector<int>> molecules;
+    
+    for (size_t i = 0; i < num_atoms; ++i) {
+        if (!visited[i]) {
+            std::vector<int> molecule;
+            std::queue<int> queue;
+            
+            queue.push(i);
+            visited[i] = true;
+            
+            while (!queue.empty()) {
+                int current = queue.front();
+                queue.pop();
+                molecule.push_back(current);
+                
+                // Add all unvisited neighbors to the queue
+                for (int neighbor : bond_graph[current]) {
+                    if (!visited[neighbor]) {
+                        queue.push(neighbor);
+                        visited[neighbor] = true;
+                    }
+                }
+            }
+            
+            molecules.push_back(molecule);
+        }
+    }
+    
+    // Count atoms in each molecule and create chemical formulas
+    std::unordered_map<std::string, int> molecular_formulas;
+    
+    for (const auto& molecule : molecules) {
+        // Count atoms in this molecule
+        std::unordered_map<std::string, int> atom_counts;
+        
+        for (int atom_idx : molecule) {
+            atom_counts[atoms[atom_idx]]++;
+        }
+        
+        // Generate molecular formula string (e.g., H2O)
+        std::ostringstream formula;
+        std::vector<std::string> sorted_atoms;
+        
+        // Get unique atom types and sort them
+        for (const auto& [atom_type, _] : atom_counts) {
+            sorted_atoms.push_back(atom_type);
+        }
+        
+        // Custom sorting: C first, H second, then alphabetically
+        std::sort(sorted_atoms.begin(), sorted_atoms.end(), [](const std::string& a, const std::string& b) {
+            if (a == "C") return true;
+            if (b == "C") return false;
+            if (a == "H") return true;
+            if (b == "H") return false;
+            return a < b;
+        });
+        
+        // Build the formula string
+        for (const auto& atom_type : sorted_atoms) {
+            formula << atom_type;
+            if (atom_counts[atom_type] > 1) {
+                formula << atom_counts[atom_type];
+            }
+        }
+        
+        // Increment count of this molecular formula
+        molecular_formulas[formula.str()]++;
+    }
+    
+    return molecular_formulas;
+}
+
 
 //##################
 //## RDF FUNCTION ##
@@ -619,52 +912,116 @@ void save_rdf_data(const std::vector<std::string>& atom_types,
 
 // Helper function: unwrap trajectory
 vector<vector<vector<float>>> unwrap_trajectory(vector<vector<vector<float>>>& trajectory, const vector<vector<float>>& pbc_matrix) {
-    // Get the diagonal of the PBC matrix (assuming orthogonal box)
-    vector<float> pbc_ortho(3);
-    for (int i = 0; i < 3; ++i) {
-        pbc_ortho[i] = pbc_matrix[i][i];
-    }
-
     // Calculate the number of time steps and atoms
     size_t time_steps = trajectory.size();
     size_t num_atoms = trajectory[0].size();
     size_t dimensions = trajectory[0][0].size();
 
+    // Check for (non)-orthogonal PBC
+    bool is_ortho_pbc = is_ortho(pbc_matrix);
+
     // Initialize wrap_matrix to store cumulative wrapping information
     vector<vector<vector<int>>> wrap_matrix(time_steps - 1, vector<vector<int>>(num_atoms, vector<int>(dimensions, 0)));
 
-    // Compute differences between consecutive time steps (dist1)
-    for (size_t t = 1; t < time_steps; ++t) {
-        for (size_t atom = 0; atom < num_atoms; ++atom) {
-            for (size_t dim = 0; dim < dimensions; ++dim) {
-                float dist = trajectory[t][atom][dim] - trajectory[t - 1][atom][dim];
-                if (dist > pbc_ortho[dim] / 2.0f) {
-                    wrap_matrix[t - 1][atom][dim] = 1; // Wrap in the positive direction
-                } else if (dist < -pbc_ortho[dim] / 2.0f) {
-                    wrap_matrix[t - 1][atom][dim] = -1; // Wrap in the negative direction
+    if (is_ortho_pbc) {
+        // Use the orthogonal method (no relative coordinates, faster)
+
+        vector<float> pbc_ortho(3);
+        for (int i = 0; i < 3; ++i) {
+            pbc_ortho[i] = pbc_matrix[i][i];
+        }
+
+
+        // Compute differences between consecutive time steps (dist1)
+        for (size_t t = 1; t < time_steps; ++t) {
+            for (size_t atom = 0; atom < num_atoms; ++atom) {
+                for (size_t dim = 0; dim < dimensions; ++dim) {
+                    float dist = trajectory[t][atom][dim] - trajectory[t - 1][atom][dim];
+                    if (dist > pbc_ortho[dim] / 2.0f) {
+                        wrap_matrix[t - 1][atom][dim] = 1; // Wrap in the positive direction
+                    } else if (dist < -pbc_ortho[dim] / 2.0f) {
+                        wrap_matrix[t - 1][atom][dim] = -1; // Wrap in the negative direction
+                    }
                 }
             }
         }
-    }
 
-    // Compute cumulative wrapping information
-    for (size_t t = 1; t < time_steps - 1; ++t) {
-        for (size_t atom = 0; atom < num_atoms; ++atom) {
-            for (size_t dim = 0; dim < dimensions; ++dim) {
-                wrap_matrix[t][atom][dim] += wrap_matrix[t - 1][atom][dim];
+        // Compute cumulative wrapping information
+        for (size_t t = 1; t < time_steps - 1; ++t) {
+            for (size_t atom = 0; atom < num_atoms; ++atom) {
+                for (size_t dim = 0; dim < dimensions; ++dim) {
+                    wrap_matrix[t][atom][dim] += wrap_matrix[t - 1][atom][dim];
+                }
             }
         }
-    }
 
-    // Adjust the trajectory by subtracting the wrapping offsets
-    for (size_t t = 1; t < time_steps; ++t) {
-        for (size_t atom = 0; atom < num_atoms; ++atom) {
-            for (size_t dim = 0; dim < dimensions; ++dim) {
-                trajectory[t][atom][dim] -= wrap_matrix[t - 1][atom][dim] * pbc_ortho[dim];
+        // Adjust the trajectory by subtracting the wrapping offsets
+        for (size_t t = 1; t < time_steps; ++t) {
+            for (size_t atom = 0; atom < num_atoms; ++atom) {
+                for (size_t dim = 0; dim < dimensions; ++dim) {
+                    trajectory[t][atom][dim] -= wrap_matrix[t - 1][atom][dim] * pbc_ortho[dim];
+                }
             }
         }
+
+        return trajectory;
+
     }
-    return trajectory;
+    else { // Use the non-orthogonal method (relative coordinates)
+
+        // Calculate the inverse of the PBC matrix for transformations to fractional coordinates
+        vector<vector<float>> inv_pbc = matrix_inverse(pbc_matrix);
+
+        // Convert all trajectory points to fractional coordinates
+        vector<vector<vector<float>>> frac_trajectory(time_steps, vector<vector<float>>(num_atoms, vector<float>(dimensions, 0.0f)));
+        for (size_t t = 0; t < time_steps; ++t) {
+            for (size_t atom = 0; atom < num_atoms; ++atom) {
+                frac_trajectory[t][atom] = matrix_vector_multiply(inv_pbc, trajectory[t][atom]);
+            }
+        }
+
+        // Compute differences between consecutive time steps in fractional space
+        for (size_t t = 1; t < time_steps; ++t) {
+            for (size_t atom = 0; atom < num_atoms; ++atom) {
+                for (size_t dim = 0; dim < dimensions; ++dim) {
+                    float dist = frac_trajectory[t][atom][dim] - frac_trajectory[t-1][atom][dim];
+                    if (dist > 0.5f) {
+                        wrap_matrix[t-1][atom][dim] = 1; // Wrap in the positive direction
+                    } else if (dist < -0.5f) {
+                        wrap_matrix[t-1][atom][dim] = -1; // Wrap in the negative direction
+                    }
+                }
+            }
+        }
+
+        // Compute cumulative wrapping information
+        for (size_t t = 1; t < time_steps - 1; ++t) {
+            for (size_t atom = 0; atom < num_atoms; ++atom) {
+                for (size_t dim = 0; dim < dimensions; ++dim) {
+                    wrap_matrix[t][atom][dim] += wrap_matrix[t-1][atom][dim];
+                }
+            }
+        }
+
+        // Create new unwrapped trajectory by adjusting the fractional coordinates and converting back to real space
+        vector<vector<vector<float>>> unwrapped_trajectory = trajectory; // Make a copy
+        
+        for (size_t t = 1; t < time_steps; ++t) {
+            for (size_t atom = 0; atom < num_atoms; ++atom) {
+                // Adjust the fractional coordinates by subtracting the wrapping offsets
+                vector<float> adjusted_frac = frac_trajectory[t][atom];
+                for (size_t dim = 0; dim < dimensions; ++dim) {
+                    adjusted_frac[dim] -= wrap_matrix[t-1][atom][dim];
+                }
+                
+                // Transform back to real space
+                unwrapped_trajectory[t][atom] = matrix_vector_multiply(pbc_matrix, adjusted_frac);
+            }
+        }
+
+        return unwrapped_trajectory;
+    }
+
 }
 
 // Helper Data: atom mass dictionary
@@ -1161,11 +1518,243 @@ void save_smsd_data(const std::vector<std::vector<std::vector<float>>>& unwrappe
     }
 }
 
+
+//##################################
+//## X-Y AUTOCORRELATION FUNCTION ##
+//##################################
+
+// Calculate vector autocorrelation
+std::tuple<std::vector<float>, std::vector<float>, std::vector<std::vector<float>>> vector_autocorr(
+    std::vector<std::vector<std::vector<float>>>& vector_arr, 
+    float timestep_md,
+    int tau_steps, 
+    int verbosity,
+    int max_length = -1) {
+    
+    size_t num_frames = vector_arr.size();
+    size_t num_atoms = vector_arr[0].size();
+    
+    // Normalize vectors
+    #pragma omp parallel for collapse(2)
+    for (size_t t = 0; t < num_frames; ++t) {
+        for (size_t i = 0; i < num_atoms; ++i) {
+            // Calculate norm of vector
+            float norm = std::sqrt(
+                vector_arr[t][i][0] * vector_arr[t][i][0] +
+                vector_arr[t][i][1] * vector_arr[t][i][1] +
+                vector_arr[t][i][2] * vector_arr[t][i][2]
+            );
+            
+            // Normalize vector
+            if (norm > 1e-10f) {
+                vector_arr[t][i][0] /= norm;
+                vector_arr[t][i][1] /= norm;
+                vector_arr[t][i][2] /= norm;
+            }
+        }
+    }
+    
+    // Set limit
+    size_t limit = (max_length > 0) ? 
+        std::min(static_cast<size_t>(max_length), num_frames) : num_frames;
+    
+    // Calculate number of time points
+    size_t num_points = (limit + tau_steps - 1) / tau_steps;
+    
+    // Prepare output arrays
+    std::vector<float> tau(num_points);
+    std::vector<float> auto_corr(num_points);
+    std::vector<std::vector<float>> auto_single(num_points, std::vector<float>(num_atoms));
+    
+    // Main autocorrelation calculation loop
+    #pragma omp parallel for schedule(dynamic)
+    for (size_t step = 0; step < num_points; ++step) {
+        int i = step * tau_steps;
+        if (i >= limit) continue;
+        
+        if (i % verbosity == 0) {
+            std::cout << "Processing lag time: " << i << std::endl;
+        }
+        
+        // Calculate dot products (equivalent to einsum operation)
+        std::vector<float> sp_arr(num_atoms, 0.0f);
+        
+        if (i == 0) {
+            // At lag 0, dot product of normalized vector with itself is 1
+            for (size_t a = 0; a < num_atoms; ++a) {
+                sp_arr[a] = 1.0f;
+            }
+        } else {
+            for (size_t a = 0; a < num_atoms; ++a) {
+                float dot_sum = 0.0f;
+                int count = 0;
+                
+                for (size_t t = 0; t < num_frames - i; ++t) {
+                    float dot = 
+                        vector_arr[t+i][a][0] * vector_arr[t][a][0] +
+                        vector_arr[t+i][a][1] * vector_arr[t][a][1] +
+                        vector_arr[t+i][a][2] * vector_arr[t][a][2];
+                    
+                    dot_sum += dot;
+                    count++;
+                }
+                
+                sp_arr[a] = count > 0 ? dot_sum / count : 0.0f;
+            }
+        }
+        
+        // Calculate mean across atoms
+        float mean_corr = 0.0f;
+        for (size_t a = 0; a < num_atoms; ++a) {
+            mean_corr += sp_arr[a];
+        }
+        mean_corr /= num_atoms;
+        
+        // Store results
+        tau[step] = i * timestep_md;
+        auto_corr[step] = mean_corr;
+        auto_single[step] = sp_arr;
+    }
+    
+    return std::make_tuple(tau, auto_corr, auto_single);
+}
+
+// Calculate autocorrelation between different atom types
+std::tuple<std::vector<float>, std::vector<float>, std::vector<std::vector<float>>> calc_autocorr_xy(
+    const std::vector<std::vector<std::vector<float>>>& trajectory,
+    const std::vector<std::string>& atoms, 
+    const std::string& atom_type1, 
+    const std::string& atom_type2, 
+    const std::vector<std::vector<float>>& pbc_mat,
+    float timestep_md,
+    int tau_steps, 
+    int verbosity = 1,
+    int max_length = -1) {
+    
+    // Extract coordinates for atoms of type1 and type2
+    std::vector<int> indices1, indices2;
+    
+    // Find indices of each atom type
+    for (size_t i = 0; i < atoms.size(); ++i) {
+        if (atoms[i] == atom_type1) {
+            indices1.push_back(i);
+        }
+        if (atoms[i] == atom_type2) {
+            indices2.push_back(i);
+        }
+    }
+    
+    // Exit if no atoms found
+    if (indices1.empty() || indices2.empty()) {
+        std::cerr << "No atoms found of specified types" << std::endl;
+        return std::make_tuple(std::vector<float>(), std::vector<float>(), std::vector<std::vector<float>>());
+    }
+    
+    // Extract coordinates for the first frame
+    std::vector<std::vector<float>> coord1_frame0(indices1.size());
+    std::vector<std::vector<float>> coord2_frame0(indices2.size());
+    
+    for (size_t i = 0; i < indices1.size(); ++i) {
+        coord1_frame0[i] = trajectory[0][indices1[i]];
+    }
+    
+    for (size_t i = 0; i < indices2.size(); ++i) {
+        coord2_frame0[i] = trajectory[0][indices2[i]];
+    }
+    
+    // Find nearest neighbors
+    auto [ind_list, min_dist] = next_neighbor(coord1_frame0, coord2_frame0, pbc_mat);
+    
+    // Create vector_arr as the difference between coord1 and nearest neighbors in coord2
+    std::vector<std::vector<std::vector<float>>> vector_arr(trajectory.size(), 
+        std::vector<std::vector<float>>(indices1.size(), std::vector<float>(3, 0.0f)));
+    
+    for (size_t t = 0; t < trajectory.size(); ++t) {
+        for (size_t i = 0; i < indices1.size(); ++i) {
+            // Get coordinates of atom i of type1 at frame t
+            const auto& pos1 = trajectory[t][indices1[i]];
+            
+            // Get coordinates of nearest neighbor in type2
+            int neigh_idx = indices2[ind_list[i]];
+            const auto& pos2 = trajectory[t][neigh_idx];
+            
+            // Create minimum distance vector between the atoms using PBC
+            std::vector<std::vector<float>> single_pos1 = {pos1};
+            std::vector<std::vector<float>> single_pos2 = {pos2};
+            
+            // For orthogonal PBC, can directly calculate the vector
+            if (is_ortho(pbc_mat)) {
+                for (int d = 0; d < 3; ++d) {
+                    vector_arr[t][i][d] = pos1[d] - pos2[d];
+                    vector_arr[t][i][d] -= pbc_mat[d][d] * std::round(vector_arr[t][i][d] / pbc_mat[d][d]);
+                }
+            } 
+            // For non-orthogonal, need to transform to fractional coordinates
+            else {
+                // Calculate the inverse of the PBC matrix
+                std::vector<std::vector<float>> inv_pbc = matrix_inverse(pbc_mat);
+                
+                // Transform to fractional coordinates
+                std::vector<float> frac1 = matrix_vector_multiply(inv_pbc, pos1);
+                std::vector<float> frac2 = matrix_vector_multiply(inv_pbc, pos2);
+                
+                // Calculate minimum image in fractional coords
+                std::vector<float> frac_diff(3);
+                for (int d = 0; d < 3; ++d) {
+                    frac_diff[d] = frac1[d] - frac2[d];
+                    frac_diff[d] -= std::round(frac_diff[d]);
+                }
+                
+                // Transform back to real space
+                vector_arr[t][i] = matrix_vector_multiply(pbc_mat, frac_diff);
+            }
+        }
+    }
+    
+    // Call vector_autocorr with the calculated vectors
+    return vector_autocorr(vector_arr, timestep_md, tau_steps, verbosity, max_length);
+}
+
+// Wrapper function to save autocorrelation data to file
+void save_autocorr_data(
+    const std::vector<std::vector<std::vector<float>>>& trajectory,
+    const std::vector<std::string>& atoms,
+    const std::vector<std::vector<float>>& pbc_mat,
+    const std::string& atom_type1,
+    const std::string& atom_type2,
+    float timestep_md,
+    int tau_steps,
+    int max_length = -1,
+    int verbosity = 100) {
+    
+    std::cout << "Computing " << atom_type1 << "-" << atom_type2 << " vector autocorrelation..." << std::endl;
+    
+    auto [tau, auto_corr, auto_single] = calc_autocorr_xy(
+        trajectory, atoms, atom_type1, atom_type2, 
+        pbc_mat, timestep_md/1000, tau_steps*10, verbosity, max_length);
+    
+    // Generate the output filename
+    std::string output_filename = "autocorr_" + atom_type1 + atom_type2 + ".csv";
+    
+    // Save autocorrelation results to file
+    std::ofstream outfile(output_filename);
+    if (outfile.is_open()) {
+        outfile << "#tau [ps], autocorrelation" << std::endl;
+        for (size_t i = 0; i < tau.size(); ++i) {
+            outfile << tau[i] << ", " << auto_corr[i] << std::endl;
+        }
+        outfile.close();
+        std::cout << "Autocorrelation data saved to " << output_filename << std::endl;
+    } else {
+        std::cerr << "Error: Unable to open file for writing!" << std::endl;
+    }
+}
+
 //##################################
 //## COMPUTE FUNCTION FROM PYTHON ##
 //##################################
 
-// Function which gets called from pybind11: Python gives coord_filename, pbc_filename, rdf_pairs, msd_atoms, smsd_atoms
+// Function which gets called from pybind11: Python gives coord_filename, pbc_filename, rdf_pairs, msd_atoms, smsd_atoms, autocorr_pairs
 void compute_analysis(
     const std::string& coord_filename,
     const std::string& pbc_filename,
@@ -1175,7 +1764,9 @@ void compute_analysis(
     // MSD atoms
     const std::vector<std::string>& msd_atoms,
     // sMSD atoms
-    const std::vector<std::string>& smsd_atoms)
+    const std::vector<std::string>& smsd_atoms,
+    // Autocorrelation pairs
+    const std::vector<std::vector<std::string>>& autocorr_pairs)
 {
     // Set the number of threads for OpenMP
     int no_cpus = 16; // Default number of CPUs
@@ -1210,6 +1801,15 @@ void compute_analysis(
         }
         std::cout << "\n";
     }
+    if (autocorr_pairs.empty()) {
+        std::cout << "No autocorrelation pairs provided." << "\n";
+    } else {
+        std::cout << "Autocorrelation pairs: ";
+        for (const auto& pair : autocorr_pairs) {
+            std::cout << pair[0] << "-" << pair[1] << " ";
+        }
+        std::cout << "\n";
+    }
 
     // Read the coordinates and PBC data
     cout << "Reading trajectory and PBC data..." << endl;
@@ -1239,7 +1839,7 @@ void compute_analysis(
         }
     }
 
-    // Set the tau_steps for MSD and sMSD
+    // Set the tau_steps for MSD, sMSD and autocorrelation
     int tau_steps_dyn = 1; // Default value
     if (timestep_md <= 50) {
         tau_steps_dyn = static_cast<int>(50.0 / timestep_md);
@@ -1256,6 +1856,11 @@ void compute_analysis(
     // Loop over sMSD atoms and calculate the sMSD
     for (const auto& atom : smsd_atoms) {
         save_smsd_data(unwrapped_coords, atoms, atom, timestep_md, tau_steps_dyn);
+    }
+
+    // Loop over autocorrelation pairs and calculate the autocorrelation
+    for (const auto& pair : autocorr_pairs) {
+        save_autocorr_data(unwrapped_coords, atoms, pbc, pair[0], pair[1], timestep_md, tau_steps_dyn);
     }
 }
 
@@ -1283,8 +1888,9 @@ int terminal_input(const std::vector<std::string>& args) {
     std::vector<std::vector<std::string>> rdf_pairs;  // To store atom pairs for RDF
     std::vector<std::string> msd_atoms;               // To store atoms for MSD
     std::vector<std::string> smsd_atoms;              // To store atoms for single MSD
+    std::vector<std::vector<std::string>> autocorr_pairs; // To store atom pairs for autocorrelation
 
-    parse_atom_types(args, rdf_pairs, msd_atoms, smsd_atoms);
+    parse_atom_types(args, rdf_pairs, msd_atoms, smsd_atoms, autocorr_pairs);
 
     // Print the planned analysis
     std::cout << "Planned analysis:" << "\n";
@@ -1315,6 +1921,15 @@ int terminal_input(const std::vector<std::string>& args) {
         }
         std::cout << "\n";
     }
+    if (autocorr_pairs.empty()) {
+        std::cout << "No autocorrelation pairs provided." << "\n";
+    } else {
+        std::cout << "Autocorrelation pairs: ";
+        for (const auto& pair : autocorr_pairs) {
+            std::cout << pair[0] << "-" << pair[1] << " ";
+        }
+        std::cout << "\n";
+    }
 
 
     // Output the parsed values for verification
@@ -1323,7 +1938,7 @@ int terminal_input(const std::vector<std::string>& args) {
     std::cout << "Timestep in fs: " << timestep_md << "\n";
     
     // Call the compute_analysis function
-    compute_analysis(xyzFilename, pbcFilename, timestep_md, rdf_pairs, msd_atoms, smsd_atoms);
+    compute_analysis(xyzFilename, pbcFilename, timestep_md, rdf_pairs, msd_atoms, smsd_atoms, autocorr_pairs);
 
     return 0;
 }

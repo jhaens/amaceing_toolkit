@@ -9,6 +9,7 @@ This example demonstrates the trajectory analysis capabilities of the aMACEing t
 * Radial Distribution Functions (RDF) to identify structural characteristics
 * Mean Square Displacement (MSD) to measure atomic mobility and diffusion coefficients
 * Single-particle Mean Square Displacement (sMSD) to identify heterogeneous dynamics
+* Vector Autocorrelation Function
 
 The example includes both single trajectory analysis and comparative multi-trajectory analysis.
 
@@ -146,12 +147,14 @@ After running the analysis, you'll get several output files:
 - ``smsd_*.csv``: Single-particle mean square displacement data (if selected)
 - ``overview_diffcoeff.csv``: Summary of calculated diffusion coefficients
 - ``diff_coeff_*.csv``: Diffusion coefficients for individual atom types
+- ``autocorr_*.csv``: Vector Autocorrelation function data (if selected)
 
 **Visualization:**
 
 - ``rdf_*_plot.pdf``: RDF plots for different atom pairs
 - ``msd_*_plot.pdf``: MSD plots with diffusion coefficient fits
 - ``smsd_*_plot.pdf``: Single-particle MSD plots (if selected)
+- ``autocorr_*_plot.pdf``: Vector Autocorrelation plots (if selected)
 
 **LaTeX Report:**
 
@@ -163,7 +166,7 @@ The PDF report includes:
 
 - Analysis details and directory structure
 - Diffusion coefficient tables (if MSD analysis was performed)
-- RDF, MSD, and sMSD plots with captions
+- RDF, MSD, sMSD and Vector Autocorrelation plots with captions
 - Statistical summary of results
 
 Smart Proposal Feature

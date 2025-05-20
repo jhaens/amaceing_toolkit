@@ -23,7 +23,7 @@ Function Reference
        config = {
            'project_name': 'test_geo',
            'coord_file': 'system.xyz',
-           'pbc_list': [10.0, 10.0, 10.0],
+           'pbc_list': [10.0, 0, 0, 0, 10.0, 0, 0, 0, 10.0],
            'max_iter': 1000,
            'print_forces': 'OFF',
            'xc_functional': 'BLYP',
@@ -44,7 +44,7 @@ GEO_OPT
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'max_iter': INT,
        'print_forces': 'ON/OFF',
        'xc_functional': 'PBE/PBE_SR/BLYP/BLYP_SR',
@@ -59,7 +59,7 @@ CELL_OPT
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'max_iter': INT,
        'keep_symmetry': 'TRUE/FALSE',
        'symmetry': 'CUBIC/TRICLINIC/NONE/MONOCLINIC/ORTHORHOMBIC/TETRAGONAL/TRIGONAL/HEXAGONAL',
@@ -75,7 +75,7 @@ MD
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'ensemble': 'NVE/NVT/NPT_F/NPT_I',
        'nsteps': INT,
        'timestep': FLOAT,
@@ -97,7 +97,7 @@ REFTRAJ
    {
        'project_name': 'NAME',
        'ref_traj': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'nsteps': INT,
        'stride': INT,
        'print_forces': 'ON/OFF',
@@ -114,7 +114,7 @@ ENERGY
    {
        'project_name': 'NAME',
        'coord_file': 'FILE',
-       'pbc_list': [FLOAT, FLOAT, FLOAT],
+       'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'xc_functional': 'PBE/PBE_SR/BLYP/BLYP_SR',
        'cp2k_newer_than_2023x': 'y/n'
    }

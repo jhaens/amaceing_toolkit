@@ -32,6 +32,12 @@ Single-particle Mean Square Displacement (sMSD)
 * Identifies heterogeneous dynamics in the system
 * Calculates diffusion coefficients for individual particles
 
+
+Vector Autocorrelation Function (VACF)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Measures the correlation of a particle's velocity over time
+* Provides insights into the dynamics of the system
+
 Usage
 -----
 

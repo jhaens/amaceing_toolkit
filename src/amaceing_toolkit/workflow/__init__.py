@@ -17,6 +17,7 @@ from .utils import ask_for_float_int
 from .utils import ask_for_int
 from .utils import ask_for_yes_no
 from .utils import ask_for_yes_no_pbc
+from .utils import ask_for_non_cubic_pbc
 
 # API functions for direct programmatic use
 def cp2k_api(run_type=None, config=None):
@@ -41,7 +42,7 @@ def cp2k_api(run_type=None, config=None):
     >>> config = {
     ...     'project_name': 'test_geo',
     ...     'coord_file': 'system.xyz',
-    ...     'pbc_list': [10.0, 10.0, 10.0],  # Will be formatted correctly for the command line
+    ...     'pbc_list': [10.0, 0, 0, 0, 10.0, 0, 0, 0, 10.0],  # Will be formatted correctly for the command line
     ...     'max_iter': 1000,
     ...     'print_forces': 'OFF',
     ...     'xc_functional': 'BLYP',
@@ -91,7 +92,7 @@ def mace_api(run_type=None, config=None):
     >>> config = {
     ...     'project_name': 'test_md',
     ...     'coord_file': 'system.xyz',
-    ...     'pbc_list': [14.0, 14.0, 14.0],  # Will be formatted correctly for the command line
+    ...     'pbc_list': [14.0, 0, 0, 0, 14.0,0, 0, 0, 14.0],  # Will be formatted correctly for the command line
     ...     'foundation_model': 'mace_mp',
     ...     'model_size': 'small',
     ...     'dispersion_via_mace': 'n',
@@ -125,13 +126,13 @@ def mace_api(run_type=None, config=None):
             if run_type == 'MULTI_MD':
                 for key in ['foundation_model', 'model_size', 'dispersion_via_mace']:
                     if key in config_copy and isinstance(config_copy[key], list):
-                        config_copy[key] = f"[{' '.join(repr(x) for x in config_copy[key])}]"
+                        config_copy[key] = ' '.join(str(x).strip('"') for x in config_copy[key])
             
             # Handle special cases for FINETUNE_MULTIHEAD with lists
             if run_type == 'FINETUNE_MULTIHEAD':
                 for key in ['train_file', 'xc_functional_of_dataset']:
                     if key in config_copy and isinstance(config_copy[key], list):
-                        config_copy[key] = f"[{' '.join(repr(x) for x in config_copy[key])}]"
+                        config_copy[key] = ' '.join(str(x).strip('"') for x in config_copy[key])
                 
             sys.argv.extend(["-c", str(config_copy)])
         atk_mace()
@@ -223,7 +224,7 @@ def mattersim_api(run_type=None, config=None):
     >>> config = {
     ...     'project_name': 'test_md',
     ...     'coord_file': 'system.xyz',
-    ...     'pbc_list': [14.0, 14.0, 14.0],  # Will be formatted correctly for the command line
+    ...     'pbc_list': [14.0, 0, 0, 0, 14.0, 0, 0, 0, 14.0],  # Will be formatted correctly for the command line
     ...     'foundation_model': 'small',
     ...     'temperature': '300',
     ...     'pressure': '1.0',
@@ -252,7 +253,7 @@ def mattersim_api(run_type=None, config=None):
             if run_type == 'MULTI_MD':
                 for key in ['foundation_model']:
                     if key in config_copy and isinstance(config_copy[key], list):
-                        config_copy[key] = f"[{' '.join(repr(x) for x in config_copy[key])}]"
+                        config_copy[key] = ' '.join(str(x).strip('"') for x in config_copy[key])
                 
             sys.argv.extend(["-c", str(config_copy)])
         atk_mattersim()
@@ -281,7 +282,7 @@ def sevennet_api(run_type=None, config=None):
     >>> config = {
     ...     'project_name': 'test_md',
     ...     'coord_file': 'system.xyz',
-    ...     'pbc_list': [14.0, 14.0, 14.0],  # Will be formatted correctly for the command line
+    ...     'pbc_list': [14.0, 0, 0, 0, 14.0, 0, 0, 0, 14.0],  # Will be formatted correctly for the command line
     ...     'foundation_model': '7net-0',
     ...     'modal': 'mpa',
     ...     'temperature': '300',
@@ -311,7 +312,7 @@ def sevennet_api(run_type=None, config=None):
             if run_type == 'MULTI_MD':
                 for key in ['foundation_model', 'modal', 'dispersion_via_ase']:
                     if key in config_copy and isinstance(config_copy[key], list):
-                        config_copy[key] = f"[{' '.join(repr(x) for x in config_copy[key])}]"
+                        config_copy[key] = ' '.join(str(x).strip('"') for x in config_copy[key])
                 
             sys.argv.extend(["-c", str(config_copy)])
         from .sevennet_input_writer import atk_sevennet

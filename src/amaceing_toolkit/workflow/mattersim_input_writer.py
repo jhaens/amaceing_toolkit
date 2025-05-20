@@ -14,6 +14,7 @@ from .utils import ask_for_float_int
 from .utils import ask_for_int
 from .utils import ask_for_yes_no
 from .utils import ask_for_yes_no_pbc
+from .utils import ask_for_non_cubic_pbc
 from .utils import create_dataset
 from .utils import e0_wrapper
 from .utils import frame_counter
@@ -37,21 +38,29 @@ def atk_mattersim():
         parser = argparse.ArgumentParser(description="Write input file for MatterSim runs and prepare them: (1) Via a short Q&A: NO arguments needed! (2) Directly from the command line with a dictionary: TWO arguments needed!", formatter_class=argparse.RawTextHelpFormatter)
         parser.add_argument("-rt", "--run_type", type=str, help="[OPTIONAL] Which type of calculation do you want to run? ('MD', 'MULTI_MD', 'FINETUNE', 'RECALC')", required=False)
         parser.add_argument("-c", "--config", type=str, help=textwrap.dedent("""[OPTIONAL] Dictionary with the configuration:\n 
-        \033[1m MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'foundation_model' : 'small/large/PATH', 'dispersion_via_ase': 'y/n', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
-        \033[1m MULTI_MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'foundation_model' : '['small/large/PATH' ...]', 'dispersion_via_ase': '['y/n' ...]', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
+        \033[1m MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : 'small/large/PATH', 'dispersion_via_ase': 'y/n', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
+        \033[1m MULTI_MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : '['small/large/PATH' ...]', 'dispersion_via_ase': '['y/n' ...]', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
         \033[1m FINETUNE \033[0m: "{'project_name' : 'NAME', 'train_data_path': 'FILE', 'device': 'cuda/cpu', 'force_loss_ratio': 'FLOAT', 'load_model_path': 'small/large/PATH', 'y/n', 'batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT', 'save_checkpoint' : 'y', 'ckpt_interval': '25', 'save_path': 'PATH', 'early_stopping': 'n'}"\n
-        \033[1m RECALC \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[FLOAT FLOAT FLOAT]', 'foundation_model': 'small/large/PATH', 'dispersion_via_ase': 'y/n'}'\n" """), required=False)
+        \033[1m RECALC \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model': 'small/large/PATH', 'dispersion_via_ase': 'y/n'}'\n" """), required=False)
         args = parser.parse_args()
         if args.config != ' ':
             try:
                 if args.run_type == 'MULTI_MD':
                     input_config = string_to_dict_multi(args.config)
+                    if np.size(input_config['pbc_list']) == 3: # Keep compatibility with old input files
+                        input_config['pbc_list'] = np.array([[input_config['pbc_list'][0], 0, 0], [0, input_config['pbc_list'][1], 0], [0, 0, input_config['pbc_list'][2]]])
+                    else:
+                        input_config['pbc_list'] = np.array(input_config['pbc_list']).reshape(3,3)
                     write_input(input_config, args.run_type)
                 elif args.run_type == 'FINETUNE':
                     input_config = string_to_dict(args.config)
                     finetune_config = crt_config(input_config)
                 else:
                     input_config = string_to_dict(args.config)
+                    if np.size(input_config['pbc_list']) == 3: # Keep compatibility with old input files
+                        input_config['pbc_list'] = np.array([[input_config['pbc_list'][0], 0, 0], [0, input_config['pbc_list'][1], 0], [0, 0, input_config['pbc_list'][2]]])
+                    else:
+                        input_config['pbc_list'] = np.array(input_config['pbc_list']).reshape(3,3)
                     write_input(input_config, args.run_type)
 
 
@@ -121,15 +130,11 @@ def mattersim_form():
 
     if box_cubic == 'y':
         box_xyz = ask_for_float_int("What is the length of the box in Å?", str(10.0))
-        pbc_list = [box_xyz, box_xyz, box_xyz]
+        pbc_mat = np.array([[box_xyz, 0.0, 0.0],[0.0, box_xyz, 0.0],[0.0, 0.0, box_xyz]])
     elif box_cubic == 'n':
-        box_x = ask_for_float_int("What is the length of the box in the x-direction in Å?", str(10.0))
-        box_y = ask_for_float_int("What is the length of the box in the y-direction in Å?", str(10.0))
-        box_z = ask_for_float_int("What is the length of the box in the z-direction in Å?", str(10.0))
-        pbc_list = [box_x, box_y, box_z]
+        pbc_mat = ask_for_non_cubic_pbc()
     else:
         pbc_mat = np.loadtxt(box_cubic)
-        pbc_list = [pbc_mat[0,0], pbc_mat[1,1], pbc_mat[2,2]]
 
 
     # Ask the user for the run type
@@ -156,7 +161,7 @@ def mattersim_form():
         dataset_needed = ask_for_yes_no("Do you want to create a training dataset from a force & a position file (y) or did you define it already (n)?", 'y')
         if dataset_needed == 'y':
             print("Creating the training dataset...")
-            path_to_training_file = dataset_creator(coord_file, pbc_list, run_type, mattersim_config)      
+            path_to_training_file = dataset_creator(coord_file, pbc_mat, run_type, mattersim_config)      
             
         else: 
             # The given file is the training file
@@ -174,9 +179,9 @@ def mattersim_form():
     use_default_input = ask_for_yes_no("Do you want to use the default input settings? (y/n)", mattersim_config['use_default_input'])
     if use_default_input == 'y':
         if run_type == 'FINETUNE':
-            input_config = config_wrapper(True, run_type, mattersim_config, coord_file, pbc_list, project_name, path_to_training_file)
+            input_config = config_wrapper(True, run_type, mattersim_config, coord_file, pbc_mat, project_name, path_to_training_file)
         else:
-            input_config = config_wrapper(True, run_type, mattersim_config, coord_file, pbc_list, project_name)
+            input_config = config_wrapper(True, run_type, mattersim_config, coord_file, pbc_mat, project_name)
     else:
         small_changes = ask_for_yes_no("Do you want to make small changes to the default settings? (y/n)", "n")
         if small_changes == 'y':
@@ -211,15 +216,15 @@ def mattersim_form():
                 changing = dict_onoff[ask_for_yes_no("Do you want to change another setting? (y/n)", 'n')]
             
             if run_type == 'FINETUNE':
-                input_config = config_wrapper(True, run_type, mattersim_config, coord_file, pbc_list, project_name, path_to_training_file)
+                input_config = config_wrapper(True, run_type, mattersim_config, coord_file, pbc_mat, project_name, path_to_training_file)
             else:
-                input_config = config_wrapper(True, run_type, mattersim_config, coord_file, pbc_list, project_name)
+                input_config = config_wrapper(True, run_type, mattersim_config, coord_file, pbc_mat, project_name)
 
         else: 
             if run_type == 'FINETUNE':
-                input_config = config_wrapper(False, run_type, mattersim_config, coord_file, pbc_list, project_name, path_to_training_file)
+                input_config = config_wrapper(False, run_type, mattersim_config, coord_file, pbc_mat, project_name, path_to_training_file)
             else:
-                input_config = config_wrapper(False, run_type, mattersim_config, coord_file, pbc_list, project_name)
+                input_config = config_wrapper(False, run_type, mattersim_config, coord_file, pbc_mat, project_name)
 
     if run_type == 'FINETUNE':
         input_config['train_data_path'] = review_training_file(input_config['train_data_path'])
@@ -276,7 +281,7 @@ def mattersim_form():
     # Citations of MatterSim (until now not necessary)
     # mattersim_citations()
 
-def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, project_name, path_to_training_file="", e0_dict={}):
+def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_mat, project_name, path_to_training_file="", e0_dict={}):
 
     """
     Wrapper function to create the input file
@@ -287,7 +292,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
         if run_type == 'MD': 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': mattersim_config[run_type]['foundation_model'],
                             #'dispersion_via_ase': mattersim_config[run_type]['dispersion_via_ase'],
                             'temperature': mattersim_config[run_type]['temperature'],
@@ -301,7 +306,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
         elif run_type == 'MULTI_MD': 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': mattersim_config[run_type]['foundation_model'], # List
                             #'dispersion_via_ase': mattersim_config[run_type]['dispersion_via_ase'], # List
                             'temperature': mattersim_config[run_type]['temperature'],
@@ -329,7 +334,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
         elif run_type == 'RECALC':
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': mattersim_config[run_type]['foundation_model']}
                             #'dispersion_via_ase': mattersim_config[run_type]['dispersion_via_ase']}
             
@@ -355,7 +360,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': foundation_model,
                             #'dispersion_via_ase': dispersion_via_ase,
                             'temperature': temperature,
@@ -394,7 +399,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': foundation_model, # List
                             'temperature': temperature,
                             'pressure': pressure,
@@ -447,7 +452,7 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_list, pr
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
-                            'pbc_list': pbc_list,
+                            'pbc_list': pbc_mat,
                             'foundation_model': foundation_model}
                             #'dispersion_via_ase': dispersion_via_ase}
     return input_config
@@ -495,7 +500,7 @@ atoms.calc = mattersim_calc
 
 # Set the temperature in Kelvin and initialize the velocities (only if it is the first start)
 temperature_K = {int(input_config['temperature'])}
-if os.path.isfile('restart.traj') == False:
+if os.path.isfile('{input_config['project_name']}.traj') == False:
     MaxwellBoltzmannDistribution(atoms, temperature_K = temperature_K) 
 
 
@@ -645,11 +650,11 @@ def dispersion_corr(dispersion_via_ase):
     else:
         return " dispersion=False"
 
-def cell_matrix(pbc_list):
+def cell_matrix(pbc_mat):
     """
-    Function to return the box matrix from the pbc_list
+    Function to return the box matrix from the pbc_mat
     """
-    return f"""np.array([[{float(pbc_list[0])}, 0, 0], [0, {float(pbc_list[1])}, 0], [0, 0, {float(pbc_list[2])}]])"""
+    return f"""np.array([[{float(pbc_mat[0,0])}, {float(pbc_mat[0,1])}, {float(pbc_mat[0,2])}], [{float(pbc_mat[1,0])}, {float(pbc_mat[1,1])}, {float(pbc_mat[1,2])}], [{float(pbc_mat[2,0])}, {float(pbc_mat[2,1])}, {float(pbc_mat[2,2])}]])"""
 
 def write_traj_file(input_config):
     """
@@ -697,7 +702,7 @@ dyn.attach(MDLogger(dyn, atoms, 'md.log', header=True, stress=True, peratom=Fals
 dyn.attach(MDLogger(dyn, atoms, 'md.log', header=True, stress=False, peratom=False, mode="a"), interval={int(input_config['log_interval'])})"""
 
 # Dataset creator
-def dataset_creator(coord_file, pbc_list, run_type, mattersim_config):
+def dataset_creator(coord_file, pbc_mat, run_type, mattersim_config):
     """
     Function to create the dataset
     """
@@ -707,7 +712,7 @@ def dataset_creator(coord_file, pbc_list, run_type, mattersim_config):
     assert os.path.isfile(force_file), "Force file does not exist!"
 
     # Create the training dataset
-    path_to_training_file = create_dataset(coord_file, force_file, pbc_list)
+    path_to_training_file = create_dataset(coord_file, force_file, pbc_mat)
     return path_to_training_file
 
 def crt_config(input_config):
@@ -777,7 +782,7 @@ def write_input(input_config, run_type):
             # Change the path of the coord file to ../coord_file (because each run is a folder)
             input_config_tmp['coord_file'] = f"../{input_config['coord_file']}"
             input_config_tmp['foundation_model'] = input_config['foundation_model'][i]
-            input_config_tmp['dispersion_via_ase'] = input_config['dispersion_via_ase'][i]
+            #input_config_tmp['dispersion_via_ase'] = input_config['dispersion_via_ase'][i]
 
             input_text = create_input(input_config_tmp, 'MD')
             file_name = f'md_mattersim.py'
@@ -856,14 +861,14 @@ def write_log(input_config):
                     # Copy the dict without the key 'foundation_model'
                     input_config_tmp = input_config.copy()
                     input_config_tmp['foundation_model'] = input_config['foundation_model'][i]
-                    input_config_tmp['dispersion_via_ase'] = input_config['dispersion_via_ase'][i]
-                    input_config_tmp['pbc_list'] = f'[{input_config["pbc_list"][0]} {input_config["pbc_list"][1]} {input_config["pbc_list"][2]}]'
+                    #input_config_tmp['dispersion_via_ase'] = input_config['dispersion_via_ase'][i]
+                    input_config_tmp['pbc_list'] = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,2]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
                     output.write(f'"{input_config_tmp}"')  
     
     with open('mattersim_input.log', 'w') as output:
         output.write("Input file created with the following configuration:\n")
         try:  
-            input_config["pbc_list"] = f'[{input_config["pbc_list"][0]} {input_config["pbc_list"][1]} {input_config["pbc_list"][2]}]'
+            input_config["pbc_list"] = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,2]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
         except:
             pass   
         # Check if foundation_model is in the input_config

@@ -8,25 +8,25 @@ echo ----------------------------
 echo Testing input file generation: GEO_OPT
 mkdir -p GEO_OPT
 cd GEO_OPT
-amaceing_mace --run_type="GEO_OPT" --config="{'project_name': 'csh2po4_geoopt', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 19.8196 19.8196]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n', 'max_iter': '10'}"
+amaceing_mace --run_type="GEO_OPT" --config="{'project_name': 'csh2po4_geoopt', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n', 'max_iter': '10'}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: CELL_OPT
 mkdir -p CELL_OPT
 cd CELL_OPT
-amaceing_mace --run_type="CELL_OPT" --config="{'project_name': 'csh2po4_geoopt', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 19.8196 19.8196]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n', 'max_iter': '10'}"
+amaceing_mace --run_type="CELL_OPT" --config="{'project_name': 'csh2po4_geoopt', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n', 'max_iter': '10'}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: MD
 mkdir -p MD
 cd MD
-amaceing_mace --run_type="MD" --config="{'project_name': 'csh2po4_md', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 19.8196 19.8196]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '20', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 10, 'print_ase_traj': 'y'}"
+amaceing_mace --run_type="MD" --config="{'project_name': 'csh2po4_md', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '20', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 10, 'print_ase_traj': 'y'}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: MULTI-MD
 mkdir -p MULTI_MD
 cd MULTI_MD
-amaceing_mace --run_type="MULTI_MD" --config="{'project_name': 'csh2po4_multimd', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 19.8196 19.8196]', 'foundation_model': '['mace_mp' 'mace_mp' 'mace_off']', 'model_size': '['small' 'medium' 'small']', 'dispersion_via_mace': '['n' 'n' 'n']', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '10', 'write_interval': '1', 'timestep': 0.5, 'log_interval': '1', 'print_ase_traj': 'y'}"
+amaceing_mace --run_type="MULTI_MD" --config="{'project_name': 'csh2po4_multimd', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'foundation_model': '['mace_mp' 'mace_mp' 'mace_off']', 'model_size': '['small' 'medium' 'small']', 'dispersion_via_mace': '['n' 'n' 'n']', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '10', 'write_interval': '1', 'timestep': 0.5, 'log_interval': '1', 'print_ase_traj': 'y'}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: FINETUNE
@@ -44,7 +44,7 @@ echo ----------------------------
 echo Testing input file generation: RECALC
 mkdir -p RECALC
 cd RECALC
-amaceing_mace --run_type="RECALC" --config="{'project_name': 'csh2po4', 'coord_file': '../../data/dft_energies.xyz', 'pbc_list': '[19.8196 19.8196 19.8196]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n'}"
+amaceing_mace --run_type="RECALC" --config="{'project_name': 'csh2po4', 'coord_file': '../../data/dft_energies.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'n'}"
 cd ..
 echo ----------------------------
 echo ============================

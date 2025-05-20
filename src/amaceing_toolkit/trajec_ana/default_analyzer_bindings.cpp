@@ -15,7 +15,8 @@ PYBIND11_MODULE(default_analyzer, m) {
           py::arg("rdf_pairs"),
           py::arg("msd_atoms"),
           py::arg("smsd_atoms"),
-          "Run the analysis pipeline (RDF, MSD, sMSD)");
+          py::arg("autocorr_pairs"),
+          "Run the analysis pipeline (RDF, MSD, sMSD, autocorrelation)");
 
     // Expose the `terminal_input` function (optional)
     m.def("terminal_input", &terminal_input, 
