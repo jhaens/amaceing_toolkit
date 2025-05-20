@@ -344,6 +344,7 @@ Not implemented yet, but planned:
 - [x] Visualization of Analyzer results
 - [x] SevenNet Fine-tuning
 - [x] More examples
+- [ ] Error evaluation provides the part of the the reference trajectory which is not well predicted by the model
 - [ ] Web-API to monitor the runs
 - [ ] Support of other workload managers (Contributions are welcome!)
 - [ ] ...
