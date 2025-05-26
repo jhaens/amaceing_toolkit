@@ -21,6 +21,7 @@
 #include <numeric> // For std::partial_sum
 #include <omp.h>  // Include OpenMP header
 #include <unordered_map> // for atom masses list
+#include <optional> // For optional type
 #include <cstdlib>  // For std::stoi (to parse strings to integers, for command line arguments)
 #include "default_analyzer.h"
 
@@ -298,6 +299,17 @@ std::vector<std::vector<float>> matrix_multiply(const std::vector<std::vector<fl
     return result;
 }
 
+// Function to multiply a 3D vector with a 3x3 matrix
+std::vector<float> vector_matrix_multiply(const std::vector<float>& vec, const std::vector<std::vector<float>>& matrix) {
+    std::vector<float> result(3, 0.0f);
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            result[i] += vec[j] * matrix[j][i];
+        }
+    }
+    return result;
+}
+
 // Function to multiply a 3x3 matrix with a 3D vector
 std::vector<float> matrix_vector_multiply(const std::vector<std::vector<float>>& matrix, const std::vector<float>& vec) {
     std::vector<float> result(3, 0.0f);
@@ -396,26 +408,58 @@ std::vector<std::vector<float>> pbc_dist_norm(const std::vector<std::vector<floa
         std::vector<std::vector<float>> transformed_coords2(coords2.size(), std::vector<float>(3, 0.0f));
 
         for (size_t i = 0; i < coords1.size(); ++i) {
-            transformed_coords1[i] = matrix_vector_multiply(inv_pbc, coords1[i]);
+            transformed_coords1[i] = vector_matrix_multiply(coords1[i], inv_pbc);
         }
         for (size_t i = 0; i < coords2.size(); ++i) {
-            transformed_coords2[i] = matrix_vector_multiply(inv_pbc, coords2[i]);
+            transformed_coords2[i] = vector_matrix_multiply(coords2[i], inv_pbc);
         }
         
         // Calculate the relative distance between coord1 and coord2
         for (size_t j = 0; j < transformed_coords1.size(); ++j) {
             for (size_t k = 0; k < transformed_coords2.size(); ++k) {
-                std::vector<float> relative_coords(3, 0.0f);
+                std::vector<float> relative_dist_vec(3, 0.0f);
+                std::vector<float> rounded_relative_dist_vec(3, 0.0f);
                 for (int dim = 0; dim < 3; ++dim) {
-                    relative_coords[dim] = transformed_coords1[j][dim] - transformed_coords2[k][dim];
-                    relative_coords[dim] -= round(relative_coords[dim]);
+                    relative_dist_vec[dim] = transformed_coords2[k][dim] - transformed_coords1[j][dim];
+                    rounded_relative_dist_vec[dim] = round(relative_dist_vec[dim]);
+                    }
+                
+                // Determine if the rounded relative distance vector has any non-zero elements
+                float sum_rounded = std::accumulate(rounded_relative_dist_vec.begin(), rounded_relative_dist_vec.end(), 0.0f);
+
+                if (sum_rounded == 0.0f) {
+                    // Transform the relative coordinates back to real space
+                    std::vector<float> real_coords = vector_matrix_multiply(relative_dist_vec, pbc);
+                
+                    // Calculate the norm of the distance
+                    norm_distance[j][k] = sqrt(pow(real_coords[0], 2) + pow(real_coords[1], 2) + pow(real_coords[2], 2));
+
+                } else {
+                    // Change the real coordinates of atom j in coords1 to the minimum image
+                    // Calculate the shifter vector using the rounded relative distance vector and the PBC matrix
+                    std::vector<float> shifter(3, 0.0f);
+                    for (int dim = 0; dim < 3; ++dim) {
+                        for (int dim2 = 0; dim2 < 3; ++dim2) {
+                            shifter[dim] += rounded_relative_dist_vec[dim2] * pbc[dim2][dim];
+                        }
                     }
 
-                // Transform the relative coordinates back to real space
-                std::vector<float> real_coords = matrix_vector_multiply(pbc, relative_coords);
-                
-                // Calculate the norm of the distance
-                norm_distance[j][k] = sqrt(pow(real_coords[0], 2) + pow(real_coords[1], 2) + pow(real_coords[2], 2));
+                    // Shift the real coordinates of atom j in coords1 to the minimum image
+                    std::vector<float> shifted_real_coords1(3, 0.0f);
+                    for (int dim = 0; dim < 3; ++dim) {
+                        shifted_real_coords1[dim] = coords1[j][dim] + shifter[dim];
+                    }
+                    
+                    // Calculate the distance vector in real space between the shifted atom j (coord1) and atom k (coord2)
+                    std::vector<float> distance_vector(3, 0.0f);
+                    for (int dim = 0; dim < 3; ++dim) {
+                        distance_vector[dim] = coords2[k][dim] - shifted_real_coords1[dim];
+                    }
+
+                    // Calculate the norm of the distance
+                    norm_distance[j][k] = sqrt(pow(distance_vector[0], 2) + pow(distance_vector[1], 2) + pow(distance_vector[2], 2));
+
+                }
             }
         }
     }
@@ -462,141 +506,168 @@ std::tuple<std::vector<int>, std::vector<float>> next_neighbor(
 //## MOLECULE RECOGNITION FUNCTION ##
 //###################################
 
-// Function to calculate the bond distances and find molecules via next-neighbor binning
-std::unordered_map<std::string, int> find_molecules_nextneighborbinning(const std::vector<std::vector<float>>& norm_distance,
+// Function to get the Van der Waals radius for an element
+std::optional<float> get_vdw_radius(const std::string& element) {
+    // Heavy atoms will not be considered
+    static const std::unordered_map<std::string, float> vdw_radii = {
+        // Elements up to Ar (atomic number 18) have their real values
+        {"H", 1.20f}, {"He", 1.40f}, {"Li", 1.82f}, {"Be", 1.53f}, {"B", 1.92f},
+        {"C", 1.70f}, {"N", 1.55f}, {"O", 1.52f}, {"F", 1.47f}, {"Ne", 1.54f},
+        {"Na", 2.27f}, {"Mg", 1.73f}, {"Al", 1.84f}, {"Si", 2.10f}, {"P", 1.80f},
+        {"S", 1.80f}, {"Cl", 1.75f}, {"Ar", 1.88f},
+        // All elements after Ar (atomic number > 18) set to 0.0f
+        {"K", 0.0f}, {"Ca", 0.0f}, {"Sc", 0.0f}, {"Ti", 0.0f}, {"V", 0.0f}, {"Cr", 0.0f}, {"Mn", 0.0f},
+        {"Fe", 0.0f}, {"Co", 0.0f}, {"Ni", 0.0f}, {"Cu", 0.0f}, {"Zn", 0.0f},
+        {"Ga", 0.0f}, {"Ge", 0.0f}, {"As", 0.0f}, {"Se", 0.0f}, {"Br", 0.0f},
+        {"Kr", 0.0f}, {"Rb", 0.0f}, {"Sr", 0.0f}, {"Y", 0.0f}, {"Zr", 0.0f},
+        {"Nb", 0.0f}, {"Mo", 0.0f}, {"Tc", 0.0f}, {"Ru", 0.0f}, {"Rh", 0.0f},
+        {"Pd", 0.0f}, {"Ag", 0.0f}, {"Cd", 0.0f}, {"In", 0.0f}, {"Sn", 0.0f},
+        {"Sb", 0.0f}, {"Te", 0.0f}, {"I", 0.0f}, {"Xe", 0.0f}, {"Cs", 0.0f},
+        {"Ba", 0.0f}, {"La", 0.0f}, {"Ce", 0.0f}, {"Pr", 0.0f}, {"Nd", 0.0f},
+        {"Pm", 0.0f}, {"Sm", 0.0f}, {"Eu", 0.0f}, {"Gd", 0.0f}, {"Tb", 0.0f},
+        {"Dy", 0.0f}, {"Ho", 0.0f}, {"Er", 0.0f}, {"Tm", 0.0f}, {"Yb", 0.0f},
+        {"Lu", 0.0f}, {"Hf", 0.0f}, {"Ta", 0.0f}, {"W", 0.0f}, {"Re", 0.0f},
+        {"Os", 0.0f}, {"Ir", 0.0f}, {"Pt", 0.0f}, {"Au", 0.0f}, {"Hg", 0.0f},
+        {"Tl", 0.0f}, {"Pb", 0.0f}, {"Bi", 0.0f}, {"Po", 0.0f}, {"At", 0.0f},
+        {"Rn", 0.0f}, {"Fr", 0.0f}, {"Ra", 0.0f}, {"Ac", 0.0f}, {"Th", 0.0f},
+        {"Pa", 0.0f}, {"U", 0.0f}, {"Np", 0.0f}, {"Pu", 0.0f}, {"Am", 0.0f}
+    };
+    // Normalize the element name (e.g., "h" -> "H", "he" -> "He")
+    std::string normalized_element = element;
+    if (normalized_element.length() == 1) {
+        normalized_element[0] = std::toupper(normalized_element[0]);
+    } else if (normalized_element.length() > 1) {
+        normalized_element[0] = std::toupper(normalized_element[0]);
+        normalized_element[1] = std::tolower(normalized_element[1]);
+    }
+
+    // Find the radius in the map
+    auto it = vdw_radii.find(normalized_element);
+    if (it != vdw_radii.end()) {
+        return it->second;
+    }
+
+    // Return nullopt if the element is not found
+    return std::nullopt;
+}
+
+// Function to find molecules using a bond guessing algorithm (similar to VMD)
+std::unordered_map<std::string, int> find_molecules(
+    const std::vector<std::vector<float>>& norm_distance,
     const std::vector<std::string>& atoms) {
     
     // Get number of atoms
     size_t num_atoms = atoms.size();
     
-    // Initialize the bond graph using adjacency list for better cache locality
+    // Initialize the bond graph using adjacency list
     std::vector<std::vector<int>> bond_graph(num_atoms);
     
-    // Identify unique atom pairs that appear in the system
-    std::unordered_map<std::string, std::vector<float>> pair_distances;
-    
-    // Collect distances for each atom pair type
+    // First, find the maximum radius to determine the cutoff
+    float cutoff = 0.833f; // Minimum cutoff value from VMD
     for (size_t i = 0; i < num_atoms; ++i) {
-        for (size_t j = i + 1; j < num_atoms; ++j) {
-            std::string atom_pair = atoms[i] + "-" + atoms[j];
-            // Also add the reverse pair for easier lookup later
-            std::string reverse_pair = atoms[j] + "-" + atoms[i];
-            
-            // Add the distance to the appropriate pair list
-            pair_distances[atom_pair].push_back(norm_distance[i][j]);
-            pair_distances[reverse_pair].push_back(norm_distance[i][j]);
+        auto radius = get_vdw_radius(atoms[i]);
+        if (radius) {
+            cutoff = std::max(cutoff, radius.value());
+        } else {
+            std::cerr << "Warning: Missing Van der Waals radius for '" << atoms[i] << "'" << std::endl;
         }
     }
+    cutoff = 1.2f * cutoff; // Scale the maximum radius by 1.2
     
-    // Determine cutoffs from distance distributions
-    std::unordered_map<std::string, float> dynamic_cutoffs;
-    std::vector<std::string> not_evaluated_bonds;
-    
-    // For each atom pair type, determine cutoff
-    for (auto& pair : pair_distances) {
-        const std::string& atom_pair = pair.first;
-        std::vector<float>& distances = pair.second;
-        
-        // Sort distances for this atom pair
-        std::sort(distances.begin(), distances.end());
-        
-        // Skip if too few data points
-        if (distances.size() < 10) {
-            not_evaluated_bonds.push_back(atom_pair);
+    // Detect bonds using VMD algorithm
+    for (size_t i = 0; i < num_atoms; ++i) {
+        auto i_radius = get_vdw_radius(atoms[i]);
+        if (!i_radius) {
+            std::cerr << "Error: Missing Van der Waals radius for '" << atoms[i] << "'" << std::endl;
             continue;
         }
         
-        // Use histogram binning to find the gap between bonded and non-bonded
-        const int num_bins = 50;
-        const float min_dist = distances.front();
-        const float max_dist = std::min(3.0f, distances.back()); // Limit to reasonable bond distance
-        const float bin_width = (max_dist - min_dist) / num_bins;
+        for (size_t j = i + 1; j < num_atoms; ++j) {
+            auto j_radius = get_vdw_radius(atoms[j]);
+            if (!j_radius) {
+                std::cerr << "Error: Missing Van der Waals radius for '" << atoms[j] << "'" << std::endl;
+                continue;
+            }
+            
+            float d = norm_distance[i][j];
+            float radii_sum = i_radius.value() + j_radius.value();
+            
+            // VMD bond criteria
+            if (0.03f < d && d < 0.6f * radii_sum && d < cutoff) {
+            bond_graph[i].push_back(j);
+            bond_graph[j].push_back(i); // Add symmetric bond
+            }
+        }
+    }
+    
+    // Post-process to remove bonds between hydrogen atoms that are bonded more than once
+    std::vector<std::pair<int, int>> bonds_to_remove;
+    
+    for (size_t i = 0; i < num_atoms; ++i) {
+        if (atoms[i] != "H") continue;
         
-        std::vector<int> histogram(num_bins, 0);
-        
-        // Fill histogram
-        for (float dist : distances) {
-            if (dist <= max_dist) {
-                int bin = static_cast<int>((dist - min_dist) / bin_width);
-                if (bin >= 0 && bin < num_bins) {
-                    histogram[bin]++;
+        for (auto j : bond_graph[i]) {
+            if (static_cast<size_t>(j) > i && atoms[j] == "H") {
+                // Count bonds for atom i
+                int bonds_i = bond_graph[i].size();
+                
+                // Count bonds for atom j
+                int bonds_j = bond_graph[j].size();
+                
+                // If either H atom is bonded more than once, mark this H-H bond for removal
+                if (bonds_i > 1 || bonds_j > 1) {
+                    bonds_to_remove.push_back({i, j});
                 }
             }
         }
+    }
+    
+    // Remove marked H-H bonds
+    for (const auto& [i, j] : bonds_to_remove) {
+        // Remove j from i's bond list
+        auto it_i = std::find(bond_graph[i].begin(), bond_graph[i].end(), j);
+        if (it_i != bond_graph[i].end()) {
+            bond_graph[i].erase(it_i);
+        }
         
-        // Find first minimum in histogram (gap between first and second peak)
-        float cutoff = 0.0f;
-        bool found_first_peak = false;
-        bool found_valley = false;
+        // Remove i from j's bond list
+        auto it_j = std::find(bond_graph[j].begin(), bond_graph[j].end(), i);
+        if (it_j != bond_graph[j].end()) {
+            bond_graph[j].erase(it_j);
+        }
+    }
+
+    // Remove hydrogen-bonded connections: Check if H is bonded to more than one atom and delete the bond with the longest distance
+    for (size_t i = 0; i < num_atoms; ++i) {
+        if (atoms[i] != "H") continue;
         
-        for (int i = 1; i < num_bins - 1; ++i) {
-            // Check if we found the first peak already
-            if (!found_first_peak && histogram[i-1] < histogram[i] && histogram[i] > histogram[i+1] && histogram[i] > histogram[i+2]) {
-                found_first_peak = true;
-                continue;
+        // Remove all unchemical bonds until only one bond remains for this H atom
+        while (bond_graph[i].size() > 1) {
+            // Find the bond with the longest distance
+            float max_distance = 0.0f;
+            int max_index = -1;
+            for (auto j : bond_graph[i]) {
+                if (norm_distance[i][j] > max_distance) {
+                    max_distance = norm_distance[i][j];
+                    max_index = j;
+                }
             }
 
-            
-            // After finding first peak, look for a valley (local minimum)
-            if (found_first_peak && !found_valley && 
-                histogram[i-1] > histogram[i] && histogram[i] <= histogram[i+1] && histogram[i] <= histogram[i+2]) {
-                cutoff = min_dist + (i * bin_width);
-                cutoff += bin_width; // Add a buffer to the cutoff
-                found_valley = true;
-                break;
+            // Remove the longest bond from i's bond list
+            auto it = std::find(bond_graph[i].begin(), bond_graph[i].end(), max_index);
+            if (it != bond_graph[i].end()) {
+            bond_graph[i].erase(it);
+            }
+
+            // Remove the longest bond from max_index's bond list
+            auto it2 = std::find(bond_graph[max_index].begin(), bond_graph[max_index].end(), i);
+            if (it2 != bond_graph[max_index].end()) {
+            bond_graph[max_index].erase(it2);
             }
         }
-        
-        // If no valley found or cutoff is too large, use a reasonable default, only override H-H cutoff if the found valley is larger than 1.0
-        if (atom_pair == "H-H" && cutoff > 1.0f) {
-            cutoff = 1.0f;
-        }
-        if (!found_valley || cutoff == 0.0f || cutoff > 2.1f) {
-            not_evaluated_bonds.push_back(atom_pair);
-            continue;
-        }
-        
-        dynamic_cutoffs[atom_pair] = cutoff;
-    }
+    } 
     
-    // Build the bond graph using the dynamic cutoffs
-    #pragma omp parallel for schedule(dynamic)
-    for (size_t i = 0; i < num_atoms; ++i) {
-        std::vector<int> neighbors;
-        
-        for (size_t j = i + 1; j < num_atoms; ++j) {
-            std::string pair_key = atoms[i] + "-" + atoms[j];
-            
-            // Skip if no cutoff determined for this pair
-            if (dynamic_cutoffs.find(pair_key) == dynamic_cutoffs.end()) {
-                continue;
-            }
-            
-            float cutoff = dynamic_cutoffs[pair_key];
-            
-            // Skip if no bond can exist
-            if (cutoff <= 0.0f) continue;
-            
-            // Check if atoms are bonded (distance is less than cutoff)
-            if (norm_distance[i][j] <= cutoff) {
-                neighbors.push_back(j);
-                
-                // Add symmetric bond (i to j already stored in neighbors)
-                #pragma omp critical
-                {
-                    bond_graph[j].push_back(i);
-                }
-            }
-        }
-        
-        // Store all neighbors found
-        #pragma omp critical
-        {
-            bond_graph[i].insert(bond_graph[i].end(), neighbors.begin(), neighbors.end());
-        }
-    }
-    
-    // Find connected components (molecules) using BFS traversal
+    // Find connected components (molecules) using traversal search (BFS)
     std::vector<bool> visited(num_atoms, false);
     std::vector<std::vector<int>> molecules;
     
@@ -666,10 +737,9 @@ std::unordered_map<std::string, int> find_molecules_nextneighborbinning(const st
         // Increment count of this molecular formula
         molecular_formulas[formula.str()]++;
     }
-    
+
     return molecular_formulas;
 }
-
 
 //##################
 //## RDF FUNCTION ##
@@ -931,7 +1001,6 @@ vector<vector<vector<float>>> unwrap_trajectory(vector<vector<vector<float>>>& t
             pbc_ortho[i] = pbc_matrix[i][i];
         }
 
-
         // Compute differences between consecutive time steps (dist1)
         for (size_t t = 1; t < time_steps; ++t) {
             for (size_t atom = 0; atom < num_atoms; ++atom) {
@@ -976,7 +1045,7 @@ vector<vector<vector<float>>> unwrap_trajectory(vector<vector<vector<float>>>& t
         vector<vector<vector<float>>> frac_trajectory(time_steps, vector<vector<float>>(num_atoms, vector<float>(dimensions, 0.0f)));
         for (size_t t = 0; t < time_steps; ++t) {
             for (size_t atom = 0; atom < num_atoms; ++atom) {
-                frac_trajectory[t][atom] = matrix_vector_multiply(inv_pbc, trajectory[t][atom]);
+                frac_trajectory[t][atom] = vector_matrix_multiply(trajectory[t][atom], inv_pbc);
             }
         }
 
@@ -1003,19 +1072,25 @@ vector<vector<vector<float>>> unwrap_trajectory(vector<vector<vector<float>>>& t
             }
         }
 
-        // Create new unwrapped trajectory by adjusting the fractional coordinates and converting back to real space
-        vector<vector<vector<float>>> unwrapped_trajectory = trajectory; // Make a copy
+        // Create new unwrapped trajectory by adjusting the real coordinates
+        vector<vector<vector<float>>> unwrapped_trajectory = trajectory; 
         
         for (size_t t = 1; t < time_steps; ++t) {
             for (size_t atom = 0; atom < num_atoms; ++atom) {
-                // Adjust the fractional coordinates by subtracting the wrapping offsets
-                vector<float> adjusted_frac = frac_trajectory[t][atom];
-                for (size_t dim = 0; dim < dimensions; ++dim) {
-                    adjusted_frac[dim] -= wrap_matrix[t-1][atom][dim];
+                // Adjust the real coordinates by subtracting the relevant pbc row vectors multiplied with the respective wrapping offsets
+                std::vector<float> shifter(3, 0.0f);
+                for (int dim = 0; dim < 3; ++dim) {
+                    for (int dim2 = 0; dim2 < 3; ++dim2) {
+                        shifter[dim] += wrap_matrix[t-1][atom][dim2] * pbc_matrix[dim2][dim];
+                    }
+                }
+
+                std::vector<float> shifted_real_coords(3, 0.0f);
+                for (int dim = 0; dim < 3; ++dim) {
+                    shifted_real_coords[dim] = trajectory[t][atom][dim] - shifter[dim];
                 }
                 
-                // Transform back to real space
-                unwrapped_trajectory[t][atom] = matrix_vector_multiply(pbc_matrix, adjusted_frac);
+                unwrapped_trajectory[t][atom] = shifted_real_coords;
             }
         }
 
@@ -1570,13 +1645,13 @@ std::tuple<std::vector<float>, std::vector<float>, std::vector<std::vector<float
     #pragma omp parallel for schedule(dynamic)
     for (size_t step = 0; step < num_points; ++step) {
         int i = step * tau_steps;
-        if (i >= limit) continue;
+        if (static_cast<size_t>(i) >= limit) continue;
         
         if (i % verbosity == 0) {
             std::cout << "Processing lag time: " << i << std::endl;
         }
         
-        // Calculate dot products (equivalent to einsum operation)
+        // Calculate dot products 
         std::vector<float> sp_arr(num_atoms, 0.0f);
         
         if (i == 0) {
@@ -1695,24 +1770,52 @@ std::tuple<std::vector<float>, std::vector<float>, std::vector<std::vector<float
                 std::vector<std::vector<float>> inv_pbc = matrix_inverse(pbc_mat);
                 
                 // Transform to fractional coordinates
-                std::vector<float> frac1 = matrix_vector_multiply(inv_pbc, pos1);
-                std::vector<float> frac2 = matrix_vector_multiply(inv_pbc, pos2);
+                std::vector<float> frac1 = vector_matrix_multiply(pos1, inv_pbc);
+                std::vector<float> frac2 = vector_matrix_multiply(pos2, inv_pbc);
                 
-                // Calculate minimum image in fractional coords
-                std::vector<float> frac_diff(3);
-                for (int d = 0; d < 3; ++d) {
-                    frac_diff[d] = frac1[d] - frac2[d];
-                    frac_diff[d] -= std::round(frac_diff[d]);
+                std::vector<float> frac_dist_vec(3, 0.0f);
+                std::vector<float> rounded_frac_dist_vec(3, 0.0f);
+                // Calculate minimum image by using fractional coords
+                for (int dim = 0; dim < 3; ++dim) {
+                    frac_dist_vec[dim] = frac2[dim] - frac1[dim];
+                    rounded_frac_dist_vec[dim] = round(frac_dist_vec[dim]);
                 }
+
+                float sum_rounded = std::accumulate(rounded_frac_dist_vec.begin(), rounded_frac_dist_vec.end(), 0.0f);
                 
-                // Transform back to real space
-                vector_arr[t][i] = matrix_vector_multiply(pbc_mat, frac_diff);
+                if (sum_rounded == 0.0f) {
+                    // Transform the relative coordinates back to real space
+                    vector_arr[t][i] = vector_matrix_multiply(frac_dist_vec, pbc_mat);
+                
+                } else {
+                    // Change the real coordinates of atom j in coords1 to the minimum image
+                    std::vector<float> shifter(3, 0.0f);
+                    for (int dim = 0; dim < 3; ++dim) {
+                        for (int dim2 = 0; dim2 < 3; ++dim2) {
+                            shifter[dim] += rounded_frac_dist_vec[dim2] * pbc_mat[dim2][dim];
+                        }
+                    }
+
+                    // Shift the real coordinates of atom j in coords1 to the minimum image
+                    std::vector<float> shifted_real_coords1(3, 0.0f);
+                    for (int dim = 0; dim < 3; ++dim) {
+                        shifted_real_coords1[dim] = pos1[dim] + shifter[dim];
+                    }
+                    
+                    // Calculate the distance in real space between the shifted atom j (coord1) and atom k (coord2)
+                    std::vector<float> distance_vector(3, 0.0f);
+                    for (int dim = 0; dim < 3; ++dim) {
+                        distance_vector[dim] = pos2[dim] - shifted_real_coords1[dim];
+                    }
+
+                    vector_arr[t][i] = distance_vector;
+                }
             }
         }
-    }
-    
-    // Call vector_autocorr with the calculated vectors
-    return vector_autocorr(vector_arr, timestep_md, tau_steps, verbosity, max_length);
+        
+        // Call vector_autocorr with the calculated vectors
+        return vector_autocorr(vector_arr, timestep_md, tau_steps, verbosity, max_length);
+    }   
 }
 
 // Wrapper function to save autocorrelation data to file
@@ -1825,6 +1928,13 @@ void compute_analysis(
     // Do com removal and unwrap
     vector<vector<vector<float>>> unwrapped_coords = remove_com_motion(coords, atoms);
     unwrapped_coords = unwrap_trajectory(unwrapped_coords, pbc);
+
+    // WIP: Print the molecules detected in the first frame of the trajectory
+    std::unordered_map<std::string, int> molecules_in_frame0 = find_molecules(pbc_dist_norm(unwrapped_coords[0], unwrapped_coords[0], pbc), atoms);
+    std::cout << "Molecules in frame 0 (WIP):" << std::endl;
+    for (const auto& pair : molecules_in_frame0) {
+        std::cout << pair.first << ": " << pair.second << std::endl;
+    }
 
     // Loop over RDF pairs and calculate the RDF
     for (const auto& atom_pair : rdf_pairs) {
