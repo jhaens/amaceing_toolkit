@@ -1133,4 +1133,4 @@ def write_log(input_config):
     """
     with open('utils.log', 'w') as output:
         output.write("Utils function run with the following configuration:\n") 
-        output.write(f"{input_config}")
+        output.write(f'"{input_config}"')
