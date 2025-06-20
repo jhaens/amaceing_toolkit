@@ -6,6 +6,8 @@ Overview
 
 The MACE module is a core component of the aMACEing toolkit designed to facilitate the creation of input files for MACE-torch simulations. It provides a user-friendly interface for preparing various machine learning-based molecular dynamics simulations and model fine-tuning tasks.
 
+=> NEW: Create LAMMPS input files for MACE-torch simulations.
+
 Capabilities
 ------------
 
@@ -105,13 +107,13 @@ For GEO_OPT:
 
 .. code-block:: bash
 
-    amaceing_mace -rt="GEO_OPT" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'max_iter': '200', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'y'}"
+    amaceing_mace -rt="GEO_OPT" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'max_iter': '200', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_ase': 'y', 'simulation_environment': 'lammps'}"
 
 For MD:
 
 .. code-block:: bash
 
-    amaceing_mace -rt="MD" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_mace': 'y', 'temperature': '300', 'thermostat': 'Langevin', 'pressure': 'None', 'nsteps': '10000', 'timestep': '0.5', 'write_interval': '10', 'log_interval': '10', 'print_ase_traj': 'y'}"
+    amaceing_mace -rt="MD" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'foundation_model': 'mace_mp', 'model_size': 'small', 'dispersion_via_ase': 'y', 'temperature': '300', 'thermostat': 'Langevin', 'pressure': 'None', 'nsteps': '10000', 'timestep': '0.5', 'write_interval': '10', 'log_interval': '10', 'print_ext_traj': 'y', 'simulation_environment': 'ase'}"
 
 For FINETUNE:
 
@@ -128,6 +130,7 @@ Output Files
 The module generates:
 
 * Python script for the calculation (e.g., `geoopt_mace.py`, `md_mace.py`, etc.)
+* LAMMPS input file for MACE-torch simulations (e.g., `lammps_md.inp`)
 * For fine-tuning: YAML configuration file (e.g., `config_model_name.yml`)
 * HPC runscript for execution (`runscript.sh` and `gpu_script.job`)
 * Log file with configuration parameters (`mace_input.log`)
@@ -138,7 +141,7 @@ Foundation Models
 
 The module supports various foundation models:
 
-* **mace_mp**: Materials Project foundation model (small, medium, large)
+* **mace_mp**: Materials Project foundation model (small, medium, large, medium-mpa-0)
 * **mace_off**: Organic molecules foundation model (small, medium, large)
 * **mace_anicc**: ANI-CC foundation model
 * **custom**: User-provided model path

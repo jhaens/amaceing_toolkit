@@ -27,7 +27,7 @@ Function Reference
            'pbc_list': [14.0, 0, 0, 0, 14.0, 0, 0, 0, 14.0],
            'foundation_model': 'mace_mp',
            'model_size': 'small',
-           'dispersion_via_mace': 'n',
+           'dispersion_via_ase': 'n',
            'temperature': '300',
            'pressure': '1.0',
            'thermostat': 'Langevin',
@@ -35,7 +35,8 @@ Function Reference
            'write_interval': 10,
            'timestep': 0.5,
            'log_interval': 100,
-           'print_ase_traj': 'y'
+           'print_ext_traj': 'y',
+            'simulation_environment': 'ase'
        }
        
        # Create a molecular dynamics input file
@@ -79,7 +80,7 @@ MD
        'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': 'mace_off/mace_anicc/mace_mp/PATH',
        'model_size': 'small/medium/large/none',
-       'dispersion_via_mace': 'y/n',
+       'dispersion_via_ase': 'y/n',
        'temperature': 'FLOAT',
        'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT',
        'pressure': 'FLOAT/None',
@@ -87,7 +88,8 @@ MD
        'timestep': FLOAT,
        'write_interval': INT,
        'log_interval': INT,
-       'print_ase_traj': 'y/n'
+       'print_ext_traj': 'y/n',
+       'simulation_environment': 'ase/lammps'
    }
 
 MULTI_MD
@@ -101,7 +103,7 @@ MULTI_MD
        'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': ['NAME/PATH', 'NAME/PATH', ...],
        'model_size': ['small/medium/large/none', 'small/medium/large/none', ...],
-       'dispersion_via_mace': ['y/n', 'y/n', ...],
+       'dispersion_via_ase': ['y/n', 'y/n', ...],
        'temperature': 'FLOAT',
        'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT',
        'pressure': 'FLOAT/None',
@@ -109,7 +111,8 @@ MULTI_MD
        'timestep': FLOAT,
        'write_interval': INT,
        'log_interval': INT,
-       'print_ase_traj': 'y/n'
+       'print_ext_traj': 'y/n',
+       'simulation_environment': 'ase/lammps'
    }
 
 GEO_OPT
@@ -124,7 +127,8 @@ GEO_OPT
        'max_iter': INT,
        'foundation_model': 'NAME/PATH',
        'model_size': 'small/medium/large/none',
-       'dispersion_via_mace': 'y/n'
+       'dispersion_via_ase': 'y/n',
+       'simulation_environment': 'ase/lammps'
    }
 
 CELL_OPT
@@ -139,7 +143,8 @@ CELL_OPT
        'max_iter': INT,
        'foundation_model': 'NAME/PATH',
        'model_size': 'small/medium/large/none',
-       'dispersion_via_mace': 'y/n'
+       'dispersion_via_ase': 'y/n',
+       'simulation_environment': 'ase/lammps'
    }
 
 FINETUNE
@@ -202,5 +207,6 @@ RECALC
        'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': 'NAME/PATH',
        'model_size': 'small/medium/large/none',
-       'dispersion_via_mace': 'y/n'
+       'dispersion_via_ase': 'y/n',
+       'simulation_environment': 'ase/lammps'
    }

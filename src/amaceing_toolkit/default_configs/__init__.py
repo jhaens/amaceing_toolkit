@@ -9,6 +9,7 @@ from .runscript_templates import cp2k_runscript
 from .runscript_templates import mace_runscript
 from .runscript_templates import mattersim_runscript
 from .runscript_templates import local_run_cp2k
+from .runscript_templates import lammps_runscript
 
-__all__ = ["configs_cp2k", "configs_mace", "configs_mattersim", "configs_sevennet", "e0s_functionals", "kind_data_functionals", "available_functionals", "cp2k_runscript", "mace_runscript", "mattersim_runscript", "local_run_cp2k"]
+__all__ = ["configs_cp2k", "configs_mace", "configs_mattersim", "configs_sevennet", "e0s_functionals", "kind_data_functionals", "available_functionals", "cp2k_runscript", "mace_runscript", "mattersim_runscript", "lammps_runscript", "local_run_cp2k"]
 

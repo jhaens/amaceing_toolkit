@@ -8,9 +8,10 @@ def configs_mace(config_name):
       'run_type': 'MD',
       'use_default_input': 'y',
       'MD' : {
+        'simulation_environment': 'lammps',
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_mace': 'n',
+        'dispersion_via_ase': 'n',
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -18,12 +19,13 @@ def configs_mace(config_name):
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 100,
-        'print_ase_traj': 'y'
+        'print_ext_traj': 'y'
       },
       'MULTI_MD' : {
+        'simulation_environment': 'lammps',
         'foundation_model': ['mace_mp', 'mace_mp', 'mace_off'],
         'model_size': ['small', 'medium', 'small'],
-        'dispersion_via_mace': ['n', 'n', 'n'],
+        'dispersion_via_ase': ['n', 'n', 'n'],
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -31,19 +33,21 @@ def configs_mace(config_name):
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 100,
-        'print_ase_traj': 'y'
+        'print_ext_traj': 'y'
       },
       'GEO_OPT': {
+        'simulation_environment': 'ase',
         'max_iter': 1000,
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_mace': 'n'
+        'dispersion_via_ase': 'n'
       },
       'CELL_OPT': {
+        'simulation_environment': 'ase',
         'max_iter': 1000,
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_mace': 'n'
+        'dispersion_via_ase': 'n'
       },
       'FINETUNE' : {
         'device': 'cuda',
@@ -79,9 +83,10 @@ def configs_mace(config_name):
         'dir': 'MACE_models'
       }, 
       'RECALC' : {
+        'simulation_environment': 'ase',
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_mace': 'n'
+        'dispersion_via_ase': 'n'
       },
     },
 

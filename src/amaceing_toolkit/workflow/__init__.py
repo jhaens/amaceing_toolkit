@@ -1,5 +1,6 @@
 from .cp2k_input_writer import atk_cp2k
 from .mace_input_writer import atk_mace
+from .mace_lammps_input import lammps_input_writer
 from .mattersim_input_writer import atk_mattersim
 from .mace_input_writer import mace_citations
 from .utils import atk_utils
@@ -95,7 +96,7 @@ def mace_api(run_type=None, config=None):
     ...     'pbc_list': [14.0, 0, 0, 0, 14.0,0, 0, 0, 14.0],  # Will be formatted correctly for the command line
     ...     'foundation_model': 'mace_mp',
     ...     'model_size': 'small',
-    ...     'dispersion_via_mace': 'n',
+    ...     'dispersion_via_ase': 'n',
     ...     'temperature': '300',
     ...     'pressure': '1.0',
     ...     'thermostat': 'Langevin',
@@ -103,7 +104,8 @@ def mace_api(run_type=None, config=None):
     ...     'write_interval': 10,
     ...     'timestep': 0.5,
     ...     'log_interval': 100,
-    ...     'print_ase_traj': 'y'
+    ...     'print_ext_traj': 'y',
+    ...     'simulation_environment': 'ase'
     ... }
     >>> mace_api(run_type='MD', config=config)
     """
@@ -124,7 +126,7 @@ def mace_api(run_type=None, config=None):
             
             # Handle special cases for MULTI_MD with lists
             if run_type == 'MULTI_MD':
-                for key in ['foundation_model', 'model_size', 'dispersion_via_mace']:
+                for key in ['foundation_model', 'model_size', 'dispersion_via_ase']:
                     if key in config_copy and isinstance(config_copy[key], list):
                         config_copy[key] = ' '.join(str(x).strip('"') for x in config_copy[key])
             

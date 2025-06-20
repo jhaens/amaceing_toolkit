@@ -176,10 +176,10 @@ def atk_utils():
             input_config = {'ener_filename_ground_truth': ener_filename_ground_truth, 'force_filename_ground_truth': force_filename_ground_truth, 'ener_filename_compare': ener_filename_compare, 'force_filename_compare': force_filename_compare}
 
         elif util_type == 'PREPARE_EVAL_ERROR':
-            print("You have chosen to prepare the error evaluation of a MACE trajectory.")
+            print("You have chosen to prepare the error evaluation of a MLMD-Run.")
 
-            # Read the Mace trajectory file
-            traj_file = input("What is the name of the MACE trajectory (.traj) file? ")
+            # Read the ASE trajectory file
+            traj_file = input("What is the name of the ASE trajectory (.traj) or xyz file? ")
             assert os.path.isfile(traj_file), "Trajectory file does not exist!"
 
             # Which frames to extract
@@ -189,10 +189,10 @@ def atk_utils():
             start_cp2k = ask_for_yes_no("Do you want to run the CP2K calculation for the error evaluation now?", 'y')
             if start_cp2k == 'y':
                 from amaceing_toolkit.default_configs import available_functionals
-                #log_file = input("What is the name of the log file of the MACE calculation? ['mace_input.log'] ")
+                #log_file = input("What is the name of the log file of the ASE calculation? ['mace_input.log'] ")
                 #if log_file == '':
                 #    log_file = 'mace_input.log'
-                #assert os.path.isfile(log_file), "Log file of the MACE calculation does not exist!"
+                #assert os.path.isfile(log_file), "Log file of the ASE calculation does not exist!"
                 log_file = ''
                 xc_functional = input(f"Which XC functional do you want to use for the CP2K calculation? {available_functionals()}: ")
 
@@ -355,7 +355,10 @@ def run_eval_error(filenames):
         ener_compare = xyz_reader(filenames[2])[2]
     else:
         ener_compare = np.loadtxt(filenames[2])
-    force_compare = xyz_reader(filenames[3])[1]
+    if filenames[3].split('.')[-1] == 'xyz':
+        force_compare = xyz_reader(filenames[3])[1]
+    elif filenames[3].split('.')[-1] == 'lammpstrj':
+        force_compare = lmp_reader(filenames[3])[1]
 
     # Rescale the ground truth (AIMD) forces and energies
     force_ground_truth *= 51.4221
@@ -385,30 +388,53 @@ def run_eval_error(filenames):
 
 def run_prepare_eval_error(traj_file, each_nth_frame, start_cp2k, log_file="", xc_functional=""):
     # Read the frames
-    atoms = read(traj_file, index = f":: {each_nth_frame}")
 
-    coord = []
-    force = []
-    ener = []
+    if traj_file.split('.')[-1] == 'xyz':
+        atom, coord = xyz_reader(traj_file)[:2]
+        force_file = input("What is the name of the force LAMMPS (.lammpstrj) or xyz file? ")
+        assert os.path.isfile(force_file), "Trajectory file does not exist!"
+        if force_file.split('.')[-1] == 'xyz':
+            force = xyz_reader(force_file)[1]
+        elif force_file.split('.')[-1] == 'lammpstrj':
+            force = lmp_reader(force_file)
+        if "E" in traj_file:
+            ener = xyz_reader(traj_file)[2]
+        else:
+            ener_file = input("What is the name of the energy file? ")
+            assert os.path.isfile(ener_file), "Energy file does not exist!"
+            ener = np.loadtxt(ener_file)
 
-    for i in range(len(atoms)):
-        coord.append(atoms[i].get_positions())
-        force.append(atoms[i].get_forces())
-        ener.append(atoms[i].get_potential_energy())
-    
-    atom = np.array(atoms[0].get_chemical_symbols())
-    coord = np.array(coord)
-    force = np.array(force)
-    ener = np.array(ener)
+        # Extract the nth frames and save them
+        coord = coord[::each_nth_frame]
+        force = force[::each_nth_frame]
+        ener = ener[::each_nth_frame]
+        xyz_writer("mace_coord.xyz", atom, coord, ener)
+        xyz_writer("mace_force.xyz", atom, force)
+    else:
+        atoms = read(traj_file, index = f":: {each_nth_frame}")
 
-    # Extract the pbc from the first frame
-    pbc= atoms[0].get_cell()
-    pbc_list = [pbc[0,0], pbc[1,1], pbc[2,2]]
+        coord = []
+        force = []
+        ener = []
 
-    # Write the files
-    xyz_writer("mace_coord.xyz", atom, coord, ener)
-    xyz_writer("mace_force.xyz", atom, force)
-    np.savetxt("pbc", pbc)
+        for i in range(len(atoms)):
+            coord.append(atoms[i].get_positions())
+            force.append(atoms[i].get_forces())
+            ener.append(atoms[i].get_potential_energy())
+        
+        atom = np.array(atoms[0].get_chemical_symbols())
+        coord = np.array(coord)
+        force = np.array(force)
+        ener = np.array(ener)
+
+        # Extract the pbc from the first frame
+        pbc= atoms[0].get_cell()
+        pbc_list = [pbc[0,0], pbc[1,1], pbc[2,2]]
+
+        # Write the files
+        xyz_writer("mace_coord.xyz", atom, coord, ener)
+        xyz_writer("mace_force.xyz", atom, force)
+        np.savetxt("pbc", pbc)
 
     # Print the information
     print(f"Extracted every {each_nth_frame} frame from the file {traj_file}.")
@@ -954,7 +980,6 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
         os.chdir('..')
 
 
-
     # Run directly the EVAL_ERROR workflow
     # Check if the reference force file is a relative path (add ../)
     if force_file[0] == '.':
@@ -982,7 +1007,29 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
         os.chdir('..')
 
 
+def lmp_reader(file):
+    """
+    Read an LAMMPS dump file and return positions or forces
+    """
+    if "fx" in file:
+        # Replace the fx, fy, fz with x, y, z in the file
+        with open(file, 'r') as f:
+            content = f.read()
+        content = content.replace('fx', 'x')
+        content = content.replace('fy', 'y')
+        content = content.replace('fz', 'z')
+        with open("tmp.lammpstrj", 'w') as f:
+            f.write(content)
+        frames = read("tmp.lammpstrj", index=":")
+        os.remove("tmp.lammpstrj")
+    else:
+        frames = read("10steps.lammpstrj", index=":") 
+    positions = []
+    for frame in frames:
+        positions.append(frame.get_positions())
+    positions = np.array(positions)
 
+    return positions
 
 # Question functions
 def ask_for_float_int(question, default):

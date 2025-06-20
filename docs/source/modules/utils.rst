@@ -15,6 +15,7 @@ Model Error Evaluation (EVAL_ERROR)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Calculates errors between machine learning potential predictions and reference data
+* Allows also .lammpstr format for forces and positions
 * Computes mean absolute error (MAE) for both forces and energies
 * Provides relative force errors for assessing model quality
 * Outputs detailed error statistics to a text file

@@ -18,7 +18,7 @@ def hpc_setup_form():
             path_to_program['cp2k'] = '/home/joha4087/programs/cp2k_easy/cp2k-2025.1/exe/local/cp2k.popt' 
             path_to_source_file['cp2k'] = '/home/joha4087/programs/cp2k_easy/source_cp2k_gcc_openmpi_by_jonas'
             path_to_program['mace'] = 'conda activate atk'                                                      # to do add the conda env name
-            path_to_source_file['mace'] = input('Enter the path to the source file of your conda: [/home/USER/anaconda3/etc/profile.d/conda.sh]')
+            path_to_source_file['mace'] = input('Enter the path to the source file of your conda: [/home/..USER../anaconda3/etc/profile.d/conda.sh]')
             path_to_program['mattersim'] = 'conda activate atk_ms7n'                                            # to do add the conda env name
             path_to_source_file['mattersim'] = path_to_source_file['mace']
             workload_manager = 'lsf'
@@ -39,7 +39,7 @@ def hpc_setup_form():
         if setup_program == 'y':
             path_to_program['mace'] = input('Enter the name of your conda env: [atk]')
             path_to_program['mace'] = f'conda activate {path_to_program["mace"]}'
-            path_to_source_file['mace'] = input('Enter the path to the source file of your conda: [/home/USER/anaconda3/etc/profile.d/conda.sh]')
+            path_to_source_file['mace'] = input('Enter the path to the source file of your conda: [/home/..USER../anaconda3/etc/profile.d/conda.sh]')
         setup_program = ask_for_yes_no('Do you want to setup the program path of your conda env for MatterSim and SevenNet? (y/n)', 'y')
         if setup_program == 'y':
             path_to_program['mattersim'] = input('Enter the name of your conda env: [atk_ms7n]')
@@ -62,6 +62,122 @@ def hpc_setup_form():
         
     print(f"HPC cluster information has been saved to {hpc_setup_file}.")
 
+def lammps_rs_form():
+    """
+    Initial setup the LAMMPS runscripts via a form
+    """
+    # Preset for TU Ilmenau HPC cluster
+    from amaceing_toolkit.workflow import ask_for_yes_no
+    tui = ask_for_yes_no('Are you using the HPC cluster of TU Ilmenau? (y/n)', 'n')
+    if tui == 'y':
+        lmp_rs_template_cpu = r"""#!/bin/sh
+#BSUB -J maceL_$$PROJECT_NAME$$
+#BSUB -o %J.out
+#BSUB -e %J.err
+#BSUB -W 120:00
+#BSUB -q BatchXL
+#BSUB -n 16
+#BSUB -R "span[hosts=1]"
+
+INFILE=$$INPUT_FILE$$
+OUTFILE=local-${INFILE}.out
+
+source /home/joha4087/programs/cp2k_easy/source_cp2k_gcc_openmpi_by_jonas
+module load intel/oneapi/mkl
+
+# DEFINE THE NUMBER OF CORES
+export OMP_NUM_THREADS=16
+
+# CPU LAMMPS
+/home/chdr3860/programs/lammps_mace_cpu/lammps/build/lmp -in $INFILE > $OUTFILE
+"""
+        lmp_rs_template_gpu = r"""#!/bin/sh
+
+INFILE=$$INPUT_FILE$$
+OUTFILE=local-${INFILE}.out
+
+source /home/joha4087/programs/cp2k_easy/source_cp2k_gcc_openmpi_by_jonas
+module load intel/oneapi/mkl
+module load cuda/v12.2
+
+# GPU LAMMPS with KOKKOS
+/scratch/joha4087/programs/lammps/lammps_mace_gpunodes/lammps/build-batchgpu/lmp -k on g 1 -sf kk -in $INFILE > $OUTFILE
+"""
+
+        # Write the LAMMPS runscripts template to a file
+        script_directory = os.path.dirname(os.path.abspath(__file__))
+        lmp_rs_template = os.path.join(script_directory, 'lmp_rs_template_cpu.txt')
+        with open(lmp_rs_template, 'w') as f:
+            f.write(lmp_rs_template_cpu)
+        lmp_rs_template = os.path.join(script_directory, 'lmp_rs_template_gpu.txt')
+        with open(lmp_rs_template, 'w') as f:
+            f.write(lmp_rs_template_gpu)
+        print(f"LAMMPS Runscript Template has been saved to lmp_rs_template_cpu.txt and lmp_rs_template_gpu.txt in {script_directory}.")
+        return None
+
+    workload_manager = checking_hpc_setup('cp2k')[1]
+    if workload_manager == 'lsf':
+        wl_setup = """#!/bin/sh
+#BSUB -J maceL_$$PROJECT_NAME$$
+#BSUB -o %J.out
+#BSUB -e %J.err
+#BSUB -W 120:00
+#BSUB -q $$PARTITION$$
+#BSUB -n $$CORES$$
+#BSUB -R "span[hosts=1]""" # LSF config
+    elif workload_manager == 'slurm':
+        wl_setup = """#!/bin/bash
+#
+#SBATCH --job-name maceL_$$PROJECT_NAME$$
+#SBATCH --output output.log
+#SBATCH --nodes 1
+#SBATCH --ntasks-per-node $$CORES$$
+#SBATCH --time 120:00:00
+#SBATCH --partition=$$PARTITION$$""" # SLURM config
+    else:
+        raise ValueError("Unsupported workload manager. Please use 'lsf' or 'slurm'.")
+
+    print("Please use the instructions on the MACE readthedocs to install a LAMMPS version compatible with MACE models.")
+    
+    # Ask for source/module commands
+    source_path = input("Enter the file path to source an environment for LAMMPS/GCC/OpenMPI (e.g. '/home/user/programs/lammps/source_lammps_gcc_openmpi.sh'): ")
+    cuda_command = input("Enter the command to source an environment for CUDA or load the corresponding module (e.g. 'source /home/user/programs/cuda/source_cuda.sh' or module load cuda): ")
+    imkl_command = input("Enter the command to source an environment for Intel MKL or load the corresponding module (e.g. 'source /home/user/programs/intel_mkl/source_intel_mkl.sh' or module load intel/mkl): ")
+
+    # Ask for the path to the LAMMPS executable
+    lmp_path_cpu = input("Enter the path to the LAMMPS executable for CPU (e.g. '/home/user/programs/lammps/lmp'): ")
+    lmp_path_gpu = input("Enter the path to the LAMMPS executable for GPU (e.g. '/home/user/programs/lammps/lmp'): ")
+
+    # Construct the LAMMPS runscript template
+    lmp_rs_template_cpu = wl_setup + r"""
+INFILE=$$INPUT_FILE$$ 
+OUTFILE=local-${INFILE}.out """+f"""
+source {source_path}
+{imkl_command}
+
+export OMP_NUM_THREADS=$$CORES$$
+
+{lmp_path_cpu} -in $INFILE > $OUTFILE """
+    lmp_rs_template_gpu = wl_setup + r"""
+INFILE=$$INPUT_FILE$$ 
+OUTFILE=local-${INFILE}.out """+f"""
+source {source_path}
+{imkl_command}
+{cuda_command}
+
+{lmp_path_gpu} -k on g 1 -sf kk -in $INFILE > $OUTFILE """
+
+    # Write the LAMMPS runscripts template to a file
+    script_directory = os.path.dirname(os.path.abspath(__file__))
+    lmp_rs_template = os.path.join(script_directory, 'lmp_rs_template_cpu.txt')
+    with open(lmp_rs_template, 'w') as f:
+        f.write(lmp_rs_template_cpu)
+    lmp_rs_template = os.path.join(script_directory, 'lmp_rs_template_gpu.txt')
+    with open(lmp_rs_template, 'w') as f:
+        f.write(lmp_rs_template_gpu)
+
+    print(f"LAMMPS Runscript Template has been saved to {lmp_rs_template_cpu} and {lmp_rs_template_gpu} in {script_directory}.")
+    return None
 
 def checking_hpc_setup(program):
     """
@@ -95,6 +211,30 @@ def checking_hpc_setup(program):
 
     return cluster, workload_manager, path_to_program[program], path_to_source_file[program]
 
+def lammps_runscript():
+    """
+    Generate the runscript for LAMMPS
+    """
+    try: 
+        # Get the path of the current script
+        script_directory = os.path.dirname(os.path.abspath(__file__))
+        
+        # Define the path for hpc_setup.txt in the same directory as the script
+        lmp_rs_template = os.path.join(script_directory, 'lmp_rs_template_cpu.txt')
+        if not os.path.isfile(lmp_rs_template):
+            raise FileNotFoundError
+    
+    except FileNotFoundError:
+        print("LAMMPS Runscript Template has not been set up yet.")
+        lammps_rs_form()
+
+    # Load the LAMMPS runscripts template content and return it
+    with open(lmp_rs_template, 'r') as f:
+        lmp_rs_cpu_template = f.read()
+    lmp_rs_template = os.path.join(script_directory, 'lmp_rs_template_gpu.txt')
+    with open(lmp_rs_template, 'r') as f:
+        lmp_rs_gpu_template = f.read()
+    return lmp_rs_cpu_template, lmp_rs_gpu_template
 
 def resource_setup_cp2k(level):
     """

@@ -19,6 +19,7 @@ from .utils import create_dataset
 from .utils import e0_wrapper
 from .utils import frame_counter
 from .utils import extract_frames
+from .mace_lammps_input import lammps_input_writer
 from amaceing_toolkit.runs.run_logger import run_logger1
 from amaceing_toolkit.default_configs import configs_mace
 from amaceing_toolkit.default_configs import e0s_functionals 
@@ -40,18 +41,20 @@ def atk_mace():
         parser = argparse.ArgumentParser(description="Write input file for MACE runs and prepare them: (1) Via a short Q&A: NO arguments needed! (2) Directly from the command line with a dictionary: TWO arguments needed!", formatter_class=argparse.RawTextHelpFormatter)
         parser.add_argument("-rt", "--run_type", type=str, help="[OPTIONAL] Which type of calculation do you want to run? ('GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'FINETUNE', 'FINETUNE_MULTIHEAD','RECALC')", required=False)
         parser.add_argument("-c", "--config", type=str, help=textwrap.dedent("""[OPTIONAL] Dictionary with the configuration:\n 
-        \033[1m GEO_OPT \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n'}"\n
-        \033[1m CELL_OPT \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n'}"\n
-        \033[1m MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
-        \033[1m MULTI_MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : '['NAME/PATH' ...]', 'model_size': '['small/medium/large/none' ...]', 'dispersion_via_mace': '['y/n' ...]', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
+        \033[1m GEO_OPT \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_ase': 'y/n', 'simulation_environment': 'lammps/ase'}"\n
+        \033[1m CELL_OPT \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'max_iter': 'INT', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_ase': 'y/n', 'simulation_environment': 'lammps/ase'}"\n
+        \033[1m MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_ase': 'y/n', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ext_traj': 'y/n', 'simulation_environment': 'lammps/ase'}"\n
+        \033[1m MULTI_MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : '['NAME/PATH' ...]', 'model_size': '['small/medium/large/none' ...]', 'dispersion_via_ase': '['y/n' ...]', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ext_traj': 'y/n', 'simulation_environment': 'lammps/ase'}"\n
         \033[1m FINETUNE \033[0m: "{'project_name' : 'NAME', 'train_file': 'FILE', 'device': 'cuda/cpu', 'stress_weight': 'FLOAT', 'forces_weight': 'FLOAT', 'energy_weight': 'FLOAT', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'prevent_catastrophic_forgetting': 'y/n', 'batch_size': 'INT', 'valid_fraction': 'FLOAT', 'valid_batch_size': 'INT', 'max_num_epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT', 'xc_functional_of_dataset' : 'BLYP/PBE', 'dir': 'PATH'}"\n
         \033[1m FINETUNE_MULTIHEAD \033[0m: "{'project_name' : 'NAME', 'train_file': '['FILE' ...]', 'device': 'cuda/cpu', 'stress_weight': 'FLOAT', 'forces_weight': 'FLOAT', 'energy_weight': 'FLOAT', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'batch_size': 'INT', 'valid_fraction': 'FLOAT', 'valid_batch_size': 'INT', 'max_num_epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT', 'xc_functional_of_dataset' : '[BLYP(_SR)/PBE(_SR) ...]', 'dir': 'PATH'}"\n
-        \033[1m RECALC \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_mace': 'y/n'}'\n" """), required=False)
+        \033[1m RECALC \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_ase': 'y/n', 'simulation_environment': 'lammps/ase'}'\n" """), required=False)
         args = parser.parse_args()
         if args.config != ' ':
             try:
                 if args.run_type == 'MULTI_MD':
                     input_config = string_to_dict_multi(args.config)
+                    if 'simulation_environment' not in input_config:
+                        input_config['simulation_environment'] = 'ase'
                     if np.size(input_config['pbc_list']) == 3: # Keep compatibility with old input files
                         input_config['pbc_list'] = np.array([[input_config['pbc_list'][0], 0, 0], [0, input_config['pbc_list'][1], 0], [0, 0, input_config['pbc_list'][2]]])
                     else:
@@ -67,12 +70,18 @@ def atk_mace():
                         input_config['E0s'][head] = e0_wrapper(e0s_functionals(input_config['xc_functional_of_dataset'][head]), input_config['train_file'][head], input_config['xc_functional_of_dataset'][head])
                 else:
                     input_config = string_to_dict(args.config)
+                    if 'simulation_environment' not in input_config:
+                        input_config['simulation_environment'] = 'ase'
                     if np.size(input_config['pbc_list']) == 3: # Keep compatibility with old input files
                         input_config['pbc_list'] = np.array([[input_config['pbc_list'][0], 0, 0], [0, input_config['pbc_list'][1], 0], [0, 0, input_config['pbc_list'][2]]])
                     else:
                         input_config['pbc_list'] = np.array(input_config['pbc_list']).reshape(3,3)
 
-                write_input(input_config, args.run_type)
+                if args.run_type == 'FINETUNE' or args.run_type == 'FINETUNE_MULTIHEAD' or input_config['simulation_environment'] == 'ase':
+                    write_input(input_config, args.run_type)
+                else:
+                    # If the simulation environment is LAMMPS, write the lammps input file
+                    lammps_input_writer(input_config, args.run_type)
             
                 with open('mace_input.log', 'w') as output:
                     output.write("Input file created with the following configuration:\n") 
@@ -162,6 +171,18 @@ def mace_form():
     else:
         run_type = run_type_dict[run_type]
 
+    # Ask for Simulation environment
+    if run_type in ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC']:
+        sim_env_default_dict = {'ase': 'y', 'lammps': 'n'}
+        sim_env = ask_for_yes_no("Do you want to use the ASE atomic simulation environment (y) or LAMMPS (n)? (y/n)", sim_env_default_dict[mace_config[run_type]['simulation_environment']])
+        if sim_env == 'y': 
+            sim_env = 'ase'
+            print("You chose to create the input file for the ASE atomic simulation environment.")
+        else: 
+            sim_env = 'lammps'
+            mace_config[run_type]['simulation_environment'] = 'lammps'
+            print("You chose to create the input file for LAMMPS.")
+            
     if run_type == 'FINETUNE' or run_type == 'FINETUNE_MULTIHEAD':
         project_name = input("What is the name of the model?: ")
     else:
@@ -253,7 +274,9 @@ def mace_form():
         
         e0_dict = e0_heads
         
-
+    # Clean up the mace_config dictionary for default printing
+    mace_config[run_type].pop('simulation_environment', None)
+    mace_config[run_type].pop('force_file', None)
     print("Default settings for this run type: " + str(mace_config[run_type]))
 
     use_default_input = ask_for_yes_no("Do you want to use the default input settings? (y/n)", mace_config['use_default_input'])
@@ -261,7 +284,7 @@ def mace_form():
         if run_type == 'FINETUNE' or run_type == 'FINETUNE_MULTIHEAD':
             input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_mat, project_name, path_to_training_file, e0_dict)
         else:
-            input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_mat, project_name)
+            input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_mat, project_name, sim_env=sim_env)
     else:
         small_changes = ask_for_yes_no("Do you want to make small changes to the default settings? (y/n)", "n")
         if small_changes == 'y':
@@ -298,13 +321,47 @@ def mace_form():
             if run_type == 'FINETUNE' or run_type == 'FINETUNE_MULTIHEAD':
                 input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_mat, project_name, path_to_training_file, e0_dict)
             else:
-                input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_mat, project_name)
+                input_config = config_wrapper(True, run_type, mace_config, coord_file, pbc_mat, project_name, sim_env=sim_env)
 
         else: 
             if run_type == 'FINETUNE' or run_type == 'FINETUNE_MULTIHEAD':
                 input_config = config_wrapper(False, run_type, mace_config, coord_file, pbc_mat, project_name, path_to_training_file, e0_dict)
             else:
-                input_config = config_wrapper(False, run_type, mace_config, coord_file, pbc_mat, project_name)
+                input_config = config_wrapper(False, run_type, mace_config, coord_file, pbc_mat, project_name, sim_env=sim_env)
+
+
+    # If the simulation environment is LAMMPS call the lammps input writer and exit afterwards
+    if run_type in ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'] and sim_env == 'lammps':
+        print("WARNING: The lammps input writer is still in development.")
+        if run_type == 'MULTI_MD':
+            counter = 0
+            for i in range(len(input_config['foundation_model'])):
+                input_config_tmp = input_config.copy()
+                input_config_tmp['foundation_model'] = input_config['foundation_model'][i]
+                input_config_tmp['model_size'] = input_config['model_size'][i]
+                input_config_tmp['dispersion_via_ase'] = input_config['dispersion_via_ase'][i]
+                # Create a directory for each run
+                os.makedirs(f"{input_config['project_name']}_run-{counter+1}", exist_ok=True)
+                os.chdir(f"{input_config['project_name']}_run-{counter+1}")
+                if "/" in input_config_tmp['foundation_model']: 
+                    input_config_tmp['foundation_model'] = f"../{input_config_tmp['foundation_model']}"
+                input_config_tmp['coord_file'] = f"../{input_config_tmp['coord_file']}"
+                lammps_input_writer(input_config_tmp, "MD")
+                write_log(input_config_tmp)
+                run_logger1(run_type, os.getcwd())
+                os.chdir('..')
+                counter += 1
+            sys.exit()
+
+        lammps_input_writer(input_config, run_type)
+
+        # Write the configuration to a log file
+        write_log(input_config)
+
+        # Log the run
+        run_logger1(run_type,os.getcwd())
+
+        sys.exit()
 
     if run_type == 'RECALC':
         
@@ -353,7 +410,7 @@ def mace_form():
     #except KeyError:
     #    mace_citations()
 
-def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_name, path_to_training_file="", e0_dict={}):
+def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_name, path_to_training_file="", e0_dict={}, sim_env='ase'):
 
     """
     Wrapper function to create the input file
@@ -367,7 +424,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                             'pbc_list': pbc_mat, 
                             'foundation_model': mace_config[run_type]['foundation_model'],
                             'model_size': mace_config[run_type]['model_size'],
-                            'dispersion_via_mace': mace_config[run_type]['dispersion_via_mace'],
+                            'dispersion_via_ase': mace_config[run_type]['dispersion_via_ase'],
                             'max_iter': mace_config[run_type]['max_iter']}
         elif run_type == 'CELL_OPT':  
             input_config = {'project_name': project_name, 
@@ -375,7 +432,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                             'pbc_list': pbc_mat, 
                             'foundation_model': mace_config[run_type]['foundation_model'],
                             'model_size': mace_config[run_type]['model_size'],
-                            'dispersion_via_mace': mace_config[run_type]['dispersion_via_mace'],
+                            'dispersion_via_ase': mace_config[run_type]['dispersion_via_ase'],
                             'max_iter': mace_config[run_type]['max_iter']}
         elif run_type == 'MD': 
             input_config = {'project_name': project_name, 
@@ -383,7 +440,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                             'pbc_list': pbc_mat,
                             'foundation_model': mace_config[run_type]['foundation_model'],
                             'model_size': mace_config[run_type]['model_size'],
-                            'dispersion_via_mace': mace_config[run_type]['dispersion_via_mace'],
+                            'dispersion_via_ase': mace_config[run_type]['dispersion_via_ase'],
                             'temperature': mace_config[run_type]['temperature'],
                             'pressure': mace_config[run_type]['pressure'],
                             'thermostat': mace_config[run_type]['thermostat'],
@@ -391,14 +448,14 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                             'write_interval': mace_config[run_type]['write_interval'],
                             'timestep': mace_config[run_type]['timestep'],
                             'log_interval': mace_config[run_type]['log_interval'],
-                            'print_ase_traj': mace_config[run_type]['print_ase_traj']}
+                            'print_ext_traj': mace_config[run_type]['print_ext_traj']}
         elif run_type == 'MULTI_MD': 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_mat,
                             'foundation_model': mace_config[run_type]['foundation_model'], # List
                             'model_size': mace_config[run_type]['model_size'], # List
-                            'dispersion_via_mace': mace_config[run_type]['dispersion_via_mace'], # List
+                            'dispersion_via_ase': mace_config[run_type]['dispersion_via_ase'], # List
                             'temperature': mace_config[run_type]['temperature'],
                             'pressure': mace_config[run_type]['pressure'],
                             'thermostat': mace_config[run_type]['thermostat'],
@@ -406,7 +463,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                             'write_interval': mace_config[run_type]['write_interval'],
                             'timestep': mace_config[run_type]['timestep'],
                             'log_interval': mace_config[run_type]['log_interval'],
-                            'print_ase_traj': mace_config[run_type]['print_ase_traj']}
+                            'print_ext_traj': mace_config[run_type]['print_ext_traj']}
         elif run_type == 'FINETUNE':
             input_config = {'project_name': project_name,
                             'train_file': path_to_training_file, 
@@ -448,14 +505,17 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                             'pbc_list': pbc_mat,
                             'foundation_model': mace_config[run_type]['foundation_model'],
                             'model_size': mace_config[run_type]['model_size'],
-                            'dispersion_via_mace': mace_config[run_type]['dispersion_via_mace']}
+                            'dispersion_via_ase': mace_config[run_type]['dispersion_via_ase']}
             
     # Ask user for input data
     else:
         if run_type == 'GEO_OPT':
             
             foundation_model, model_size = ask_for_foundational_model(mace_config, run_type)
-            dispersion_via_mace = ask_for_yes_no("Do you want to include dispersion via MACE? (y/n)", mace_config[run_type]['dispersion_via_mace'])
+            if sim_env == 'ase':
+                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+            else:
+                dispersion_via_ase = 'placeholder'
             max_iter = ask_for_int("What is the maximum number of iterations?", mace_config['GEO_OPT']['max_iter'])
 
             input_config = {'project_name': project_name, 
@@ -463,13 +523,16 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                             'pbc_list': pbc_mat, 
                             'foundation_model': foundation_model,
                             'model_size': model_size,
-                            'dispersion_via_mace': dispersion_via_mace,
+                            'dispersion_via_ase': dispersion_via_ase,
                             'max_iter': max_iter}
 
         elif run_type == 'CELL_OPT':  
             
             foundation_model, model_size = ask_for_foundational_model(mace_config, run_type)
-            dispersion_via_mace = ask_for_yes_no("Do you want to include dispersion via MACE? (y/n)", mace_config[run_type]['dispersion_via_mace'])
+            if sim_env == 'ase':
+                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+            else:
+                dispersion_via_ase = 'placeholder'
             max_iter = ask_for_int("What is the maximum number of iterations?", mace_config['GEO_OPT']['max_iter'])
 
             input_config = {'project_name': project_name, 
@@ -477,13 +540,16 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                             'pbc_list': pbc_mat, 
                             'foundation_model': foundation_model,
                             'model_size': model_size,
-                            'dispersion_via_mace': dispersion_via_mace,
+                            'dispersion_via_ase': dispersion_via_ase,
                             'max_iter': max_iter}
             
         elif run_type == 'MD': 
             
             foundation_model, model_size = ask_for_foundational_model(mace_config, run_type)
-            dispersion_via_mace = ask_for_yes_no("Do you want to include dispersion via MACE? (y/n)", mace_config[run_type]['dispersion_via_mace'])
+            if sim_env == 'ase':
+                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+            else:
+                dispersion_via_ase = 'placeholder'
             thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mace_config[run_type]['thermostat'])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
@@ -496,14 +562,14 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
             write_interval = ask_for_int("How often do you want to write the trajectory?", mace_config[run_type]['write_interval'])
             timestep = ask_for_float_int("What is the timestep in fs?", mace_config[run_type]['timestep'])
             log_interval = ask_for_int("How often do you want to write the log file?", mace_config[run_type]['log_interval'])
-            print_ase_traj = ask_for_yes_no("Do you want to print the ASE trajectory? (y/n)", mace_config[run_type]['print_ase_traj'])
+            print_ext_traj = ask_for_yes_no("Do you want to print the extended trajectory (incl. forces)? (y/n)", mace_config[run_type]['print_ext_traj'])
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_mat,
                             'foundation_model': foundation_model,
                             'model_size': model_size,
-                            'dispersion_via_mace': dispersion_via_mace,
+                            'dispersion_via_ase': dispersion_via_ase,
                             'temperature': temperature,
                             'pressure': pressure,
                             'thermostat': thermostat,
@@ -511,7 +577,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                             'write_interval': write_interval,
                             'timestep': timestep,
                             'log_interval': log_interval,
-                            'print_ase_traj': print_ase_traj}
+                            'print_ext_traj': print_ext_traj}
 
             
         elif run_type == 'MULTI_MD': 
@@ -519,13 +585,16 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
             no_runs = ask_for_int("How many MD runs do you want to perform?")
             foundation_model = []
             model_size = []
-            dispersion_via_mace = []
-            for i in range(no_runs):
-                foundation_model_tmp, model_size_tmp = ask_for_foundational_model(mace_config, run_type)
-                dispersion_via_mace_tmp = ask_for_yes_no("Do you want to include dispersion via MACE? (y/n)", mace_config[run_type]['dispersion_via_mace'])
-                foundation_model.append(foundation_model_tmp)
-                model_size.append(model_size_tmp)
-                dispersion_via_mace.append(dispersion_via_mace_tmp)
+            if sim_env == 'ase':
+                dispersion_via_ase = []
+                for i in range(no_runs):
+                    foundation_model_tmp, model_size_tmp = ask_for_foundational_model(mace_config, run_type)
+                    dispersion_via_ase_tmp = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+                    foundation_model.append(foundation_model_tmp)
+                    model_size.append(model_size_tmp)
+                    dispersion_via_ase.append(dispersion_via_ase_tmp)
+            else:
+                dispersion_via_ase = 'placeholder'
             thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mace_config[run_type]['thermostat'])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
@@ -538,14 +607,17 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
             write_interval = ask_for_int("How often do you want to write the trajectory?", mace_config[run_type]['write_interval'])
             timestep = ask_for_float_int("What is the timestep in fs?", mace_config[run_type]['timestep'])
             log_interval = ask_for_int("How often do you want to write the log file?", mace_config[run_type]['log_interval'])
-            print_ase_traj = ask_for_yes_no("Do you want to print the ASE trajectory? (y/n)", mace_config[run_type]['print_ase_traj'])
+            if sim_env == 'ase':
+                print_ext_traj = ask_for_yes_no("Do you want to print the extended trajectory (incl. forces)? (y/n)", mace_config[run_type]['print_ext_traj'])
+            else: 
+                print_ext_traj = ask_for_yes_no("Do you want to print the forces? (y/n)", mace_config[run_type]['print_ext_traj'])
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_mat,
                             'foundation_model': foundation_model, # List
                             'model_size': model_size, # List
-                            'dispersion_via_mace': dispersion_via_mace, # List
+                            'dispersion_via_ase': dispersion_via_ase, # List
                             'temperature': temperature,
                             'pressure': pressure,
                             'thermostat': thermostat,
@@ -553,7 +625,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                             'write_interval': write_interval,
                             'timestep': timestep,
                             'log_interval': log_interval,
-                            'print_ase_traj': print_ase_traj}
+                            'print_ext_traj': print_ext_traj}
 
 
         elif run_type == 'FINETUNE':
@@ -624,14 +696,17 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
         elif run_type == 'RECALC':
             
             foundation_model, model_size = ask_for_foundational_model(mace_config, run_type)
-            dispersion_via_mace = ask_for_yes_no("Do you want to include dispersion via MACE? (y/n)", mace_config[run_type]['dispersion_via_mace'])
+            if sim_env == 'ase':
+                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+            else:
+                dispersion_via_ase = 'placeholder'
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_mat,
                             'foundation_model': foundation_model,
                             'model_size': model_size,
-                            'dispersion_via_mace': dispersion_via_mace}
+                            'dispersion_via_ase': dispersion_via_ase}
     return input_config
 
 
@@ -654,7 +729,7 @@ from ase.optimize import BFGS
 from ase.io import read
 
 # Load the foundation model
-mace_calc = {foundation_model_path(input_config['foundation_model'], input_config['dispersion_via_mace'], input_config['model_size'])} 
+mace_calc = {foundation_model_path(input_config['foundation_model'], input_config['dispersion_via_ase'], input_config['model_size'])} 
 print("Loading of MACE model completed: {input_config['foundation_model']} model {input_config['model_size']}")
 
 # Load the coordinates
@@ -701,7 +776,7 @@ from ase.io import read
 from ase.constraints import ExpCellFilter, StrainFilter
 
 # Load the foundation model
-mace_calc = {foundation_model_path(input_config['foundation_model'], input_config['dispersion_via_mace'], input_config['model_size'])} 
+mace_calc = {foundation_model_path(input_config['foundation_model'], input_config['dispersion_via_ase'], input_config['model_size'])} 
 print("Loading of MACE model completed: {input_config['foundation_model']} model {input_config['model_size']}")
 
 # Load the coordinates
@@ -763,7 +838,7 @@ from ase.md import MDLogger
 {thermostat_code(input_config)[0]}
 
 # Load the foundation model
-mace_calc = {foundation_model_path(input_config['foundation_model'], input_config['dispersion_via_mace'], input_config['model_size'])}
+mace_calc = {foundation_model_path(input_config['foundation_model'], input_config['dispersion_via_ase'], input_config['model_size'])}
 print("Loading of MACE model completed: {input_config['foundation_model']} model {input_config['model_size']}")
 
 # Load the coordinates (take care if it is the first start or a restart)
@@ -915,7 +990,7 @@ from ase.io import write
 from ase.io import read
 
 # Load the foundation model
-mace_calc = {foundation_model_path(input_config['foundation_model'], input_config['dispersion_via_mace'], input_config['model_size'])}
+mace_calc = {foundation_model_path(input_config['foundation_model'], input_config['dispersion_via_ase'], input_config['model_size'])}
 print("Loading of MACE model completed: {input_config['foundation_model']} model {input_config['model_size']}")
 
 # Load the reference trajectory
@@ -992,29 +1067,29 @@ def foundation_model_code(foundation_model):
     else:
         return "from mace.calculators import mace_mp" # to do check if right?
 
-def foundation_model_path(foundation_model, dispersion_via_mace, model_size = ""):
+def foundation_model_path(foundation_model, dispersion_via_ase, model_size = ""):
     """
     Function to return the path to the foundation model
     """
     if foundation_model == 'mace_off':
         if model_size == "" or model_size not in ['small', 'medium', 'large']:
             model_size = 'small'
-        return f"mace_off(model='{model_size}' {dispersion_corr(dispersion_via_mace)} {is_cuequivariance_installed()})"
+        return f"mace_off(model='{model_size}' {dispersion_corr(dispersion_via_ase)} {is_cuequivariance_installed()})"
     elif foundation_model == 'mace_anicc':
-        return f"mace_anicc( {dispersion_corr(dispersion_via_mace)} {is_cuequivariance_installed()})"
+        return f"mace_anicc( {dispersion_corr(dispersion_via_ase)} {is_cuequivariance_installed()})"
     elif foundation_model == 'mace_mp':
         if model_size == "" or model_size not in ['small', 'medium', 'large']:
             model_size = 'small'
-        return f"mace_mp(model='{model_size}' {dispersion_corr(dispersion_via_mace)} {is_cuequivariance_installed()})" 
+        return f"mace_mp(model='{model_size}' {dispersion_corr(dispersion_via_ase)} {is_cuequivariance_installed()})" 
     else:
         # Check if the foundation_model is a file path
         if np.logical_and(os.path.isfile(foundation_model),foundation_model.endswith('.model')):
-            return f"mace_mp(model='{foundation_model}' {dispersion_corr(dispersion_via_mace)})"
+            return f"mace_mp(model='{foundation_model}' {dispersion_corr(dispersion_via_ase)})"
         else: 
             print("Here are the available models (previously logged models):")
             show_models()
             path_to_custom_model = get_model(ask_for_int("What is the number of the model you want to use? ", 1))
-            return f"mace_mp(model='{path_to_custom_model}' {dispersion_corr(dispersion_via_mace)})"
+            return f"mace_mp(model='{path_to_custom_model}' {dispersion_corr(dispersion_via_ase)})"
 
 def foundation_model_finetune_config(foundation_model, model_size = ""):
     """
@@ -1035,11 +1110,11 @@ def foundation_model_finetune_config(foundation_model, model_size = ""):
         return foundation_model
 
 
-def dispersion_corr(dispersion_via_mace):
+def dispersion_corr(dispersion_via_ase):
     """
     Function to return the dispersion correction
     """
-    if dispersion_via_mace == 'y':
+    if dispersion_via_ase == 'y':
         return ", dispersion = True"
     else:
         return ", dispersion = False"
@@ -1054,7 +1129,7 @@ def write_traj_file(input_config):
     """
     Function to write the trajectory file
     """
-    if input_config['print_ase_traj'] == 'y':
+    if input_config['print_ext_traj'] == 'y':
         return f"""# Trajectory ASE format: including positions, forces and velocities
 traj = Trajectory('{input_config['project_name']}.traj', 'a', atoms)
 dyn.attach(traj.write, interval={int(input_config['write_interval'])})
@@ -1110,12 +1185,21 @@ def ask_for_foundational_model(mace_config, run_type):
         foundation_model = mace_config[run_type]['foundation_model']
 
     if foundation_model in ['mace_off', 'mace_mp']:
-        while model_size not in ['small', 'medium', 'large', '']:
-            model_size = input("What is the model size? ('small', 'medium', 'large'): ")
-            if model_size not in ['small', 'medium', 'large', '']:
-                print("Invalid input! Please enter 'small', 'medium', or 'large'.")
-        if model_size == '':
-            model_size = mace_config[run_type]['model_size']
+        if run_type == 'FINETUNE':
+            while model_size not in ['small', 'medium', 'large', '']:
+                model_size = input("What is the model size? ('small', 'medium', 'large'): ")
+                if model_size not in ['small', 'medium', 'large', '']:
+                    print("Invalid input! Please enter 'small', 'medium', or 'large'.")
+            if model_size == '':
+                model_size = mace_config[run_type]['model_size']
+        else:
+            while model_size not in ['small', 'medium', 'medium-mpa-0', 'large', '']:
+                model_size = input("What is the model size? ('small', 'medium', 'medium-mpa-0' (new: Materials Projects + Alexandria), 'large'): ")
+                if model_size not in ['small', 'medium', 'medium-mpa-0', 'large', '']:
+                    print("Invalid input! Please enter 'small', 'medium', 'medium-mpa-0', or 'large'.")
+            if model_size == '':
+                model_size = mace_config[run_type]['model_size']
+
     
     return foundation_model, model_size
 
@@ -1191,7 +1275,7 @@ def write_input(input_config, run_type):
             input_config_tmp['coord_file'] = f"../{input_config['coord_file']}"
             input_config_tmp['foundation_model'] = input_config['foundation_model'][i]
             input_config_tmp['model_size'] = input_config['model_size'][i]
-            input_config_tmp['dispersion_via_mace'] = input_config['dispersion_via_mace'][i]
+            input_config_tmp['dispersion_via_ase'] = input_config['dispersion_via_ase'][i]
 
             input_text = create_input(input_config_tmp, 'MD')
             file_name = f'md_mace.py'
@@ -1288,7 +1372,7 @@ def write_log(input_config):
                 input_config_tmp = input_config.copy()
                 input_config_tmp['foundation_model'] = input_config['foundation_model'][i]
                 input_config_tmp['model_size'] = input_config['model_size'][i]
-                input_config_tmp['dispersion_via_mace'] = input_config['dispersion_via_mace'][i]
+                input_config_tmp['dispersion_via_ase'] = input_config['dispersion_via_ase'][i]
                 input_config_tmp['pbc_list'] = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,2]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
                 output.write(f'"{input_config_tmp}"')  
     
@@ -1310,11 +1394,11 @@ def write_log(input_config):
             model_size_string = f"'[{model_size_string}]'"
             input_config['model_size'] = model_size_string
         try:
-            if type(input_config['dispersion_via_mace']) == list:
+            if type(input_config['dispersion_via_ase']) == list:
                 # build a string with the list elements separated by a space
-                dispersion_string = ' '.join(f"'{item}'" for item in input_config['dispersion_via_mace'])
+                dispersion_string = ' '.join(f"'{item}'" for item in input_config['dispersion_via_ase'])
                 dispersion_string = f"'[{dispersion_string}]'"
-                input_config['dispersion_via_mace'] = dispersion_string
+                input_config['dispersion_via_ase'] = dispersion_string
         except:
             pass
 

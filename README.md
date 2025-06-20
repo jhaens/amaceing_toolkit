@@ -192,7 +192,7 @@ The main functions available (until now) are the creation of MACE, MatterSim (, 
 ```bash
 amaceing_cp2k # Starts Q&A session for cp2k input creation
 
-amaceing_mace # Starts Q&A session for mace-torch input creation
+amaceing_mace # Starts Q&A session for mace-torch input creation (ASE and LAMMPS)
 
 amaceing_mattersim # Starts Q&A session for mattersim input creation
 
@@ -345,6 +345,10 @@ Not implemented yet, but planned:
 - [x] SevenNet Fine-tuning
 - [x] More examples
 - [ ] Error evaluation provides the part of the the reference trajectory which is not well predicted by the model
+- [ ] Adding the Possibility of REFTRAJ-Run within amaceing_cp2k using the CP2K restart file
+- [x] Adding newer MACE Foundation Models to choose from
+- [x] Adding the possibility to create LAMMPS input files for MACE
+- [ ] Fasten the dataset creator for Fine-tuning
 - [ ] Web-API to monitor the runs
 - [ ] Support of other workload managers (Contributions are welcome!)
 - [ ] ...

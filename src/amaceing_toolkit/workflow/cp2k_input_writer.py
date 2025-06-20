@@ -331,6 +331,8 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
 
             if equi_prod == 'y':
                 equi_nsteps = ask_for_int("What is the number of steps for the equilibration run?", cp2k_config['MD']['equilibration_steps'])
+            else:
+                equi_nsteps = 999 # Placeholder
             input_config = {'project_name': project_name,
                             'coord_file': coord_file,
                             'pbc_list': pbc_mat,
