@@ -333,6 +333,8 @@ def mace_form():
     # If the simulation environment is LAMMPS call the lammps input writer and exit afterwards
     if run_type in ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'] and sim_env == 'lammps':
         print("WARNING: The lammps input writer is still in development.")
+        if input_config_tmp['dispersion_via_ase'] == 'y':
+            print("WARNING: The dispersion correction via LAMMPS is not implemented yet. Please use the ASE atomic simulation environment for running dispersion corrected runs.")
         if run_type == 'MULTI_MD':
             counter = 0
             for i in range(len(input_config['foundation_model'])):
@@ -513,7 +515,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
             
             foundation_model, model_size = ask_for_foundational_model(mace_config, run_type)
             if sim_env == 'ase':
-                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", mace_config[run_type]['dispersion_via_ase'])
             else:
                 dispersion_via_ase = 'placeholder'
             max_iter = ask_for_int("What is the maximum number of iterations?", mace_config['GEO_OPT']['max_iter'])
@@ -530,7 +532,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
             
             foundation_model, model_size = ask_for_foundational_model(mace_config, run_type)
             if sim_env == 'ase':
-                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", mace_config[run_type]['dispersion_via_ase'])
             else:
                 dispersion_via_ase = 'placeholder'
             max_iter = ask_for_int("What is the maximum number of iterations?", mace_config['GEO_OPT']['max_iter'])
@@ -547,7 +549,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
             
             foundation_model, model_size = ask_for_foundational_model(mace_config, run_type)
             if sim_env == 'ase':
-                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", mace_config[run_type]['dispersion_via_ase'])
             else:
                 dispersion_via_ase = 'placeholder'
             thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mace_config[run_type]['thermostat'])
@@ -589,7 +591,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                 dispersion_via_ase = []
                 for i in range(no_runs):
                     foundation_model_tmp, model_size_tmp = ask_for_foundational_model(mace_config, run_type)
-                    dispersion_via_ase_tmp = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+                    dispersion_via_ase_tmp = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", mace_config[run_type]['dispersion_via_ase'])
                     foundation_model.append(foundation_model_tmp)
                     model_size.append(model_size_tmp)
                     dispersion_via_ase.append(dispersion_via_ase_tmp)
@@ -697,7 +699,7 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
             
             foundation_model, model_size = ask_for_foundational_model(mace_config, run_type)
             if sim_env == 'ase':
-                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+                dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", mace_config[run_type]['dispersion_via_ase'])
             else:
                 dispersion_via_ase = 'placeholder'
 

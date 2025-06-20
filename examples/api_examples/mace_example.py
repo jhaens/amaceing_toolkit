@@ -20,8 +20,9 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],  # List directly, API handles formatting
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_mace': 'n',
-        'max_iter': 10
+        'dispersion_via_ase': 'n',
+        'max_iter': 10,
+        'simulation_environment': 'ase'
     }
     mace_api(run_type='GEO_OPT', config=geo_opt_config)
     
@@ -37,8 +38,9 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_mace': 'n',
-        'max_iter': 10
+        'dispersion_via_ase': 'n',
+        'max_iter': 10,
+        'simulation_environment': 'ase'
     }
     mace_api(run_type='CELL_OPT', config=cell_opt_config)
     
@@ -54,7 +56,7 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_mace': 'n',
+        'dispersion_via_ase': 'n',
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -62,7 +64,8 @@ def main():
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 10,
-        'print_ase_traj': 'y'
+        'print_ext_traj': 'y',
+        'simulation_environment': 'ase'
     }
     mace_api(run_type='MD', config=md_config)
     
@@ -79,7 +82,7 @@ def main():
         # Lists can be passed directly as Python lists
         'foundation_model': ['mace_mp', 'mace_mp', 'mace_off'],
         'model_size': ['small', 'medium', 'small'],
-        'dispersion_via_mace': ['n', 'n', 'n'],
+        'dispersion_via_ase': ['n', 'n', 'n'],
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -87,7 +90,8 @@ def main():
         'write_interval': 1,
         'timestep': 0.5,
         'log_interval': 1,
-        'print_ase_traj': 'y'
+        'print_ext_traj': 'y',
+        'simulation_environment': 'ase'
     }
     mace_api(run_type='MULTI_MD', config=multi_md_config)
     
@@ -156,7 +160,8 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_mace': 'n'
+        'dispersion_via_ase': 'n',
+        'simulation_environment': 'ase'
     }
     mace_api(run_type='RECALC', config=recalc_config)
     

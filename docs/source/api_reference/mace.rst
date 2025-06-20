@@ -36,7 +36,7 @@ Function Reference
            'timestep': 0.5,
            'log_interval': 100,
            'print_ext_traj': 'y',
-            'simulation_environment': 'ase'
+           'simulation_environment': 'ase'
        }
        
        # Create a molecular dynamics input file

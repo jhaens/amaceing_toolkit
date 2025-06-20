@@ -8,7 +8,7 @@ def configs_mace(config_name):
       'run_type': 'MD',
       'use_default_input': 'y',
       'MD' : {
-        'simulation_environment': 'lammps',
+        'simulation_environment': 'ase',
         'foundation_model': 'mace_mp',
         'model_size': 'small',
         'dispersion_via_ase': 'n',
@@ -22,7 +22,7 @@ def configs_mace(config_name):
         'print_ext_traj': 'y'
       },
       'MULTI_MD' : {
-        'simulation_environment': 'lammps',
+        'simulation_environment': 'ase',
         'foundation_model': ['mace_mp', 'mace_mp', 'mace_off'],
         'model_size': ['small', 'medium', 'small'],
         'dispersion_via_ase': ['n', 'n', 'n'],

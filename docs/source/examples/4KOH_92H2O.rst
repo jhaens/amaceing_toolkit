@@ -170,8 +170,9 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: mace_mp
     # - Model size: small
-    # - Use dispersion via MACE: n
+    # - Use dispersion via ASE: n
     # - Max iterations: 10
+    # - Simulation environment: ASE
     cd ../..
 
     # For molecular dynamics
@@ -185,7 +186,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: mace_mp
     # - Model size: small
-    # - Use dispersion via MACE: n
+    # - Use dispersion via ASE: n
     # - Temperature: 300
     # - Pressure: 1.0
     # - Thermostat: Langevin
@@ -193,7 +194,8 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Write interval: 10
     # - Timestep: 0.5
     # - Log interval: 10
-    # - Print ASE trajectory: y
+    # - Print ext trajectory: y
+    # - Simulation environment: ASE
     cd ../..
 
     # For multi-configuration molecular dynamics
@@ -209,15 +211,15 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - For Configuration 1:
     #   - Foundation model: mace_mp
     #   - Model size: small
-    #   - Use dispersion via MACE: n
+    #   - Use dispersion via ASE: n
     # - For Configuration 2:
     #   - Foundation model: mace_mp
     #   - Model size: medium
-    #   - Use dispersion via MACE: n
+    #   - Use dispersion via ASE: n
     # - For Configuration 3:
     #   - Foundation model: mace_off
     #   - Model size: small
-    #   - Use dispersion via MACE: n
+    #   - Use dispersion via ASE: n
     # - Temperature: 300
     # - Pressure: 1.0
     # - Thermostat: Langevin
@@ -225,7 +227,8 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Write interval: 1
     # - Timestep: 0.5
     # - Log interval: 1
-    # - Print ASE trajectory: y
+    # - Print ext trajectory: y
+    # - Simulation environment: ASE
     cd ../..
 
     # For fine-tuning
@@ -264,7 +267,8 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: mace_mp
     # - Model size: small
-    # - Use dispersion via MACE: n
+    # - Use dispersion via ASE: n
+    # - Simulation environment: ASE
     cd ../..
 
 After running these examples, each calculation will generate appropriate Python scripts, configuration files, and runscripts. The file structure will include:
@@ -338,7 +342,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Write interval: 10
     # - Timestep: 0.5
     # - Log interval: 100
-    # - Print ASE trajectory: y
+    # - Print ext trajectory: y
     cd ../..
 
     # For multi-configuration molecular dynamics
@@ -362,7 +366,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Write interval: 10
     # - Timestep: 0.5
     # - Log interval: 100
-    # - Print ASE trajectory: y
+    # - Print ext trajectory: y
     cd ../..
 
     # For fine-tuning
@@ -462,7 +466,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Write interval: 10
     # - Timestep: 0.5
     # - Log interval: 10
-    # - Print ASE trajectory: y
+    # - Print ext trajectory: y
     cd ../..
 
     # For multi-configuration molecular dynamics
@@ -490,7 +494,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Write interval: 10
     # - Timestep: 0.5
     # - Log interval: 10
-    # - Print ASE trajectory: y
+    # - Print ext trajectory: y
     cd ../..
 
     # For fine-tuning

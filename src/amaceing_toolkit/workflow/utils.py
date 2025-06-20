@@ -904,7 +904,7 @@ def setup_bechmark_dir(coord_data, pbc_data, nsteps, mace_model, mattersim_model
 
         if nn == 'mace':
             
-            command = r"""amaceing_mace --run_type="MD" --config="{ """+f"""'project_name': 'mace_benchmark', 'coord_file': '../{coord_data}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mace_model[0]}', 'model_size': '{mace_model[1]}', 'dispersion_via_mace': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '{nsteps}', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 10, 'print_ase_traj': 'y'"""+r"""}" """
+            command = r"""amaceing_mace --run_type="MD" --config="{ """+f"""'project_name': 'mace_benchmark', 'coord_file': '../{coord_data}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mace_model[0]}', 'model_size': '{mace_model[1]}', 'dispersion_via_ase': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '{nsteps}', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 10, 'print_ext_traj': 'y', 'simulation_environment': 'ase'"""+r"""}" """
 
             print("Creating directory for MACE benchmark: including the MACE input file and runscript.")
         
@@ -945,7 +945,7 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
 
         if nn == 'mace':
 
-            command = r"""amaceing_mace --run_type="RECALC" --config="{ """+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mace_model[0]}', 'model_size': '{mace_model[1]}', 'dispersion_via_mace': 'n'"""+r"""}" """
+            command = r"""amaceing_mace --run_type="RECALC" --config="{ """+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mace_model[0]}', 'model_size': '{mace_model[1]}', 'dispersion_via_ase': 'n', 'simulation_environment': 'ase'"""+r"""}" """
             
             print("Creating directory for MACE benchmark and recalcing the reference trajectory...")
         
