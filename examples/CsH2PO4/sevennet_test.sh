@@ -2,8 +2,8 @@
 echo ============================
 echo Testing amaceing_sevennet
 echo ============================
-mkdir -p mattersim
-cd mattersim
+mkdir -p sevennet
+cd sevennet
 echo ----------------------------
 echo Testing input file generation: MD 
 mkdir -p MD
