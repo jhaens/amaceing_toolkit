@@ -18,6 +18,7 @@ from .utils import ask_for_non_cubic_pbc
 from .utils import frame_counter
 from .utils import extract_frames
 from .utils import xyz_reader
+from .sevennet_lammps_input import lammps_input_writer
 from amaceing_toolkit.runs.run_logger import run_logger1
 from amaceing_toolkit.default_configs import configs_sevennet
 from amaceing_toolkit.default_configs import mattersim_runscript
@@ -37,15 +38,17 @@ def atk_sevennet():
         parser = argparse.ArgumentParser(description="Write input file for SevenNet runs and prepare them: (1) Via a short Q&A: NO arguments needed! (2) Directly from the command line with a dictionary: TWO arguments needed!", formatter_class=argparse.RawTextHelpFormatter)
         parser.add_argument("-rt", "--run_type", type=str, help="[OPTIONAL] Which type of calculation do you want to run? ('MD', 'MULTI_MD', 'FINETUNE', 'RECALC')", required=False)
         parser.add_argument("-c", "--config", type=str, help=textwrap.dedent("""[OPTIONAL] Dictionary with the configuration:\n 
-        \033[1m MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : '7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH', 'modal': 'None/mpa/oma24' 'dispersion_via_ase': 'y/n', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
-        \033[1m MULTI_MD \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : '['7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH' ...]', 'modal': ['None/mpa/oma24' ...]', 'dispersion_via_ase': '['y/n' ...]', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ase_traj': 'y/n'}"\n
+        \033[1m MD \033[0m: "{'project_name' : 'NAME', 'coord_file' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : '7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH', 'modal': 'None/mpa/omat24' 'dispersion_via_simenv': 'y/n', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ext_traj': 'y/n', 'simulation_environment': 'lammps/ase'}"\n
+        \033[1m MULTI_MD \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'foundation_model' : '['7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH' ...]', 'modal': ['None/mpa/omat24' ...]', 'dispersion_via_simenv': '['y/n' ...]', 'temperature': 'FLOAT', 'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT','pressure': 'FLOAT/None', 'nsteps': 'INT', 'timestep': 'FLOAT', 'write_interval': 'INT', 'log_interval': 'INT', 'print_ext_traj': 'y/n', 'simulation_environment': 'lammps/ase'}"\n
         \033[1m FINETUNE \033[0m: "{'project_name': 'NAME', 'foundation_model': '7net-0', 'train_data_path': 'FILE', 'batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT'}"\n]
-        \033[1m RECALC \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', foundation_model' : '7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH', 'modal': 'None/mpa/oma24', 'dispersion_via_ase': 'y/n'}'\n" """), required=False)
+        \033[1m RECALC \033[0m: "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', foundation_model' : '7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH', 'modal': 'None/mpa/omat24', 'dispersion_via_simenv': 'y/n', 'simulation_environment': 'lammps/ase'}'\n" """), required=False)
         args = parser.parse_args()
         if args.config != ' ':
             try:
                 if args.run_type == 'MULTI_MD':
                     input_config = string_to_dict_multi(args.config)
+                    if 'simulation_environment' not in input_config:
+                        input_config['simulation_environment'] = 'ase'
                     if np.size(input_config['pbc_list']) == 3: # Keep compatibility with old input files
                         input_config['pbc_list'] = np.array([[input_config['pbc_list'][0], 0, 0], [0, input_config['pbc_list'][1], 0], [0, 0, input_config['pbc_list'][2]]])
                     else:
@@ -54,17 +57,23 @@ def atk_sevennet():
                 else:
                     input_config = string_to_dict(args.config)
                     if args.run_type != 'FINETUNE':
+                        if 'simulation_environment' not in input_config:
+                            input_config['simulation_environment'] = 'ase'
                         if np.size(input_config['pbc_list']) == 3: # Keep compatibility with old input files
                             input_config['pbc_list'] = np.array([[input_config['pbc_list'][0], 0, 0], [0, input_config['pbc_list'][1], 0], [0, 0, input_config['pbc_list'][2]]])
                         else:
                             input_config['pbc_list'] = np.array(input_config['pbc_list']).reshape(3,3)
-                    write_input(input_config, args.run_type)
+                    
+                    if args.run_type == 'FINETUNE' or input_config['simulation_environment'] == 'ase':
+                        write_input(input_config, args.run_type)
+                    else:
+                        lammps_input_writer(input_config, args.run_type)
 
                 with open('sevennet_input.log', 'w') as output:
                     output.write("Input file created with the following configuration:\n") 
                     output.write(f'"{args.config}"')
 
-                if args.run_type == 'RECALC':
+                if args.run_type == 'RECALC' and input_config['simulation_environment'] == 'ase':
                     print('Starting the recalculation...')
 
                     print("""#####################
@@ -146,6 +155,18 @@ def sevennet_form():
     else:
         run_type = run_type_dict[run_type]
 
+    # Ask for Simulation environment
+    if run_type in ['MD', 'MULTI_MD', 'RECALC']:
+        sim_env_default_dict = {'ase': 'y', 'lammps': 'n'}
+        sim_env = ask_for_yes_no("Do you want to use the ASE atomic simulation environment (y) or LAMMPS (n)? (y/n)", sim_env_default_dict[sevennet_config[run_type]['simulation_environment']])
+        if sim_env == 'y': 
+            sim_env = 'ase'
+            print("You chose to create the input file for the ASE atomic simulation environment.")
+        else: 
+            sim_env = 'lammps'
+            sevennet_config[run_type]['simulation_environment'] = 'lammps'
+            print("You chose to create the input file for LAMMPS.")
+
     if run_type == 'FINETUNE':
         project_name = input("What is the name of the final model?: ")
     else:
@@ -171,7 +192,6 @@ def sevennet_form():
             dataset_fraction = ask_for_int("Which n-th frame do you want to use? (e.g. 10 means every 10th frame)", 10)
             path_to_training_file = extract_frames(path_to_training_file, dataset_fraction)
 
-
     print("Default settings for this run type: " + str(sevennet_config[run_type]))
 
     use_default_input = ask_for_yes_no("Do you want to use the default input settings? (y/n)", sevennet_config['use_default_input'])
@@ -179,7 +199,7 @@ def sevennet_form():
         if run_type == 'FINETUNE':
             input_config = config_wrapper(True, run_type, sevennet_config, coord_file, pbc_mat, project_name, path_to_training_file)
         else:
-            input_config = config_wrapper(True, run_type, sevennet_config, coord_file, pbc_mat, project_name)
+            input_config = config_wrapper(True, run_type, sevennet_config, coord_file, pbc_mat, project_name, sim_env=sim_env)
     else:
         small_changes = ask_for_yes_no("Do you want to make small changes to the default settings? (y/n)", "n")
         if small_changes == 'y':
@@ -216,13 +236,46 @@ def sevennet_form():
             if run_type == 'FINETUNE':
                 input_config = config_wrapper(True, run_type, sevennet_config, coord_file, pbc_mat, project_name, path_to_training_file)
             else:
-                input_config = config_wrapper(True, run_type, sevennet_config, coord_file, pbc_mat, project_name)
+                input_config = config_wrapper(True, run_type, sevennet_config, coord_file, pbc_mat, project_name, sim_env=sim_env)
 
         else: 
             if run_type == 'FINETUNE':
                 input_config = config_wrapper(False, run_type, sevennet_config, coord_file, pbc_mat, project_name, path_to_training_file)
             else:
-                input_config = config_wrapper(False, run_type, sevennet_config, coord_file, pbc_mat, project_name)
+                input_config = config_wrapper(False, run_type, sevennet_config, coord_file, pbc_mat, project_name, sim_env=sim_env)
+
+    if run_type in ['MD', 'MULTI_MD', 'RECALC'] and sim_env == 'lammps':
+        print("WARNING: The lammps input writer is still in development.")
+        print("Please be aware that only a runscript for GPU calculations is created, not for CPU calculations.")
+        if run_type == 'MULTI_MD':
+            counter = 0
+            for i in range(len(input_config['foundation_model'])):
+                input_config_tmp = input_config.copy()
+                input_config_tmp['foundation_model'] = input_config['foundation_model'][i]
+                input_config_tmp['modal'] = input_config['modal'][i]
+                input_config_tmp['dispersion_via_simenv'] = input_config['dispersion_via_simenv'][i]
+                # Create a directory for each run
+                os.makedirs(f"{input_config['project_name']}_run-{counter+1}", exist_ok=True)
+                os.chdir(f"{input_config['project_name']}_run-{counter+1}")
+                if "/" in input_config_tmp['foundation_model']: 
+                    input_config_tmp['foundation_model'] = f"../{input_config_tmp['foundation_model']}"
+                input_config_tmp['coord_file'] = f"../{input_config_tmp['coord_file']}"
+                lammps_input_writer(input_config_tmp, "MD")
+                write_log(input_config_tmp)
+                run_logger1(run_type, os.getcwd())
+                os.chdir('..')
+                counter += 1
+            sys.exit()
+
+        lammps_input_writer(input_config, run_type)
+
+        # Write the configuration to a log file
+        write_log(input_config)
+
+        # Log the run
+        run_logger1(run_type,os.getcwd())
+
+        sys.exit()
 
     if run_type == 'FINETUNE':
         # Write the input file
@@ -246,7 +299,7 @@ def sevennet_form():
     elif run_type == 'RECALC':
         
         write_input(input_config, run_type)
-        
+    
         print('Starting the recalculation...')
 
         print("""#####################
@@ -283,7 +336,7 @@ def sevennet_form():
         sevenet_citations()
 
 
-def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, project_name, path_to_training_file="", e0_dict={}):
+def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, project_name, path_to_training_file="", e0_dict={}, sim_env='ase'):
 
     """
     Wrapper function to create the input file
@@ -297,7 +350,7 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, proj
                             'pbc_list': pbc_mat,
                             'foundation_model': sevennet_config[run_type]['foundation_model'],
                             'modal': sevennet_config[run_type]['modal'],
-                            'dispersion_via_ase': sevennet_config[run_type]['dispersion_via_ase'],
+                            'dispersion_via_simenv': sevennet_config[run_type]['dispersion_via_simenv'],
                             'temperature': sevennet_config[run_type]['temperature'],
                             'pressure': sevennet_config[run_type]['pressure'],
                             'thermostat': sevennet_config[run_type]['thermostat'],
@@ -305,13 +358,13 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, proj
                             'write_interval': sevennet_config[run_type]['write_interval'],
                             'timestep': sevennet_config[run_type]['timestep'],
                             'log_interval': sevennet_config[run_type]['log_interval'],
-                            'print_ase_traj': sevennet_config[run_type]['print_ase_traj']}
+                            'print_ext_traj': sevennet_config[run_type]['print_ext_traj']}
         elif run_type == 'MULTI_MD': 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_mat,
                             'foundation_model': sevennet_config[run_type]['foundation_model'], # List
-                            'dispersion_via_ase': sevennet_config[run_type]['dispersion_via_ase'], # List
+                            'dispersion_via_simenv': sevennet_config[run_type]['dispersion_via_simenv'], # List
                             'modal': sevennet_config[run_type]['modal'], # List
                             'temperature': sevennet_config[run_type]['temperature'],
                             'pressure': sevennet_config[run_type]['pressure'],
@@ -320,7 +373,7 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, proj
                             'write_interval': sevennet_config[run_type]['write_interval'],
                             'timestep': sevennet_config[run_type]['timestep'],
                             'log_interval': sevennet_config[run_type]['log_interval'],
-                            'print_ase_traj': sevennet_config[run_type]['print_ase_traj']}
+                            'print_ext_traj': sevennet_config[run_type]['print_ext_traj']}
         elif run_type == 'FINETUNE': 
             input_config = {'project_name': project_name,
                             'foundation_model': sevennet_config[run_type]['foundation_model'],
@@ -335,15 +388,16 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, proj
                             'pbc_list': pbc_mat,
                             'foundation_model': sevennet_config[run_type]['foundation_model'],
                             'modal': sevennet_config[run_type]['modal'],
-                            'dispersion_via_ase': sevennet_config[run_type]['dispersion_via_ase']}
+                            'dispersion_via_simenv': sevennet_config[run_type]['dispersion_via_simenv']}
             
     # Ask user for input data
     else:
         if run_type == 'MD': 
             
             foundation_model, modal = ask_for_foundational_model(sevennet_config, run_type)
-            dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", sevennet_config[run_type]['dispersion_via_ase'])
-            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", sevennet_config[run_type]['thermostat'])
+            dispersion_via_simenv = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", sevennet_config[run_type]['dispersion_via_simenv'])
+            reversed_thermo_dict = {'Langevin': '1', 'NoseHooverChainNVT': '2', 'Bussi': '3', 'NPT': '4'}
+            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", reversed_thermo_dict[sevennet_config[run_type]['thermostat']])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
             temperature = ask_for_float_int("What is the temperature in Kelvin?", sevennet_config[run_type]['temperature'])
@@ -355,14 +409,17 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, proj
             write_interval = ask_for_int("How often do you want to write the trajectory?", sevennet_config[run_type]['write_interval'])
             timestep = ask_for_float_int("What is the timestep in fs?", sevennet_config[run_type]['timestep'])
             log_interval = ask_for_int("How often do you want to write the log file?", sevennet_config[run_type]['log_interval'])
-            print_ase_traj = ask_for_yes_no("Do you want to print the ASE trajectory? (y/n)", sevennet_config[run_type]['print_ase_traj'])
-
+            if sim_env == 'ase':
+                print_ext_traj = ask_for_yes_no("Do you want to print the extended trajectory (incl. forces)? (y/n)", sevennet_config[run_type]['print_ext_traj'])
+            else: 
+                print_ext_traj = ask_for_yes_no("Do you want to print the forces? (y/n)", sevennet_config[run_type]['print_ext_traj'])
+            
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_mat,
                             'foundation_model': foundation_model,
                             'modal': modal,
-                            'dispersion_via_ase': dispersion_via_ase,
+                            'dispersion_via_simenv': dispersion_via_simenv,
                             'temperature': temperature,
                             'pressure': pressure,
                             'thermostat': thermostat,
@@ -370,22 +427,23 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, proj
                             'write_interval': write_interval,
                             'timestep': timestep,
                             'log_interval': log_interval,
-                            'print_ase_traj': print_ase_traj}
+                            'print_ext_traj': print_ext_traj}
 
             
         elif run_type == 'MULTI_MD': 
             
-            no_runs = ask_for_int("How many MD runs do you want to perform?")
+            no_runs = ask_for_int("How many MD runs do you want to perform?", 2)
             foundation_model = []
             modal = []
-            dispersion_via_ase = []
-            for i in range(no_runs):
+            dispersion_via_simenv = []
+            for i in range(int(no_runs)):
                 foundation_model_tmp, modal_tmp = ask_for_foundational_model(sevennet_config, run_type)
-                dispersion_via_ase_tmp = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", sevennet_config[run_type]['dispersion_via_ase'])
+                dispersion_via_simenv_tmp = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", sevennet_config[run_type]['dispersion_via_simenv'][0])
                 foundation_model.append(foundation_model_tmp)
                 modal.append(modal_tmp)
-                dispersion_via_ase.append(dispersion_via_ase_tmp)
-            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", sevennet_config[run_type]['thermostat'])
+                dispersion_via_simenv.append(dispersion_via_simenv_tmp)
+            reversed_thermo_dict = {'Langevin': '1', 'NoseHooverChainNVT': '2', 'Bussi': '3', 'NPT': '4'}
+            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", reversed_thermo_dict[sevennet_config[run_type]['thermostat']])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
             temperature = ask_for_float_int("What is the temperature in Kelvin?", sevennet_config[run_type]['temperature'])
@@ -397,13 +455,17 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, proj
             write_interval = ask_for_int("How often do you want to write the trajectory?", sevennet_config[run_type]['write_interval'])
             timestep = ask_for_float_int("What is the timestep in fs?", sevennet_config[run_type]['timestep'])
             log_interval = ask_for_int("How often do you want to write the log file?", sevennet_config[run_type]['log_interval'])
-            print_ase_traj = ask_for_yes_no("Do you want to print the ASE trajectory? (y/n)", sevennet_config[run_type]['print_ase_traj'])
-
+            if sim_env == 'ase':
+                print_ext_traj = ask_for_yes_no("Do you want to print the extended trajectory (incl. forces)? (y/n)", sevennet_config[run_type]['print_ext_traj'])
+            else: 
+                print_ext_traj = ask_for_yes_no("Do you want to print the forces? (y/n)", sevennet_config[run_type]['print_ext_traj'])
+                
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_mat,
                             'foundation_model': foundation_model, # List
                             'modal': modal, # List
+                            'dispersion_via_simenv': dispersion_via_simenv, # List
                             'temperature': temperature,
                             'pressure': pressure,
                             'thermostat': thermostat,
@@ -411,7 +473,7 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, proj
                             'write_interval': write_interval,
                             'timestep': timestep,
                             'log_interval': log_interval,
-                            'print_ase_traj': print_ase_traj}
+                            'print_ext_traj': print_ext_traj}
 
 
         elif run_type == 'FINETUNE':
@@ -440,14 +502,14 @@ def config_wrapper(default, run_type, sevennet_config, coord_file, pbc_mat, proj
         elif run_type == 'RECALC':
             
             foundation_model, modal = ask_for_foundational_model(sevennet_config, run_type)
-            dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", sevennet_config[run_type]['dispersion_via_ase'])
+            dispersion_via_simenv = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", sevennet_config[run_type]['dispersion_via_simenv'])
 
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_mat,
                             'foundation_model': foundation_model,
                             'modal': modal,
-                            'dispersion_via_ase': dispersion_via_ase}
+                            'dispersion_via_simenv': dispersion_via_simenv}
     return input_config
 
 
@@ -468,14 +530,14 @@ from ase.io.trajectory import Trajectory
 from ase.io import write
 from ase.io import read
 from ase.md import MDLogger
-{foundation_model_code(input_config['dispersion_via_ase'])}
+{foundation_model_code(input_config['dispersion_via_simenv'])}
 {thermostat_code(input_config)[0]}
 
 # Set the device
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load the foundation model
-sevennet_calc = {foundation_model_path(input_config['foundation_model'], input_config['modal'], input_config['dispersion_via_ase'])}, device=device)
+sevennet_calc = {foundation_model_path(input_config['foundation_model'], input_config['modal'], input_config['dispersion_via_simenv'])}, device=device)
 print("Loading of SevenNet model completed: {input_config['foundation_model']} model")
 
 # Load the coordinates (take care if it is the first start or a restart)
@@ -644,13 +706,13 @@ from ase import units
 from ase.io.trajectory import Trajectory
 from ase.io import write
 from ase.io import read
-{foundation_model_code(input_config['dispersion_via_ase'])}
+{foundation_model_code(input_config['dispersion_via_simenv'])}
 
 # Set the device
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load the foundation model
-sevennet_calc = {foundation_model_path(input_config['foundation_model'], input_config['modal'], input_config['dispersion_via_ase'])}, device=device)
+sevennet_calc = {foundation_model_path(input_config['foundation_model'], input_config['modal'], input_config['dispersion_via_simenv'])}, device=device)
 print("Loading of SevenNet model completed: {input_config['foundation_model']} model")
 
 # Load the reference trajectory
@@ -714,11 +776,11 @@ dyn = NPT(atoms, {float(input_config['timestep'])}*units.fs, temperature_K = tem
 """
 
 
-def dispersion_corr(dispersion_via_ase):
+def dispersion_corr(dispersion_via_simenv):
     """
     Function to return the dispersion correction
     """
-    if dispersion_via_ase == 'y':
+    if dispersion_via_simenv == 'y':
         return " dispersion=True"
     else:
         return " dispersion=False"
@@ -733,7 +795,7 @@ def write_traj_file(input_config):
     """
     Function to write the trajectory file
     """
-    if input_config['print_ase_traj'] == 'y':
+    if input_config['print_ext_traj'] == 'y':
         return f"""# Trajectory ASE format: including positions, forces and velocities
 traj = Trajectory('{input_config['project_name']}.traj', 'a', atoms)
 dyn.attach(traj.write, interval={int(input_config['write_interval'])})
@@ -771,18 +833,18 @@ def ask_for_foundational_model(sevennet_config, run_type):
             if modal == 'y':
                 modal = 'mpa'
             else:
-                modal = 'oma24'
+                modal = 'omat24'
         else: 
             modal = '' # no modal for the other models
         
     return foundation_model, modal
 
-def foundation_model_path(foundation_model, modal, dispersion_via_ase):
+def foundation_model_path(foundation_model, modal, dispersion_via_simenv):
     """
     Function to return the path to the foundation model
     """
     # Set the calculator
-    if dispersion_via_ase == 'y':
+    if dispersion_via_simenv == 'y':
         model_code = "SevenNetD3Calculator"
     else:
         model_code = "SevenNetCalculator"
@@ -792,8 +854,8 @@ def foundation_model_path(foundation_model, modal, dispersion_via_ase):
         if foundation_model in ['7net-omat', '7net-l3i5']:
             model_code = model_code + f"""(model='{foundation_model}' """ # in input file follows ... device=device)
         elif foundation_model == '7net-mf-ompa':
-            if modal == 'oma24':
-                model_code = model_code + f"""(model='{foundation_model}', modal='oma24' """
+            if modal == 'omat24':
+                model_code = model_code + f"""(model='{foundation_model}', modal='omat24' """
             else:
                 model_code = model_code + f"""(model='{foundation_model}', modal='mpa' """ # in input file follows ... device=device)
         elif foundation_model == '7net-0':
@@ -873,7 +935,7 @@ def write_input(input_config, run_type):
             input_config_tmp['coord_file'] = f"../{input_config['coord_file']}"
             input_config_tmp['foundation_model'] = input_config['foundation_model'][i]
             input_config_tmp['modal'] = input_config['modal'][i]
-            input_config_tmp['dispersion_via_ase'] = input_config['dispersion_via_ase'][i]
+            input_config_tmp['dispersion_via_simenv'] = input_config['dispersion_via_simenv'][i]
 
             input_text = create_input(input_config_tmp, 'MD')
             file_name = f'md_sevennet.py'
@@ -948,7 +1010,7 @@ def write_log(input_config):
                     input_config_tmp = input_config.copy()
                     input_config_tmp['foundation_model'] = input_config['foundation_model'][i]
                     input_config_tmp['modal'] = input_config['modal'][i]
-                    input_config_tmp['dispersion_via_ase'] = input_config['dispersion_via_ase'][i]
+                    input_config_tmp['dispersion_via_simenv'] = input_config['dispersion_via_simenv'][i]
                     input_config_tmp['pbc_list'] = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,2]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
                     output.write(f'"{input_config_tmp}"')  
     
@@ -959,18 +1021,18 @@ def write_log(input_config):
         except:
             pass   
         # Check if foundation_model is in the input_config
-        if np.logical_and('foundation_model' in input_config, 'dispersion_via_ase' in input_config):
+        if np.logical_and('foundation_model' in input_config, 'dispersion_via_simenv' in input_config):
             if type(input_config['foundation_model']) == list:
                 # build a string with the list elements separated by a space
                 foundation_string = ' '.join(f"'{item}'" for item in input_config['foundation_model'])
                 foundation_string = f"'[{foundation_string}]'"
                 input_config['foundation_model'] = foundation_string
 
-            if type(input_config['dispersion_via_ase']) == list:
+            if type(input_config['dispersion_via_simenv']) == list:
                 # build a string with the list elements separated by a space
-                dispersion_string = ' '.join(f"'{item}'" for item in input_config['dispersion_via_ase'])
+                dispersion_string = ' '.join(f"'{item}'" for item in input_config['dispersion_via_simenv'])
                 dispersion_string = f"'[{dispersion_string}]'"
-                input_config['dispersion_via_ase'] = dispersion_string
+                input_config['dispersion_via_simenv'] = dispersion_string
 
             if type(input_config['modal']) == list:
                 # build a string with the list elements separated by a space

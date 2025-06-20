@@ -15,7 +15,7 @@ def get_element_list(coord_file, list_only=False):
     """
     Function to extract the list of elements from a coordinate file.
     """
-    elements_ordered = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne",
+    elements_ordered =  ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne",
                          "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar",
                          "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe",
                          "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se",
@@ -54,15 +54,8 @@ def lammps_input_writer (
     run_type
 ):
     """
-    Function to write LAMMPS input files based on the provided configuration.
-    
-    Parameters:
-        config_dict (dict): Configuration dictionary containing settings for LAMMPS input.
-        run_type (str): Type of run (e.g., 'MD', 'GEO_OPT', etc.).
-    
-        
+    Function to write LAMMPS input files based on the provided configuration.      
     """
-    
     # Create the first part of the input file
     input_file_content = f"""# --------- Units and System Setup ---------
 units         metal
@@ -89,120 +82,55 @@ variable      pot_e equal pe"""
     # Get the element list from the coordinates/trajectory file
     element_list = get_element_list(config_dict['coord_file'])
 
-    # Convert the Mace model to LAMMPS format
+    # Convert the SevenNet model to LAMMPS format
     if config_dict['foundation_model'].endswith('.pt'):
-        model_file = config_dict['foundation_model']
+        print(f"The model {config_dict['foundation_model']} is already in LAMMPS format.")
     else:
-        import mace
-        converter_script_path = mace.__file__.replace('__init__.py', 'cli/create_lammps_model.py')
-        if config_dict['foundation_model'].endswith('.model'):
-            # Convert the custom model file to LAMMPS format
-            convert_command = f"python {converter_script_path} {config_dict['foundation_model']}"
+        if "." not in config_dict['foundation_model']:
+            print(f"Converting foundation model {config_dict['foundation_model']} to LAMMPS format...")
+            if config_dict['modal'] != '':
+                print(f"Converting with the respect to modal {config_dict['modal']}.") 
+                convert_command = f'sevenn_get_model -o {config_dict["foundation_model"]+".pt"} -m {config_dict["modal"]} {config_dict["foundation_model"]}' 
+            else:
+                convert_command = f'sevenn_get_model -o {config_dict["foundation_model"]+".pt"} {config_dict["foundation_model"]}'
+            config_dict['foundation_model'] = config_dict['foundation_model'] + '.pt'
+        elif config_dict['foundation_model'].endswith('.pth'):
             print(f"Converting model {config_dict['foundation_model']} to LAMMPS format...")
-            try:
-                subprocess.run(convert_command, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            except subprocess.CalledProcessError as e:
-                print(f"Error: Model conversion failed with exit code {e.returncode}")
-            model_file = f"{config_dict['foundation_model']}-lammps.pt"
-        else:
-            # No custom model file provided, download the default model and convert it
-            download_model_dict = {'mp_small': 'https://github.com/ACEsuit/mace-mp/releases/download/mace_mp_0/2023-12-10-mace-128-L0_energy_epoch-249.model',
-                                   'mp_medium': 'https://github.com/ACEsuit/mace-mp/releases/download/mace_mp_0/2023-12-03-mace-128-L1_epoch-199.model',
-                                   'mp_large': 'https://github.com/ACEsuit/mace-mp/releases/download/mace_mp_0/2024-01-07-mace-128-L2_epoch-199.model',
-                                   'mpa_medium': 'https://github.com/ACEsuit/mace-mp/releases/download/mace_mpa_0/mace-mpa-0-medium.model',
-                                   'off_small': 'https://github.com/ACEsuit/mace-off/blob/main/mace_off23/MACE-OFF23_small.model',
-                                   'off_medium': 'https://github.com/ACEsuit/mace-off/blob/main/mace_off23/MACE-OFF23_medium.model',
-                                   'off_large': 'https://github.com/ACEsuit/mace-off/blob/main/mace_off23/MACE-OFF23_large.model'}
-
-            # Build key string for the model
-            dataset_key = config_dict['foundation_model'].split('_')[-1]
-            size_key = config_dict['model_size']
-
-            if size_key == 'medium-mpa-0': 
-                model_key = 'mpa_medium'
+            if config_dict['modal'] != '':
+                print(f"Converting with the respect to modal {config_dict['modal']}.") 
+                convert_command = f'sevenn_get_model -o {config_dict["foundation_model"].replace(".pth", ".pt")} -m {config_dict["modal"]} {config_dict["foundation_model"]}' 
             else:
-                model_key = f"{dataset_key}_{size_key}"
-            if model_key not in download_model_dict:
-                raise ValueError(f"Model {model_key} not found in the download dictionary. Please check the model name or add it to the dictionary.")
-            model_url = download_model_dict[model_key]
-            # Download the model file
-            print(f"Downloading model {model_key} from {model_url}...")
-            model_file = f"{model_key}.model"
-            if not os.path.exists(model_file):
-                os.system(f"wget {model_url} -O {model_file}")
-            # Convert the downloaded model file to LAMMPS format
-            convert_command = f"python {converter_script_path} {model_file}"
-            print(f"Converting model {model_file} to LAMMPS format...")
-            os.system(convert_command)
-            model_file = f"{model_file}-lammps.pt"
+                convert_command = f'sevenn_get_model -o {config_dict["foundation_model"].replace(".pth", ".pt")} {config_dict["foundation_model"]}'
+            config_dict['foundation_model'] = config_dict['foundation_model'].replace('.pth', '.pt')
+        else:
+            print("Error: Model file must be a .pt or .pth file or the foundation model keyword.")
+            sys.exit(1)
+        try:
+            subprocess.run(convert_command, shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except subprocess.CalledProcessError as e:
+            print(f"Error: Model conversion failed with exit code {e.returncode}")
 
-
-    
-
-    # Setup the Mace Potential settings
-    input_file_content += f"""# --------- Potential Setup ---------
-pair_style    mace no_domain_decomposition
-pair_coeff    * * {model_file} {element_list}
+    # Setup the SevenNet Potential settings
+    if config_dict['dispersion_via_simenv'] == 'n':
+        input_file_content += f"""# --------- Potential Setup ---------
+pair_style    e3gnn
+pair_coeff    * * {config_dict['foundation_model']} {element_list}
+"""
+    else:
+        functional = input("Please enter the functional for the dispersion correction (e.g., 'BLPY', 'PBE'): ['PBE']").strip()
+        if functional == '':
+            functional = 'PBE'
+        elif functional == 'BLPY': 
+            # Correct name (see https://docs.lammps.org/pair_dispersion_d3.html)
+            functional = 'b-lyp' 
+        input_file_content += f"""# --------- Potential Setup ---------
+pair_style    hybrid/overlay e3gnn d3 9000 1600 damp_bj {functional}
+pair_coeff    * * e3gnn {config_dict['foundation_model']} {element_list}
+pair_coeff    * * d3 {element_list}
 """
 
-
-    if run_type == "GEO_OPT":
-
-        # Insert code for geometry optimization
-        input_file_content += f"""# --------- Neighbors ---------
-neighbor      2.0 bin
-neigh_modify  every 1 delay 0 check yes
-
-# --------- Minimization ---------
-thermo        1
-dump          d_go all xyz 1 geoopt_traj.xyz
-dump_modify   d_go element {element_list} sort id
-fix           log_energy all print {config_dict['write_interval']} """+r""" "${pot_e}" file energies.txt screen no title "" """+f"""
-minimize      1.0e-5 1.0e-7 {int(config_dict['max_iter'])} {10*int(config_dict['max_iter'])}
-undump	      d_go
-unfix         log_energy
-
-write_dump all xyz {config_dict['project_name']}_geoopt.xyz modify sort id element {element_list}"""
-
-
-    elif run_type == "CELL_OPT":
-        # Check if PBC 3x3 matrix is non-orhtogonal: off diagonal elements are not zero
-        pbc_matrix = np.array(config_dict['pbc_list']).reshape(3, 3)
-        if np.any(np.abs(pbc_matrix - np.diag(np.diag(pbc_matrix))) > 1e-6):
-            cellopt_fix = "cellopt all box/relax tri 0.0 vmax 0.001"
-        else:
-            keep_symmetry = ask_for_yes_no("Do you want to keep the symmetry of the cell? (y/n)", 'y')
-            if keep_symmetry:
-                cellopt_fix = "cellopt all box/relax iso 0.0 vmax 0.001"
-            else:
-                cellopt_fix = "cellopt all box/relax aniso 0.0 vmax 0.001"
-
-        # Insert code for cell optimization
-        input_file_content += f"""# --------- Neighbors ---------
-neighbor      2.0 bin
-neigh_modify  every 1 delay 0 check yes
-
-# --------- Minimization ---------
-thermo        1
-dump          d_co all xyz 1 cellopt_traj.xyz
-dump_modify   d_co element {element_list} sort id
-fix           log_energy all print {config_dict['write_interval']} """+r""" "${pot_e}" file energies.txt screen no title "" """+f"""
-fix           {cellopt_fix}
-minimize      1.0e-5 1.0e-7 {int(config_dict['max_iter'])} {10*int(config_dict['max_iter'])}
-unfix         cellopt
-unfix	      log_energy
-undump	      d_co
-
-write_dump all xyz {config_dict['project_name']}_cellopt.xyz modify sort id element {element_list}
-
-
-print "avecx avecy avecz" file pbc_new screen no
-print "bvecx bvecy bvecz" append pbc_new screen no
-print "cvecx cvecy cvecz" append pbc_new screen no
-"""
-
-    
-    elif run_type == "MD":
+    # Writung Input files
+    if run_type == "MD":
         timestep = float(config_dict['timestep']) * 0.001  # Convert fs to ps
         print_production = print_ext_traj_lines(config_dict, element_list)
         # Insert code for molecular dynamics
@@ -324,7 +252,7 @@ fix           log_energy all print {config_dict['write_interval']} """+r""" "${p
 
 fix           volavg all ave/time 1 1 1 v_v ave running
 fix           pressavg all ave/time 1 1 1 v_p ave running
-thermo_style  custom step temp pe etotal press vol f_pressavg f_volavg avecx avecy avecz bvecx bvecy bvecz cvecx cvecy cvecz
+thermo_style  custom step temp pe etotal press vol f_pressavg f_volavg 
 run 	      {config_dict['nsteps']}
 unfix 	      fcom
 unfix	      integrator
@@ -335,21 +263,6 @@ variable      rdens equal (mass(all)/6.02214086E-1/${boxvol})
 print         ">>> Average volume is ${boxvol} Angstrom^3"
 print         ">>> Resulting density is ${rdens} g/cm^3."
 
-variable      a1 equal avecx
-variable      a2 equal avecy
-variable      a3 equal avecz
-variable      b1 equal bvecx
-variable      b2 equal bvecy
-variable      b3 equal bvecz
-variable      c1 equal cvecx
-variable      c2 equal cvecy
-variable      c3 equal cvecz
-print         "----------------------------------------------------------------"
-print	      "------------------------NEW CELL VECTORS------------------------" 
-print         ">>> Cell A-vector ${a1} ${a2} ${a3}."
-print         ">>> Cell B-vector ${b1} ${b2} ${b3}."
-print         ">>> Cell C-vector ${c1} ${c2} ${c3}."
-print         "----------------------------------------------------------------"
 variable      alpha equal xy
 variable      beta equal xz
 variable      gamma equal yz
@@ -367,9 +280,9 @@ print         ">>> B tilt ${beta}."
 print         ">>> C tilt ${gamma}."
 print         "----------------------------------------------------------------"
 
-print "${a1} ${a2} ${a3}" file deformed_pbc screen no
-print "${b1} ${b2} ${b3}" append deformed_pbc screen no
-print "${c1} ${c2} ${c3}" append deformed_pbc screen no
+print "${len_a} 0.0 0.0" file pbc_new screen no
+print "${alpha} ${len_b} 0.0" append pbc_new screen no
+print "${beta} ${gamma} ${len_c}" append pbc_new screen no
 
 
 undump        d_npt"""
@@ -453,27 +366,23 @@ def runscript_writer(run_type, config_dict):
     }
 
     # Load the template for the runscript
-    cpu_template, gpu_template = lammps_runscript()
+    gpu_template = lammps_runscript(sevennet=True)
 
     # Define the variables from the templates
-    cpu_script = cpu_template.replace("$$PROJECT_NAME$$", f"{config_dict['project_name']}")
-    cpu_script = cpu_script.replace("$$INPUT_FILE$$", input_file_names_dict[run_type])
     gpu_script = gpu_template.replace("$$PROJECT_NAME$$", f"{config_dict['project_name']}")
     gpu_script = gpu_script.replace("$$INPUT_FILE$$", input_file_names_dict[run_type])
 
-    open("runscript.sh", 'w').write(cpu_script)
     open("gpu_script.job", 'w').write(gpu_script)
-    os.chmod("runscript.sh", 0o755)
     os.chmod("gpu_script.job", 0o755)
 
-    if "$$" in cpu_script or "$$" in gpu_script:
+    if "$$" in gpu_script:
             raise ValueError("The template includes variable placeholders that need to be replaced.")
-    print("The Runscripts were created for GPU and CPU! ")
+    print("The Runscript was created for GPU! ")
     # Check if BSUB is in cpu_script
-    if "BSUB" in cpu_script:
-        print("Start the calculation with 'bsub < runscript.sh' or with 'batch.1gpu gpu_script.job'")
+    if "SBATCH" in gpu_script:
+        print("Start the calculation with 'sbatch runscript.sh'")
     else:
-        print("Start the calculation with 'sbatch runscript.sh' or 'sbatch runscript.sh'")
+        print("Start the calculation with 'batch.1gpu gpu_script.job'")
 
 def convert_trajectory_to_lammps(traj_file, cell, element_list):
     """
@@ -540,4 +449,3 @@ def convert_trajectory_to_lammps(traj_file, cell, element_list):
                 atom_type = element_to_type[el]
                 f.write(f"{j+1} {atom_type} {pos[0]:.6f} {pos[1]:.6f} {pos[2]:.6f}\n")
     
-

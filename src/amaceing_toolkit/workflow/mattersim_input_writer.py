@@ -344,7 +344,8 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_mat, pro
             
             foundation_model = ask_for_foundational_model(mattersim_config, run_type)
             #dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mattersim_config[run_type]['dispersion_via_ase'])
-            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mattersim_config[run_type]['thermostat'])
+            reversed_thermo_dict = {'Langevin': '1', 'NoseHooverChainNVT': '2', 'Bussi': '3', 'NPT': '4'}
+            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", reversed_thermo_dict[mattersim_config[run_type]['thermostat']])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
             temperature = ask_for_float_int("What is the temperature in Kelvin?", mattersim_config[run_type]['temperature'])
@@ -375,15 +376,16 @@ def config_wrapper(default, run_type, mattersim_config, coord_file, pbc_mat, pro
             
         elif run_type == 'MULTI_MD': 
             
-            no_runs = ask_for_int("How many MD runs do you want to perform?")
+            no_runs = ask_for_int("How many MD runs do you want to perform?", 2)
             foundation_model = []
             #dispersion_via_ase = []
-            for i in range(no_runs):
+            for i in range(int(no_runs)):
                 foundation_model_tmp = ask_for_foundational_model(mattersim_config, run_type)
                 #dispersion_via_ase_tmp = ask_for_yes_no("Do you want to include dispersion via ASE? (y/n)", mattersim_config[run_type]['dispersion_via_ase'])
                 foundation_model.append(foundation_model_tmp)
                 #dispersion_via_ase.append(dispersion_via_ase_tmp)
-            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mattersim_config[run_type]['thermostat'])
+            reversed_thermo_dict = {'Langevin': '1', 'NoseHooverChainNVT': '2', 'Bussi': '3', 'NPT': '4'}
+            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", reversed_thermo_dict[mattersim_config[run_type]['thermostat']])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
             temperature = ask_for_float_int("What is the temperature in Kelvin?", mattersim_config[run_type]['temperature'])

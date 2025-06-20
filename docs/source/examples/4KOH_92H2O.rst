@@ -458,7 +458,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: 7net-mf-ompa
     # - Modal: mpa
-    # - Use dispersion via ASE: n
+    # - Use dispersion via Simulation environment: n
     # - Temperature: 300
     # - Pressure: 1.0
     # - Thermostat: Langevin
@@ -467,6 +467,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Timestep: 0.5
     # - Log interval: 10
     # - Print ext trajectory: y
+    # - Simulation environment: ASE
     cd ../..
 
     # For multi-configuration molecular dynamics
@@ -482,11 +483,11 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - For Configuration 1:
     #   - Foundation model: 7net-0
     #   - Modal: (leave empty)
-    #   - Use dispersion via ASE: n
+    #   - Use dispersion via Simulation environment: n
     # - For Configuration 2:
     #   - Foundation model: 7net-mf-ompa
     #   - Modal: mpa
-    #   - Use dispersion via ASE: n
+    #   - Use dispersion via Simulation environment: n
     # - Temperature: 300
     # - Pressure: 1.0
     # - Thermostat: Langevin
@@ -495,6 +496,7 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Timestep: 0.5
     # - Log interval: 10
     # - Print ext trajectory: y
+    # - Simulation environment: ASE
     cd ../..
 
     # For fine-tuning
@@ -523,7 +525,8 @@ To run these examples manually using Q&A sessions instead of command line parame
     # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
     # - Foundation model: 7net-mf-ompa
     # - Modal: mpa
-    # - Use dispersion via ASE: n
+    # - Use dispersion via Simulation environment: n
+    # - Simulation environment: ASE
     cd ../..
 
 After running these examples, each calculation will generate appropriate Python scripts, configuration files, and runscripts. The file structure will include:

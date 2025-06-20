@@ -292,6 +292,8 @@ def sevennet_api(run_type=None, config=None):
     ...     'nsteps': 1000,
     ...     'write_interval': 10,
     ...     'timestep': 0.5,
+    ...     'simulation_environment': 'ASE',
+    ...     'dispersion_via_simenv': 'n',
     ... }
     >>> sevennet_api(run_type='MD', config=config)
     """
@@ -312,7 +314,7 @@ def sevennet_api(run_type=None, config=None):
             
             # Handle special cases for MULTI_MD with lists
             if run_type == 'MULTI_MD':
-                for key in ['foundation_model', 'modal', 'dispersion_via_ase']:
+                for key in ['foundation_model', 'modal', 'dispersion_via_simenv']:
                     if key in config_copy and isinstance(config_copy[key], list):
                         config_copy[key] = ' '.join(str(x).strip('"') for x in config_copy[key])
                 

@@ -87,7 +87,7 @@ def atk_mace():
                     output.write("Input file created with the following configuration:\n") 
                     output.write(f'"{args.config}"')
 
-                if args.run_type == 'RECALC':
+                if args.run_type == 'RECALC' and input_config['simulation_environment'] == 'ase':
                     print('Starting the recalculation...')
 
                     print("""#################
@@ -274,9 +274,6 @@ def mace_form():
         
         e0_dict = e0_heads
         
-    # Clean up the mace_config dictionary for default printing
-    mace_config[run_type].pop('simulation_environment', None)
-    mace_config[run_type].pop('force_file', None)
     print("Default settings for this run type: " + str(mace_config[run_type]))
 
     use_default_input = ask_for_yes_no("Do you want to use the default input settings? (y/n)", mace_config['use_default_input'])
@@ -552,7 +549,8 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
                 dispersion_via_ase = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", mace_config[run_type]['dispersion_via_ase'])
             else:
                 dispersion_via_ase = 'placeholder'
-            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mace_config[run_type]['thermostat'])
+            reversed_thermo_dict = {'Langevin': '1', 'NoseHooverChainNVT': '2', 'Bussi': '3', 'NPT': '4'}
+            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", reversed_thermo_dict[mace_config[run_type]['thermostat']])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
             temperature = ask_for_float_int("What is the temperature in Kelvin?", mace_config[run_type]['temperature'])
@@ -564,8 +562,11 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
             write_interval = ask_for_int("How often do you want to write the trajectory?", mace_config[run_type]['write_interval'])
             timestep = ask_for_float_int("What is the timestep in fs?", mace_config[run_type]['timestep'])
             log_interval = ask_for_int("How often do you want to write the log file?", mace_config[run_type]['log_interval'])
-            print_ext_traj = ask_for_yes_no("Do you want to print the extended trajectory (incl. forces)? (y/n)", mace_config[run_type]['print_ext_traj'])
-
+            if sim_env == 'ase':
+                print_ext_traj = ask_for_yes_no("Do you want to print the extended trajectory (incl. forces)? (y/n)", mace_config[run_type]['print_ext_traj'])
+            else: 
+                print_ext_traj = ask_for_yes_no("Do you want to print the forces? (y/n)", mace_config[run_type]['print_ext_traj'])
+                
             input_config = {'project_name': project_name, 
                             'coord_file': coord_file, 
                             'pbc_list': pbc_mat,
@@ -584,20 +585,21 @@ def config_wrapper(default, run_type, mace_config, coord_file, pbc_mat, project_
             
         elif run_type == 'MULTI_MD': 
             
-            no_runs = ask_for_int("How many MD runs do you want to perform?")
+            no_runs = ask_for_int("How many MD runs do you want to perform?", 2)
             foundation_model = []
             model_size = []
             if sim_env == 'ase':
                 dispersion_via_ase = []
-                for i in range(no_runs):
+                for i in range(int(no_runs)):
                     foundation_model_tmp, model_size_tmp = ask_for_foundational_model(mace_config, run_type)
-                    dispersion_via_ase_tmp = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", mace_config[run_type]['dispersion_via_ase'])
+                    dispersion_via_ase_tmp = ask_for_yes_no("Do you want to include dispersion via ASE/LAMMPS? (y/n)", mace_config[run_type]['dispersion_via_ase'][0])
                     foundation_model.append(foundation_model_tmp)
                     model_size.append(model_size_tmp)
                     dispersion_via_ase.append(dispersion_via_ase_tmp)
             else:
                 dispersion_via_ase = 'placeholder'
-            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", mace_config[run_type]['thermostat'])
+            reversed_thermo_dict = {'Langevin': '1', 'NoseHooverChainNVT': '2', 'Bussi': '3', 'NPT': '4'}
+            thermostat = ask_for_int("What thermostat do you want to use (or NPT run)? (1: Langevin, 2: NoseHooverChainNVT, 3: Bussi, 4: NPT): ", reversed_thermo_dict[mace_config[run_type]['thermostat']])
             thermo_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
             thermostat = thermo_dict[thermostat]
             temperature = ask_for_float_int("What is the temperature in Kelvin?", mace_config[run_type]['temperature'])

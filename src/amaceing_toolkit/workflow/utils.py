@@ -916,7 +916,7 @@ def setup_bechmark_dir(coord_data, pbc_data, nsteps, mace_model, mattersim_model
 
         elif nn == 'sevennet':
 
-            command = r"""amaceing_sevennet --run_type="MD" --config="{"""+f"""'project_name': 'sevennet_benchmark', 'coord_file': '../{coord_data}', 'pbc_list': '{pbc_data}', 'foundation_model': '{sevennet_model[0]}', 'modal': '{sevennet_model[1]}', 'dispersion_via_ase': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '{nsteps}', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ase_traj': 'y'"""+r"""}" """
+            command = r"""amaceing_sevennet --run_type="MD" --config="{"""+f"""'project_name': 'sevennet_benchmark', 'coord_file': '../{coord_data}', 'pbc_list': '{pbc_data}', 'foundation_model': '{sevennet_model[0]}', 'modal': '{sevennet_model[1]}', 'dispersion_via_simenv': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '{nsteps}', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ext_traj': 'y', 'simulation_environment': 'ase'"""+r"""}" """
 
             print("Creating directory for SevenNet benchmark: including the SevenNet input file and runscript.")
 
@@ -970,7 +970,7 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
             except ModuleNotFoundError:
                 print("SevenNet is currently not installed (in this environment). Please install it first or change to the respective environment.")
                 print("The SevenNet Run can be run via: ")
-                print("""amaceing_sevennet --run_type="RECALC" --config="{"""+f"'project_name': benchmark, 'coord_file': {ref_traj}, 'pbc_list': {pbc_data}, 'foundation_model': {sevennet_model[0]}, 'modal': {sevennet_model[1]}, 'dispersion_via_ase': n"+"""}" """)
+                print("""amaceing_sevennet --run_type="RECALC" --config="{"""+f"'project_name': benchmark, 'coord_file': {ref_traj}, 'pbc_list': {pbc_data}, 'foundation_model': {sevennet_model[0]}, 'modal': {sevennet_model[1]}, 'dispersion_via_simenv': 'n', 'simulation_environment': 'ase'"+"""}" """)
                 command = "FAIL"
 
         if command != "FAIL":

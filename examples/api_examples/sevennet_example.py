@@ -19,7 +19,7 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': '7net-mf-ompa',
         'modal': 'mpa',
-        'dispersion_via_ase': 'n',
+        'dispersion_via_simenv': 'n',
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -27,7 +27,7 @@ def main():
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 10,
-        'print_ase_traj': 'y'
+        'print_ext_traj': 'y'
     }
     sevennet_api(run_type='MD', config=md_config)
     
@@ -42,7 +42,7 @@ def main():
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': ['7net-0', '7net-mf-ompa'],
-        'dispersion_via_ase': ['n', 'n'],
+        'dispersion_via_simenv': ['n', 'n'],
         'modal': ['', 'mpa'],
         'temperature': '300',
         'pressure': '1.0',
@@ -51,7 +51,7 @@ def main():
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 10,
-        'print_ase_traj': 'y'
+        'print_ext_traj': 'y'
     }
     sevennet_api(run_type='MULTI_MD', config=multi_md_config)
     
@@ -84,7 +84,7 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': '7net-mf-ompa',
         'modal': 'mpa',
-        'dispersion_via_ase': 'n'
+        'dispersion_via_simenv': 'n'
     }
     sevennet_api(run_type='RECALC', config=recalc_config)
     

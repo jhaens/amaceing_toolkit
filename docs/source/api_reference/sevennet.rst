@@ -32,6 +32,7 @@ Function Reference
            'nsteps': 1000,
            'write_interval': 10,
            'timestep': 0.5,
+           'simulation_environment': 'ASE'
        }
        
        # Create a molecular dynamics input file
@@ -51,7 +52,7 @@ MD
        'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': '7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH',
        'modal': 'mpa/oma24/None',
-       'dispersion_via_ase': 'y/n',
+       'dispersion_via_simenv': 'y/n',
        'temperature': 'FLOAT',
        'pressure': 'FLOAT',
        'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT',
@@ -59,7 +60,8 @@ MD
        'write_interval': INT,
        'timestep': FLOAT,
        'log_interval': INT,
-       'print_ase_traj': 'y/n'
+       'print_ext_traj': 'y/n',
+       'simulation_environment': 'ASE'
    }
 
 MULTI_MD
@@ -73,7 +75,7 @@ MULTI_MD
        'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': ['PATH', 'PATH', ...],
        'modal': ['mpa/oma24/None', 'mpa/oma24/None', ...],
-       'dispersion_via_ase': ['y/n', 'y/n', ...],
+       'dispersion_via_simenv': ['y/n', 'y/n', ...],
        'temperature': 'FLOAT',
        'pressure': 'FLOAT',
        'thermostat': 'Langevin/NoseHooverChainNVT/Bussi/NPT',
@@ -81,7 +83,8 @@ MULTI_MD
        'write_interval': INT,
        'timestep': FLOAT,
        'log_interval': INT,
-       'print_ase_traj': 'y/n'
+       'print_ext_traj': 'y/n',
+       'simulation_environment': 'ASE'
    }
 
 FINETUNE
@@ -115,5 +118,5 @@ RECALC
        'pbc_list': [FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT],
        'foundation_model': '7net-mf-ompa/7net-omat/7net-l3i5/7net-0/PATH',
        'modal': 'mpa/oma24/None',
-       'dispersion_via_ase': 'y/n'
+       'dispersion_via_simenv': 'y/n'
    }

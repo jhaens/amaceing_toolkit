@@ -8,9 +8,10 @@ def configs_sevennet(config_name):
       'run_type': 'MD',
       'use_default_input': 'y',
       'MD' : {
+        'simulation_environment': 'ase',
         'foundation_model': '7net-mf-ompa',
         'modal': 'mpa',
-        'dispersion_via_ase': 'n',
+        'dispersion_via_simenv': 'n',
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -18,12 +19,13 @@ def configs_sevennet(config_name):
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 100,
-        'print_ase_traj': 'y'
+        'print_ext_traj': 'y'
       },
       'MULTI_MD' : {
+        'simulation_environment': 'ase',
         'foundation_model': ['7net-0', '7net-mf-ompa'],
         'modal': ['', 'mpa'],
-        'dispersion_via_ase': ['n', 'n'],
+        'dispersion_via_simenv': ['n', 'n'],
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -31,7 +33,7 @@ def configs_sevennet(config_name):
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 100,
-        'print_ase_traj': 'y'
+        'print_ext_traj': 'y'
       },
       'FINETUNE' : {
         'foundation_model': '7net-0',
@@ -42,9 +44,10 @@ def configs_sevennet(config_name):
         'lr': 0.01
       },
       'RECALC' : {
+        'simulation_environment': 'ase',
         'foundation_model': '7net-mf-ompa',
         'modal': 'mpa',
-        'dispersion_via_ase': 'n'
+        'dispersion_via_simenv': 'n'
       },
     },
 
