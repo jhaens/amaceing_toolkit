@@ -108,13 +108,19 @@ The module generates:
 Foundation Models
 -----------------
 
-The module supports various foundation models:
+The module supports various UMA models for the following tasks:
 
 * **oc20**: catalysis related tasks
 * **omat**: inorganic materials
 * **omol**: organic molecules
 * **odac**: Metal-Organic Frameworks (MOFs)
 * **omc**: molecular crystals
+
+Besides these also pretrained equivariant Smooth Energy Network (eSEN) models (only for `omol` tasks) can be used:
+
+* **eSEN-sm-direct**
+* **eSEN-sm-conserving**
+* **eSEN-md-direct**
 
 Technical Details
 -----------------

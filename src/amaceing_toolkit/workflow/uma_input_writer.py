@@ -345,6 +345,7 @@ def create_input(input_config, run_type):
     """
     Function to create the input file
     """
+    pretrained_model, task = task_and_model(input_config['foundation_model'])
 
     if run_type == 'MD':
         return f"""
@@ -366,9 +367,9 @@ from fairchem.core import pretrained_mlip
 device1 = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load the foundation model
-predictor = pretrained_mlip.get_predict_unit("uma-s-1", device=device1)
-uma_calc = FAIRChemCalculator(predictor, task_name="{input_config['foundation_model']}")
-print("Loading of UMA completed: {input_config['foundation_model']} model")
+predictor = pretrained_mlip.get_predict_unit("{pretrained_model}", device=device1)
+uma_calc = FAIRChemCalculator(predictor, task_name="{task}")
+print("Loading of fairchem model completed: {pretrained_model} @ {task}")
 
 # Load the coordinates (take care if it is the first start or a restart)
 if os.path.isfile('{input_config['project_name']}.traj'):
@@ -434,9 +435,9 @@ from fairchem.core import pretrained_mlip
 device1 = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load the foundation model
-predictor = pretrained_mlip.get_predict_unit("uma-s-1", device=device1)
-uma_calc = FAIRChemCalculator(predictor, task_name="{input_config['foundation_model']}")
-print("Loading of UMA completed: {input_config['foundation_model']} model")
+predictor = pretrained_mlip.get_predict_unit("{pretrained_model}", device=device1)
+uma_calc = FAIRChemCalculator(predictor, task_name="{task}")
+print("Loading of fairchem model completed: {pretrained_model} @ {task}")
 
 # Load the reference trajectory
 trajectory = read('{input_config['coord_file']}', index=':')
@@ -522,25 +523,71 @@ def ask_for_foundational_model(uma_config, run_type):
     Function to ask the user for the foundational model and its size
     """
     foundation_model = ' '
-    print("fairchem offeres serveral foundation models, so called pretrained UMA (Universal Models for Atoms) models for different classes of materials. These models are available from huggingface.co and will be downloaded automatically if you are logged to huggingface.co with your account. You need to have access to the UMA model repository.")
-    print("""The available models are:
+    # pretrained_model = ' '
+    # task = ' '
+    # print("fairchem offeres serveral foundation models, so called pretrained UMA (Universal Models for Atoms) models for different classes of materials. These models are available from huggingface.co and will be downloaded automatically if you are logged to huggingface.co with your account. You need to have access to the UMA model repository.")
+    print("""The available pretrained model and tasks are:
+    ==Universal Models for Atoms (UMA)==
     (1) oc20: catalysis related tasks,
     (2) omat: inorganic materials,
     (3) omol: organic molecules,
     (4) odac: Metal-Organic Frameworks (MOFs),
-    (5) omc: molecular crystals.""")
-    foundation_model_dict = {1: 'oc20', 2: 'omat', 3: 'omol', 4: 'odac', 5: 'omc'}
-    while foundation_model not in ['1', '2', '3', '4', '5', '']:
-        foundation_model = input("Which foundational model do you want to use? [1-5]: ")
-        if foundation_model not in ['1', '2', '3', '4', '5', '']:
-            print("Invalid input! Please enter '1', '2', '3', '4' or '5'.")
+    (5) omc: molecular crystals.
+    == equivariant Smooth Energy Network (eSEN)==
+    (6) eSEN-sm-direct,
+    (7) eSEN-sm-conserving,
+    (8) eSEN-md-direct.""")
+    foundation_model_dict = {'1': 'oc20', '2': 'omat', '3': 'omol', '4': 'odac', '5': 'omc', '6': 'eSEN-sm-direct', '7': 'eSEN-sm-conserving', '8': 'eSEN-md-direct'}
+    while foundation_model not in ['1', '2', '3', '4', '5', '6', '7', '8', '']:
+        foundation_model = input("Which model do you want to use? (1-8): " + "[" + uma_config[run_type]['foundation_model'] + "]: ")
+        if foundation_model not in ['1', '2', '3', '4', '5', '6', '7', '8', '']:
+            print("Invalid input! Please enter a number between 1 and 8.")
     if foundation_model == '':
         foundation_model = uma_config[run_type]['foundation_model']
     else:
-        foundation_model = foundation_model_dict[int(foundation_model)]
+        foundation_model = foundation_model_dict[foundation_model]
 
     return foundation_model
 
+    # task_dict = {1: 'oc20', 2: 'omat', 3: 'omol', 4: 'odac', 5: 'omc', 6: 'omol', 7: 'omol', 8: 'omol'}
+    # while task not in ['1', '2', '3', '4', '5', '6', '7', '8', '']:
+    #     task = input("Which model do you want to use? [1-8]: ")
+    #     if task not in ['1', '2', '3', '4', '5', '6', '7', '8', '']:
+    #         print("Invalid input! Please enter '1', '2', '3', '4', '5', '6', '7' or '8'.")
+    # if task == '':
+    #     task = uma_config[run_type]['foundation_model']
+    # else:
+    #     task = task_dict[int(task)]
+
+    # if task in ['oc20', 'omat', 'omol', 'odac', 'omc']:
+    #     pretrained_model = "uma-s-1"
+    # elif task == 'eSEN-sm-direct':
+    #     pretrained_model = "esen-sm-direct-all-omol"
+    # elif task == 'eSEN-sm-conserving':
+    #     pretrained_model = "esen-sm-conserving-all-omol"
+    # elif task == 'eSEN-md-direct':
+    #     pretrained_model = "esen-md-direct-all-omol"
+
+    #return pretrained_model, task 
+
+def task_and_model(foundation_model):
+    """
+    Function to return the task and model based on the foundation model
+    """
+    if foundation_model in ['oc20', 'omat', 'omol', 'odac', 'omc']:
+        task = "uma-s-1"
+        pretrained_model = foundation_model
+    elif foundation_model == 'eSEN-sm-direct':
+        pretrained_model = "esen-sm-direct-all-omol"
+        task = "omol"
+    elif foundation_model == 'eSEN-sm-conserving':
+        pretrained_model = "esen-sm-conserving-all-omol"
+        task = "omol"
+    elif foundation_model == 'eSEN-md-direct':
+        pretrained_model = "esen-md-direct-all-omol"
+        task = "omol"
+    
+    return pretrained_model, task
 
 def write_log_file(input_config):
     """
