@@ -64,6 +64,13 @@ Installation from Source
        conda activate atk_ms7n
        pip install mattersim==1.1.2 sevenn==0.11.0
 
+7. **Create a third environment for fairchem**:
+    .. code-block:: bash
+    
+         conda create -n atk_uma python=3.12
+         conda activate atk_uma
+         pip install uma
+
 Installation via pip
 --------------------
 
@@ -117,3 +124,17 @@ After installation, verify with:
         pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
         # Install the packages
         pip install mattersim==1.1.2 sevenn==0.11.0
+
+5. **Optional: Install fairchem**:
+    If you want to use the pip-package with fairchem, install it in a separate environment:
+    
+    .. code-block:: bash
+
+        conda create -n atk_uma python=3.12
+        conda activate atk_uma
+        # Install PyTorch for CUDA 12.4
+        pip install torch torchvision torchaudio
+        # Or for CPU-only systems
+        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+        # Install fairchem
+        pip install uma

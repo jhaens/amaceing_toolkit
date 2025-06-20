@@ -324,6 +324,60 @@ def sevennet_api(run_type=None, config=None):
     finally:
         sys.argv = old_args
 
+
+def uma_api(run_type=None, config=None):
+    """
+    API function for UMA input file creation
+    
+    Parameters
+    ----------
+    run_type : str, optional
+        Type of calculation to run ('MD', 'MULTI_MD', 'FINETUNE', 'RECALC')
+    config : dict, optional
+        Dictionary with the configuration parameters
+        
+    Returns
+    -------
+    None
+        Creates input files in the current directory
+        
+    Examples
+    --------
+    >>> from amaceing_toolkit.workflow import uma_api
+    >>> config = {
+    ...     'project_name': 'test_md',
+    ...     'coord_file': 'system.xyz',
+    ...     'pbc_list': [14.0, 0, 0, 0, 14.0, 0, 0, 0, 14.0],  # Will be formatted correctly for the command line
+    ...     'foundation_model': 'uma-0',
+    ...     'temperature': '300',
+    ...     'pressure': '1.0',
+    ...     'nsteps': 1000,
+    ...     'write_interval': 10,
+    ...     'timestep': 0.5,
+    ... }
+    >>> uma_api(run_type='MD', config=config)
+    """
+    import sys
+    import copy
+    old_args = sys.argv
+    try:
+        sys.argv = ["amaceing_uma"]
+        if run_type is not None:
+            sys.argv.extend(["-rt", run_type])
+        if config is not None:
+            # Make a deep copy to avoid modifying the original
+            config_copy = copy.deepcopy(config)
+            
+            # Handle the pbc_list special format
+            if 'pbc_list' in config_copy and isinstance(config_copy['pbc_list'], list):
+                config_copy['pbc_list'] = f"[{' '.join(str(x) for x in config_copy['pbc_list'])}]"
+                
+            sys.argv.extend(["-c", str(config_copy)])
+        from .sevennet_input_writer import atk_uma
+        atk_uma()
+    finally:
+        sys.argv = old_args
+
 def analyzer_api(file=None, pbc=None, timestep=None, visualize=None):
     """
     API function for trajectory analysis
@@ -371,4 +425,4 @@ __all__ = ["atk_cp2k", "atk_mace", "atk_mattersim", "atk_utils", "print_logo", "
            "string_to_dict_multi", "string_to_dict_multi2", "e0_wrapper", "frame_counter", 
            "cite_amaceing_toolkit", "create_dataset", "ask_for_float_int", "ask_for_int", 
            "ask_for_yes_no", "ask_for_yes_no_pbc", "extract_frames", "equi_to_md", "mace_citations",
-           "cp2k_api", "mace_api", "utils_api", "mattersim_api", "sevennet_api", "analyzer_api"]
+           "cp2k_api", "mace_api", "utils_api", "mattersim_api", "sevennet_api", "uma_api", "analyzer_api"]

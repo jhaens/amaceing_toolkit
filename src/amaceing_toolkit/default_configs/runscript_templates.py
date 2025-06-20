@@ -17,9 +17,11 @@ def hpc_setup_form():
             cluster = 'BatchXL'
             path_to_program['cp2k'] = '/home/joha4087/programs/cp2k_easy/cp2k-2025.1/exe/local/cp2k.popt' 
             path_to_source_file['cp2k'] = '/home/joha4087/programs/cp2k_easy/source_cp2k_gcc_openmpi_by_jonas'
-            path_to_program['mace'] = 'conda activate atk'                                                      # to do add the conda env name
+            path_to_program['mace'] = 'conda activate atk'                                                      
             path_to_source_file['mace'] = input('Enter the path to the source file of your conda: [/home/..USER../anaconda3/etc/profile.d/conda.sh]')
-            path_to_program['mattersim'] = 'conda activate atk_ms7n'                                            # to do add the conda env name
+            path_to_program['mattersim'] = 'conda activate atk_ms7n'                                            
+            path_to_source_file['mattersim'] = path_to_source_file['mace']
+            path_to_program['uma'] = 'conda activate atk_uma'                                           
             path_to_source_file['mattersim'] = path_to_source_file['mace']
             workload_manager = 'lsf'
         elif which_cluster == '2':
@@ -45,6 +47,11 @@ def hpc_setup_form():
             path_to_program['mattersim'] = input('Enter the name of your conda env: [atk_ms7n]')
             path_to_program['mattersim'] = f'conda activate {path_to_program["mattersim"]}'
             path_to_source_file['mattersim'] = path_to_source_file['mace']
+        setup_program = ask_for_yes_no('Do you want to setup the program path of your conda env for UMA (Meta fairchem)? (y/n)', 'y')
+        if setup_program == 'y':
+            path_to_program['uma'] = input('Enter the name of your conda env: [atk_uma]')
+            path_to_program['uma'] = f'conda activate {path_to_program["uma"]}'
+            path_to_source_file['uma'] = path_to_source_file['mace']
         
 
 
@@ -634,6 +641,75 @@ source {path_to_source_file}
 
 python {input_file_name} > {project_name}.out
 """, "Start the calculation with 'sbatch runscript.sh'"
+
+def uma_runscript(project_name, input_file_name, run_type):
+    """
+    Generate the runscript for UMA: gpu and cpu
+    """
+
+    # Load the HPC cluster information and set resources
+    cluster, workload_manager, path_to_program, path_to_source_file = checking_hpc_setup('uma')
+    resources_cpu = resource_setup_pyML('intermediate')
+    resources_gpu = resource_setup_pyML('gpu')
+
+    if workload_manager == 'lsf':
+        return f"""#!/bin/sh
+# GPU runscript
+
+source {path_to_source_file}
+{path_to_program}
+
+python {input_file_name} > {project_name}.out
+""", f"Start the calculation with 'batch.{resources_gpu[0]}gpu gpu_script.job'", f"""#!/bin/sh
+# CPU runscript
+
+#BSUB -J {project_name}
+#BSUB -o %J.out
+#BSUB -e %J.err
+#BSUB -W {resources_cpu[1]}:00
+#BSUB -q {cluster}
+#BSUB -n {resources_cpu[0]}
+#BSUB -R "span[hosts=1]"
+
+source {path_to_source_file}
+{path_to_program}
+
+python {input_file_name} > {project_name}.out
+""", "Start the calculation with 'bsub < runscript.sh'"
+    
+    elif workload_manager == 'slurm':           # WIP please check the slurm script for your hpc
+        return f"""#!/bin/bash
+# GPU runscript
+
+#SBATCH --job-name {project_name}
+#SBATCH --output output.log
+#SBATCH --nodes 1
+#SBATCH --ntasks-per-node {resources_gpu[0]}
+#SBATCH --time 24:00:00
+#SBATCH --partition={cluster}
+
+source {path_to_source_file}
+{path_to_program}
+
+python {input_file_name} > {project_name}.out
+source {path_to_source_file}
+""", f"Start the calculation with 'sbatch runscript.sh'", f"""#!/bin/bash
+# CPU runscript
+
+#SBATCH --job-name {project_name}
+#SBATCH --output output.log
+#SBATCH --nodes 1
+#SBATCH --ntasks-per-node {resources_cpu[0]}
+#SBATCH --time {resources_cpu[1]}:00:00
+#SBATCH --partition={cluster}   
+
+source {path_to_source_file}
+{path_to_program}
+
+python {input_file_name} > {project_name}.out
+""", "Start the calculation with 'sbatch runscript.sh'"
+
+
 
 
 # to do add a runscript directory where templates of other hpc clusters can be added these should be loaded in the runscript function

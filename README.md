@@ -18,6 +18,7 @@
   - [MACE input creation](#mace-input-creation-amaceing_mace)
   - [MatterSim input creation](#mattersim-input-creation-amaceing_mattersim)
   - [SevenNet input creation](#sevennet-input-creation-amaceing_sevennet)
+  - [UMA input creation](#uma-input-creation-amaceing_uma)
   - [Analyzer](#analyzer-amaceing_ana)
   - [Utilities](#utilities-amaceing_utils)
 - [Examples](#examples)
@@ -131,7 +132,21 @@ The package is available on GitHub and can be installed via pip.
     ```bash
     pip install mattersim==1.1.2 sevenn==0.11.0
     ```
-    The second environment is needed because the package mace and MatterSim/SevenNet have som conflicting dependencies:mace-torch depends on e3nn v0.4.4 and MatttuningerSim/SevenNet depend on e3nn v0.5.0. 
+
+7. In order to be able to use the package also with fairchem you need to create a thrid environment. This can be done via the following command:
+    ```bash
+    conda create -n atk_uma python=3.12    # create the environment
+    conda activate atk_uma                 # activate the environment
+    pip install fairchem                   # install fairchem
+    ```
+    Now you have to login to huggingface to be able to download the models. This can be done via:
+
+    ```bash
+    huggingface-cli login
+    ```
+    After logging in and requesting the access to the models, you can use the aMACEing_toolkit with fairchem.
+    
+    The second and third environment are needed because the package mace and MatterSim/SevenNet and fairchem have some conflicting dependencies:mace-torch depends on e3nn v0.4.4,  MatterSim/SevenNet depend on e3nn v0.5.0 and fairchem depends on e3nn v0.5.6. 
     It is also possible to use other names for the environments, but please make sure to change the names in the script `/amaceing_toolkit/src/amaceing_toolkit/default_config/runscript_templates.py` and `/amaceing_toolkit/src/amaceing_toolkit/default_config/hpc_setup.txt`. The names are used in the runscript generation.
 
 
@@ -198,6 +213,8 @@ amaceing_mattersim # Starts Q&A session for mattersim input creation
 
 amaceing_sevennet # Starts Q&A session for sevennet input creation
 
+amaceing_uma # Starts Q&A session for UMA input creation
+
 amaceing_ana # Starts Q&A session for the analyzer (only RDF, MSD and single particle MSD)
 
 amaceing_utils # Starts Q&A session for some useful tools including the evaluation of the performance of a (fine-tuned) model
@@ -251,6 +268,12 @@ The SevenNet input creation is designed to be easy to use. You can create a Seve
 - Molecular dynamics
 - Multi-configuration molecular dynamics
 - Fine-tuning of a foundation model (only 7net-0)
+- Recalculation of a reference trajectory
+
+### UMA input creation: amaceing_uma
+The UMA (fairchem) input creation is designed to be easy to use. You can create a UMA input file for different types of projects. The following types are available:
+- Molecular dynamics
+- Multi-configuration molecular dynamics
 - Recalculation of a reference trajectory
 
 ### Analyzer: amaceing_ana
@@ -312,6 +335,8 @@ This package allows for the use of predefined input values. The setup of this va
 /path/to/amaceing_toolkit/src/amaceing_toolkit/default_configs/mattersim_config.py # Open and change the mattersim config file 
 
 /path/to/amaceing_toolkit/src/amaceing_toolkit/default_configs/sevennet_config.py # Open and change the sevennet config file 
+
+/path/to/amaceing_toolkit/src/amaceing_toolkit/default_configs/uma_config.py # Open and change the uma config file
 ```
 
 The different calculation programs are sometimes using data which is stored in dictionary files (e.g. basis sets, xc functionals, atomic energies), these can be found in the same folder. If needed please insert here the required data.
@@ -348,6 +373,8 @@ Not implemented yet, but planned:
 - [ ] Adding the Possibility of REFTRAJ-Run within amaceing_cp2k using the CP2K restart file
 - [x] Adding newer MACE Foundation Models to choose from
 - [x] Adding the possibility to create LAMMPS input files for MACE
+- [x] Adding the possibility to create LAMMPS input files for SevenNet
+- [ ] Adding the possibility to create ASE input files for UMA/fairchem
 - [ ] Fasten the dataset creator for Fine-tuning
 - [ ] Web-API to monitor the runs
 - [ ] Support of other workload managers (Contributions are welcome!)

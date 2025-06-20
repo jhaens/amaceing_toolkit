@@ -27,6 +27,7 @@ Tutorial Notebook B: `aMACEing Toolkit Tutorial Notebook B <https://colab.resear
    modules/mace
    modules/mattersim
    modules/sevennet
+   modules/uma
    modules/utils
    modules/analyzer
 

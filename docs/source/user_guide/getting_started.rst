@@ -17,6 +17,7 @@ Run the following commands to start a Q&A session for input creation:
     amaceing_mace          # MACE input creation
     amaceing_mattersim     # MatterSim input creation
     amaceing_sevennet      # SevenNet input creation
+    amaceing_uma           # UMA (fairchem) input creation
     amaceing_ana           # Analyzer
     amaceing_utils         # Utilities
 
@@ -61,6 +62,16 @@ Supports:
 
 MatterSim Input Creation
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+Supports:
+
+* Molecular dynamics
+* Multi-configuration molecular dynamics
+* Fine-tuning of a foundation model
+* Recalculation of a reference trajectory
+
+SevenNet Input Creation
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Supports:
 

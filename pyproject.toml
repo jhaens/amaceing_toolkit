@@ -28,6 +28,7 @@ amaceing_cp2k = "amaceing_toolkit:amaceing_cp2k"
 amaceing_mace = "amaceing_toolkit:amaceing_mace"
 amaceing_mattersim = "amaceing_toolkit:amaceing_mattersim"
 amaceing_sevennet = "amaceing_toolkit:amaceing_sevennet"
+amaceing_uma = "amaceing_toolkit:amaceing_uma"
 amaceing_utils = "amaceing_toolkit:amaceing_utils"
 amaceing_ana = "amaceing_toolkit:amaceing_ana"
 

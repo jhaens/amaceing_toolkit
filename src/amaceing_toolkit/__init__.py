@@ -4,6 +4,7 @@ from .workflow.utils import atk_utils as amaceing_utils
 from .trajec_ana import atk_analyzer as amaceing_ana
 from .workflow.mattersim_input_writer import atk_mattersim as amaceing_mattersim
 from .workflow.sevennet_input_writer import atk_sevennet as amaceing_sevennet
+from .workflow.uma_input_writer import atk_uma as amaceing_uma
 from .workflow.utils import print_logo
 from .workflow.utils import cite_amaceing_toolkit
 from .workflow.utils import string_to_dict
@@ -27,10 +28,11 @@ from .workflow import mace_api
 from .workflow import utils_api
 from .workflow import mattersim_api
 from .workflow import sevennet_api
+from .workflow import uma_api
 from .workflow import analyzer_api
 
 
 __all__ = ["amaceing_cp2k", "amaceing_mace", "amaceing_utils", "amaceing_ana", 
            "amaceing_mattersim", "amaceing_sevennet", "cp2k_api", "mace_api",
-           "utils_api", "mattersim_api", "sevennet_api", "analyzer_api"]
+           "utils_api", "mattersim_api", "sevennet_api", "uma_api", "analyzer_api", "amaceing_uma"]
 

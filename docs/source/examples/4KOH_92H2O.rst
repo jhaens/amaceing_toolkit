@@ -434,7 +434,7 @@ The ``sevennet_test.sh`` script demonstrates four different types of SevenNet ca
 
 1. **Molecular Dynamics**: Runs an MD simulation using a SevenNet model
 2. **Multi-Configuration MD**: Runs multiple MD calculations with different foundation models
-3. **Fine-tuning**: Currently marked as "NOT IMPLEMENTED YET" in the script
+3. **Fine-tuning**: Fine-tunes a SevenNet foundation model with custom data
 4. **Reference Trajectory Recalculation**: Recomputes energies and forces along a reference trajectory
 
 You can run all SevenNet examples at once with:
@@ -557,6 +557,105 @@ Note that SevenNet models have specific naming conventions:
 * 7net-0: Base SevenNet model
 * 7net-mf-ompa: Multi-fidelity organic-materials/properties-average model
 * The "modal" parameter refers to the specific modal variant (mpa = materials/properties average)
+
+UMA Examples
+~~~~~~~~~~~~~~~~~
+
+The ``uma_test.sh`` script demonstrates three different types of UMA calculations:
+
+1. **Molecular Dynamics**: Runs an MD simulation using a UMA foundation model
+2. **Multi-Configuration MD**: Runs multiple MD calculations with different foundation models
+3. **Reference Trajectory Recalculation**: Recomputes energies and forces along a reference trajectory
+
+You can run all UMA examples at once with:
+
+.. code-block:: bash
+
+    bash /path/to/amaceing_toolkit/examples/4KOH_92H2O_333K/uma_test.sh
+
+To run these examples manually using Q&A sessions instead of command line parameters:
+
+.. code-block:: bash
+
+    # For molecular dynamics
+    mkdir -p uma/MD
+    cd uma/MD
+    amaceing_uma
+    # Then answer the prompts:
+    # - Run type: MD
+    # - Project name: 4koh_92h2o_md
+    # - Coordinate file: ../../data/system.xyz
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
+    # - Foundation model: omol
+    # - Temperature: 300
+    # - Pressure: 1.0
+    # - Thermostat: Langevin
+    # - Number of steps: 10
+    # - Write interval: 10
+    # - Timestep: 0.5
+    # - Log interval: 10
+    # - Print ext trajectory: y
+    cd ../..
+
+    # For multi-configuration molecular dynamics
+    mkdir -p uma/MULTI_MD
+    cd uma/MULTI_MD
+    amaceing_uma
+    # Then answer the prompts:
+    # - Run type: MULTI_MD
+    # - Project name: 4koh_92h2o_md
+    # - Coordinate file: ../../data/system.xyz
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
+    # - Number of configurations: 2
+    # - For Configuration 1:
+    #   - Foundation model: omol
+    # - For Configuration 2:
+    #   - Foundation model: omat
+    # - Temperature: 300
+    # - Pressure: 1.0
+    # - Thermostat: Langevin
+    # - Number of steps: 10
+    # - Write interval: 10
+    # - Timestep: 0.5
+    # - Log interval: 10
+    # - Print ext trajectory: y
+    cd ../..
+
+    # For reference trajectory recalculation
+    mkdir -p uma/RECALC
+    cd uma/RECALC
+    amaceing_uma
+    # Then answer the prompts:
+    # - Run type: RECALC
+    # - Project name: 4koh_92h2o_recalc
+    # - Coordinate file: ../../data/system.xyz
+    # - Cell dimensions: 14.2067 0 0 0 14.2067 0 0 0 14.2067
+    # - Foundation model: omol
+    cd ../..
+
+After running these examples, each calculation will generate appropriate Python scripts, configuration files, and runscripts. The file structure will include:
+
+.. code-block:: none
+
+    uma/
+    ├── MD/
+    │   ├── md_uma.py              # Python script for molecular dynamics
+    │   ├── runscript.sh           # Runscript
+    │   └── uma_input.log          # Log of configuration parameters
+    ├── MULTI_MD/
+    │   ├── md_uma_1/              # Directory for first configuration
+    │   │   ├── md_uma.py
+    │   │   └── runscript.sh
+    │   ├── md_uma_2/              # Directory for second configuration
+    │   └── uma_input.log
+    └── RECALC/
+        ├── recalc_uma.py          # Recalculation script
+        ├── runscript.sh           # Runscript
+        └── uma_input.log
+
+The UMA module supports foundation model types:
+* omol: Organic molecules model
+* omat: Organic materials model
 
 Utility Examples
 ~~~~~~~~~~~~~~~~
