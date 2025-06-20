@@ -67,9 +67,9 @@ Installation from Source
 7. **Create a third environment for fairchem**:
     .. code-block:: bash
     
-         conda create -n atk_uma python=3.12
-         conda activate atk_uma
-         pip install uma
+       conda create -n atk_uma python=3.12
+       conda activate atk_uma
+       pip install fairchem-core
 
 Installation via pip
 --------------------

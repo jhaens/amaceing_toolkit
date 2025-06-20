@@ -137,7 +137,7 @@ The package is available on GitHub and can be installed via pip.
     ```bash
     conda create -n atk_uma python=3.12    # create the environment
     conda activate atk_uma                 # activate the environment
-    pip install fairchem                   # install fairchem
+    pip install fairchem-core              # install fairchem
     ```
     Now you have to login to huggingface to be able to download the models. This can be done via:
 
