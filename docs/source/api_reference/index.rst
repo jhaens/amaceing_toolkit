@@ -28,7 +28,8 @@ This section provides detailed API reference documentation for the aMACEing tool
 
    cp2k
    mace
-   utils
    mattersim
    sevennet
+   uma
    analyzer
+   utils
