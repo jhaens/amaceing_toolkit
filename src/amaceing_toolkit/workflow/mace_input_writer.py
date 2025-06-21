@@ -330,7 +330,7 @@ def mace_form():
     # If the simulation environment is LAMMPS call the lammps input writer and exit afterwards
     if run_type in ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'] and sim_env == 'lammps':
         print("WARNING: The lammps input writer is still in development.")
-        if input_config_tmp['dispersion_via_ase'] == 'y':
+        if input_config['dispersion_via_ase'] == 'y':
             print("WARNING: The dispersion correction via LAMMPS is not implemented yet. Please use the ASE atomic simulation environment for running dispersion corrected runs.")
         if run_type == 'MULTI_MD':
             counter = 0
