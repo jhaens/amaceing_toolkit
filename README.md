@@ -130,7 +130,7 @@ The package is available on GitHub and can be installed via pip.
     Now you can install the package via:
 
     ```bash
-    pip install mattersim==1.1.2 sevenn==0.11.0
+    pip install mattersim==1.1.2 sevenn==0.11.2
     ```
 
 7. In order to be able to use the package also with fairchem you need to create a thrid environment. This can be done via the following command:

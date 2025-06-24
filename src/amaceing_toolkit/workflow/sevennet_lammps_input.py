@@ -90,9 +90,9 @@ variable      pot_e equal pe"""
             print(f"Converting foundation model {config_dict['foundation_model']} to LAMMPS format...")
             if config_dict['modal'] != '':
                 print(f"Converting with the respect to modal {config_dict['modal']}.") 
-                convert_command = f'sevenn_get_model -o {config_dict["foundation_model"]+".pt"} -m {config_dict["modal"]} {config_dict["foundation_model"]}' 
+                convert_command = f'sevenn_get_model {config_dict["foundation_model"]} -o {config_dict["foundation_model"]+".pt"} -m {config_dict["modal"]}' 
             else:
-                convert_command = f'sevenn_get_model -o {config_dict["foundation_model"]+".pt"} {config_dict["foundation_model"]}'
+                convert_command = f'sevenn_get_model {config_dict["foundation_model"]} -o {config_dict["foundation_model"]+".pt"}'
             config_dict['foundation_model'] = config_dict['foundation_model'] + '.pt'
         elif config_dict['foundation_model'].endswith('.pth'):
             print(f"Converting model {config_dict['foundation_model']} to LAMMPS format...")
