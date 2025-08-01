@@ -25,7 +25,7 @@ def main():
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 100,
-        'print_ase_traj': 'y'
+        'print_ext_traj': 'y'
     }
     mattersim_api(run_type='MD', config=md_config)
     
@@ -47,7 +47,7 @@ def main():
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 100,
-        'print_ase_traj': 'y'
+        'print_ext_traj': 'y'
     }
     mattersim_api(run_type='MULTI_MD', config=multi_md_config)
     
@@ -59,10 +59,10 @@ def main():
     print("Running FINETUNE example")
     finetune_config = {
         'project_name': 'system_ft',
-        'train_data_path': '../../../4KOH_92H2O_333K/data/train_file_ms.xyz',
+        'train_file': '../../../4KOH_92H2O_333K/data/train_file_ms.xyz',
         'device': 'cuda',
         'force_loss_ratio': 100.0,
-        'load_model_path': 'small',
+        'foundation_model': 'small',
         'batch_size': 5,
         'save_checkpoint': 'y',
         'ckpt_interval': 25,

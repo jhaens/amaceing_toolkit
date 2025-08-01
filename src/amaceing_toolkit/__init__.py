@@ -1,10 +1,11 @@
 from .workflow.cp2k_input_writer import atk_cp2k as amaceing_cp2k
-from .workflow.mace_input_writer import atk_mace as amaceing_mace
+from .workflow.input_wrapper import atk_mace as amaceing_mace
 from .workflow.utils import atk_utils as amaceing_utils
 from .trajec_ana import atk_analyzer as amaceing_ana
-from .workflow.mattersim_input_writer import atk_mattersim as amaceing_mattersim
-from .workflow.sevennet_input_writer import atk_sevennet as amaceing_sevennet
-from .workflow.uma_input_writer import atk_uma as amaceing_uma
+from .workflow.input_wrapper import atk_mattersim as amaceing_mattersim
+from .workflow.input_wrapper import atk_sevennet as amaceing_sevennet
+from .workflow.input_wrapper import atk_orb as amaceing_orb
+from .workflow.input_wrapper import atk_grace as amaceing_grace
 from .workflow.utils import print_logo
 from .workflow.utils import cite_amaceing_toolkit
 from .workflow.utils import string_to_dict
@@ -28,11 +29,11 @@ from .workflow import mace_api
 from .workflow import utils_api
 from .workflow import mattersim_api
 from .workflow import sevennet_api
-from .workflow import uma_api
 from .workflow import analyzer_api
-
+from .workflow import orb_api
+from .workflow import grace_api
 
 __all__ = ["amaceing_cp2k", "amaceing_mace", "amaceing_utils", "amaceing_ana", 
-           "amaceing_mattersim", "amaceing_sevennet", "cp2k_api", "mace_api",
-           "utils_api", "mattersim_api", "sevennet_api", "uma_api", "analyzer_api", "amaceing_uma"]
+           "amaceing_mattersim", "amaceing_sevennet", "amaceing_orb",  "amaceing_grace", "cp2k_api", "mace_api",
+           "utils_api", "mattersim_api", "sevennet_api", "analyzer_api", "orb_api", "grace_api"]
 

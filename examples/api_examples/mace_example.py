@@ -20,7 +20,7 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],  # List directly, API handles formatting
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_ase': 'n',
+        'dispersion_via_simenv': 'n',
         'max_iter': 10,
         'simulation_environment': 'ase'
     }
@@ -38,11 +38,12 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_ase': 'n',
+        'dispersion_via_simenv': 'n',
         'max_iter': 10,
         'simulation_environment': 'ase'
     }
     mace_api(run_type='CELL_OPT', config=cell_opt_config)
+
     
     os.chdir("../..")  # Go back to main mace directory
     os.makedirs("mace/MD", exist_ok=True)
@@ -56,7 +57,7 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_ase': 'n',
+        'dispersion_via_simenv': 'n',
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -82,7 +83,7 @@ def main():
         # Lists can be passed directly as Python lists
         'foundation_model': ['mace_mp', 'mace_mp', 'mace_off'],
         'model_size': ['small', 'medium', 'small'],
-        'dispersion_via_ase': ['n', 'n', 'n'],
+        'dispersion_via_simenv': ['n', 'n', 'n'],
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -114,7 +115,7 @@ def main():
         'prevent_catastrophic_forgetting': 'n',
         'valid_fraction': 0.1,
         'valid_batch_size': 2,
-        'max_num_epochs': 2,
+        'epochs': 2,
         'seed': 1,
         'lr': 0.01,
         'dir': 'MACE_models',
@@ -140,7 +141,7 @@ def main():
         'batch_size': 5,
         'valid_fraction': 0.1,
         'valid_batch_size': 2,
-        'max_num_epochs': 2,
+        'epochs': 2,
         'seed': 1,
         'lr': 0.01,
         'xc_functional_of_dataset': ['BLYP', 'BLYP'],
@@ -160,7 +161,7 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_ase': 'n',
+        'dispersion_via_simenv': 'n',
         'simulation_environment': 'ase'
     }
     mace_api(run_type='RECALC', config=recalc_config)

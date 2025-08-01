@@ -5,7 +5,7 @@ def configs_cp2k(config_name):
     'default' : {
       'cp2k_newer_than_2023x': 'y',
       'coord_file' : 'coord.xyz',
-      'box_cubic' : 'y',
+      'box_cubic' : 'pbc',
       'run_type' : 'MD',
       'use_default_input' : 'y',
       'MD' : {
@@ -13,8 +13,8 @@ def configs_cp2k(config_name):
         'nsteps' : 200000,
         'timestep' : 0.5,
         'temperature' : 300,
-        'print_forces' : 'y',
-        'print_velocities' : 'n',
+        'print_forces' : 'ON',
+        'print_velocities' : 'OFF',
         'xc_functional' : 'BLYP',
         'equilibration_steps' : 2000,
         'pressure_b': 1.0,
@@ -22,7 +22,7 @@ def configs_cp2k(config_name):
       },
       'GEO_OPT': {
         'max_iter': 1000,
-        'print_forces': 'n',
+        'print_forces': 'OFF',
         'xc_functional': 'BLYP'
       },
       'CELL_OPT': {
@@ -34,8 +34,8 @@ def configs_cp2k(config_name):
       'REFTRAJ' : {
         'nsteps' : 400000,
         'stride' : 200,
-        'print_forces' : 'y',
-        'print_velocities' : 'n',
+        'print_forces' : 'ON',
+        'print_velocities' : 'OFF',
         'xc_functional' : 'BLYP'
       },
       'ENERGY': {

@@ -1,113 +1,137 @@
-Usage Guide
-===========
+Getting Started
+===============
 
-This package is designed to be easy to use. You can create input files for CP2K, MACE, MatterSim, and SevenNet via a Q&A session or one-line commands.
+aMACEing_toolkit provides several command-line tools and Python APIs for creating input files, running simulations, and analyzing results. This guide will help you get started with the basic usage patterns.
 
-Command-Line Usage
-------------------
+Command-Line Interface
+----------------------
 
-Q&A Session
-~~~~~~~~~~~
+The toolkit offers interactive Q&A sessions for creating input files and configuring simulations. This is the easiest way for beginners to use the toolkit.
 
-Run the following commands to start a Q&A session for input creation:
+Basic Commands
+~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
     amaceing_cp2k          # CP2K input creation
     amaceing_mace          # MACE input creation
-    amaceing_mattersim     # MatterSim input creation
+    amaceing_mattersim     # MatterSim input creation 
     amaceing_sevennet      # SevenNet input creation
-    amaceing_uma           # UMA (fairchem) input creation
-    amaceing_ana           # Analyzer
-    amaceing_utils         # Utilities
+    amaceing_orb           # ORB input creation
+    amaceing_grace         # Grace input creation
+    amaceing_ana           # Trajectory analysis
+    amaceing_utils         # Utility functions
 
-One-Line Commands
+Interactive Usage
 ~~~~~~~~~~~~~~~~~
-
-You can also use one-line commands for input creation:
+To create a CP2K input file interactively, run:
 
 .. code-block:: bash
 
-    amaceing_<function> -rt="<run_type>" -c="{'project_name': 'test', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', ...}"
+    amaceing_cp2k
 
-.. note::
-   **Important**: Do **NOT** use double quotes or commas inside lists in the dictionary.
+This will start an interactive session where you can answer questions about your simulation setup, such as the type of simulation (e.g., geometry optimization, molecular dynamics), the system's coordinates, periodic boundary conditions, and other parameters.
 
-Available Functions
--------------------
+Non-Interactive Usage
+~~~~~~~~~~~~~~~~~~~~~
 
-CP2K Input Creation
-~~~~~~~~~~~~~~~~~~~
+For automated workflows or batch processing, you can use one-line commands:
 
-Supports:
+.. code-block:: bash
 
-* Geometry optimization
-* Cell optimization
-* Molecular dynamics
-* Recalculation of a reference trajectory
-* Single point energy calculation
+    amaceing_cp2k -rt="GEO_OPT" -c="{'project_name': 'test', 'coord_file': 'system.xyz', 'pbc_list': [14.2067 0 0 0 14.2067 0 0 0 14.2067], 'max_iter': 100, 'xc_functional': 'BLYP', 'print_forces': 'OFF', 'cp2k_newer_than_2023x': 'y'}"
 
-MACE Input Creation
-~~~~~~~~~~~~~~~~~~~
+.. warning::
+   When using the one-line command format, do **NOT** use double quotes inside the dictionary or commas inside lists in the dictionary. The dictionary is passed as a string and nested double quotes are not allowed.
 
-Supports:
+Python API
+----------
 
-* Geometry optimization
-* Cell optimization
-* Molecular dynamics
-* Multi-configuration molecular dynamics
-* Fine-tuning of a foundation model
-* Multihead fine-tuning of a foundation model
-* Recalculation of a reference trajectory
+For more programmatic control or integration into your own Python scripts, you can use the Python API:
 
-MatterSim Input Creation
-~~~~~~~~~~~~~~~~~~~~~~~~
+.. code-block:: python
 
-Supports:
+    from amaceing_toolkit.workflow import cp2k_api
+    
+    # Generate CP2K geometry optimization input
+    config = {
+        'project_name': 'system_geoopt',
+        'coord_file': 'system.xyz',
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
+        'max_iter': 100,
+        'xc_functional': 'BLYP',
+        'print_forces': 'OFF',
+        'cp2k_newer_than_2023x': 'y'
+    }
+    cp2k_api(run_type='GEO_OPT', config=config)
 
-* Molecular dynamics
-* Multi-configuration molecular dynamics
-* Fine-tuning of a foundation model
-* Recalculation of a reference trajectory
+Core Functionality
+------------------
 
-SevenNet Input Creation
-~~~~~~~~~~~~~~~~~~~~~~~
+The toolkit supports different simulation types for various engines:
 
-Supports:
+CP2K Workflows (``amaceing_cp2k``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Molecular dynamics
-* Multi-configuration molecular dynamics
-* Fine-tuning of a foundation model
-* Recalculation of a reference trajectory
+* ``GEO_OPT``: Geometry optimization
+* ``CELL_OPT``: Cell optimization
+* ``MD``: Molecular dynamics
+* ``REFTRAJ``: Recalculation of a reference trajectory
+* ``ENERGY``: Single point energy calculation
 
-SevenNet Input Creation
-~~~~~~~~~~~~~~~~~~~~~~~
+MACE Workflows (``amaceing_mace``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Supports:
+* **Simulation**: ``GEO_OPT``, ``CELL_OPT``, ``MD``, ``MULTI_MD``, ``RECALC`` 
+* **Training**: ``FINETUNE``, ``FINETUNE_MULTIHEAD``
+* **Output formats**: ASE and LAMMPS
 
-* Molecular dynamics
-* Multi-configuration molecular dynamics
-* Recalculation of a reference trajectory
+MatterSim Workflows (``amaceing_mattersim``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Analyzer
-~~~~~~~~
+* **Simulation**: ``GEO_OPT``, ``CELL_OPT``, ``MD``, ``MULTI_MD``, ``RECALC``
+* **Training**: ``FINETUNE``
+* **Output formats**: ASE
 
-Analyze results with:
+SevenNet Workflows (``amaceing_sevennet``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Single Trajectory Analysis
-* Multiple Trajectory Analysis
-* Radial Distribution Function (RDF)
-* Mean Square Displacement (MSD)
-* Single Particle MSD (sMSD)
+* **Simulation**: ``GEO_OPT``, ``CELL_OPT``, ``MD``, ``MULTI_MD``, ``RECALC``
+* **Training**: ``FINETUNE``
+* **Output formats**: ASE, LAMMPS
 
-Utilities
-~~~~~~~~~
+ORB Workflows (``amaceing_orb``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Includes:
+* **Simulation**: ``GEO_OPT``, ``CELL_OPT``, ``MD``, ``MULTI_MD``, ``RECALC``
+* **Training**: ``FINETUNE``
+* **Output formats**: ASE
 
-* Model error evaluation
-* Trajectory preparation
-* Frame extraction
-* Citation generation
-* Benchmarking
-* Logger overview
+Grace Workflows (``amaceing_grace``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* **Simulation**: ``GEO_OPT``, ``CELL_OPT``, ``MD``, ``MULTI_MD``, ``RECALC``
+* **Training**: ``FINETUNE``
+* **Output formats**: ASE, LAMMPS
+
+Trajectory Analysis (``amaceing_ana``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The analyzer supports:
+
+* Single and multiple trajectory analysis
+* Radial distribution function (RDF) 
+* Mean square displacement (MSD)
+* Single-particle mean square displacement (sMSD)
+* Vector autocorrelation function (VACF)
+* Visualization of results
+* LaTeX report generation
+
+Utility Functions (``amaceing_utils``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Model evaluation against reference trajectories
+* Frame extraction from trajectories
+* Citation management
+* Benchmarking of different machine learning interatomic potentials (MLIPs)
+* Run and model logging

@@ -5,7 +5,7 @@ echo ============================
 mkdir -p ana_koh
 cd ana_koh
 echo ----------------------------
-amaceing_ana --file=../data/koh1.xyz --pbc=../data/pbc_koh1 --timestep=50.0 --visualize=y
+amaceing_ana --file=../data/koh1.xyz --pbc=../data/pbc_koh1 --timestep=50.0 --visualize=y --rdf_pairs=O-O,O-H --msd_list=H
 pdflatex analysis.tex
 pdflatex analysis.tex
 cd ..

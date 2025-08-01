@@ -3,8 +3,8 @@ import os
 import sys
 import sphinx
 
-
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
+#html_theme = "sphinx_rtd_theme"
 
 extensions = [
     'sphinx.ext.autodoc',

@@ -1,52 +1,86 @@
 Analyzer Module
 ===============
 
-Overview
---------
+The Analyzer module provides high-performance tools for molecular dynamics trajectory analysis. It combines Python interface logic with C++ computational backends to deliver efficient calculations of key physical properties from simulation trajectories.
 
-The Analyzer module is a powerful component of the aMACEing toolkit designed to analyze molecular dynamics trajectories. It provides tools for calculating fundamental physical properties and visualizing the results.
 
-Analysis Capabilities
----------------------
-
-The Analyzer supports the following types of analyses:
+Analysis Methods
+----------------
 
 Radial Distribution Function (RDF)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Calculates the probability of finding particles at a specific distance from a reference particle
-* Helps identify structural organization in systems
-* Automatically proposes relevant atom pairs based on system composition
+The RDF (or pair correlation function) g(r) describes how the atomic density varies as a function of distance from a reference particle:
+
+.. math::
+
+   g_{ab}(r)= \dfrac{V}{N_{a} \cdot N_{b}} \displaystyle \sum_{i=1}^{N_{a}} \displaystyle \sum_{j=i+1}^{N_{b}} \langle \delta(r - \left\vert \vec{r}_{i}(t) - \vec{r}_{j}(t) \right\vert) \rangle _{t}
+
+Where:
+- ρ is the average number density
+- n(r) is the number of atoms in a shell of width Δr at distance r
+
+Implementation features:
+* Bin-based histogram calculation with configurable resolution
+* Automatic normalization for correct physical interpretation
+* Support for arbitrary atom pairs
+* Multiple RDFs can be calculated in a single analysis run
+* Handles periodic boundary conditions correctly
 
 Mean Square Displacement (MSD)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Measures how far atoms move from their initial positions
-* Used to calculate diffusion coefficients
-* Identifies atomic mobility in the system
+The MSD measures how far atoms travel from their initial positions as a function of time:
+
+.. math::
+
+   \text{MSD}(t) = \left\langle |r_i(t) - r_i(0)|^2 \right\rangle_i
+
+Where:
+- r_i(t) is the position of atom i at time t
+- The average is taken over all atoms of a given type
+
+Implementation features:
+* Automatic unwrapping of trajectories with periodic boundary conditions
+* Calculation of diffusion coefficients using Einstein relation
+* Error estimation for diffusion coefficients
+* Supports multiple atom types in a single analysis run
 
 Single-particle Mean Square Displacement (sMSD)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Tracks individual particle displacement rather than ensemble averages
-* Identifies heterogeneous dynamics in the system
-* Calculates diffusion coefficients for individual particles
+The sMSD tracks displacement for individual atoms rather than ensemble averages:
 
+.. math::
+
+   \text{sMSD}_i(t) = |r_i(t) - r_i(0)|^2
+
+Implementation features:
+* Individual trajectories for each particle
+* Statistical distribution of single-particle diffusion coefficients
+* Identification of outlier particles with anomalous diffusion
 
 Vector Autocorrelation Function (VACF)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* Measures the correlation of a particle's velocity over time
-* Provides insights into the dynamics of the system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The VACF measures how a particle's velocity remains correlated with its initial velocity over time:
+
+.. math::
+
+   \text{VACF}(t) = \left\langle v_i(t) \cdot v_i(0) \right\rangle_i
+
+Implementation features:
+* Support for different vector quantities (velocity, dipole, etc.)
+* Normalized and unnormalized correlation functions
+* Fourier transform for spectral analysis
 
 Usage
 -----
 
-The Analyzer can be used in two ways:
+Command Line Interface
+~~~~~~~~~~~~~~~~~~~~~~
 
-Q&A Session
-~~~~~~~~~~~
-
-Start an interactive Q&A session with:
+**Interactive Q&A Mode**:
 
 .. code-block:: bash
 
@@ -54,49 +88,105 @@ Start an interactive Q&A session with:
 
 This guides you through:
 
-1. Selecting trajectory files for analysis
-2. Specifying periodic boundary conditions
-3. Setting the timestep
-4. Choosing which analyses to perform
-5. Generating visualizations and reports
+1. Selecting trajectory files (supports multiple files)
+2. Defining periodic boundary conditions
+3. Setting timestep values for each trajectory
+4. Selecting which analyses to perform
+5. Choosing atom types or pairs for each analysis
+6. Configuring visualization options
 
-The Analyzer offers a "smart proposal" feature that automatically recommends analyses based on the atom types in your system.
-
-Command-line Usage
-~~~~~~~~~~~~~~~~~~
-
-Analyze files directly with a single command:
+**Direct Command Line Mode**:
 
 .. code-block:: bash
 
-    amaceing_ana -f="coord.xyz" -p="pbc.txt" -t="0.5" -v="y"
+    amaceing_ana -f="traj.xyz" -p="pbc.dat" -t="0.5" -v="y" -r="O-H,O-O" -m="O,H" -s="O" -a="O-H"
 
 Parameters:
 
-* ``-f, --file``: Path to the trajectory file(s) (comma-separated for multiple)
-* ``-p, --pbc``: Path to the PBC file(s) (comma-separated for multiple)
+* ``-f, --file``: Path to trajectory file(s) (comma-separated for multiple)
+* ``-p, --pbc``: Path to PBC file(s) (comma-separated for multiple)
 * ``-t, --timestep``: Timestep in fs (comma-separated for multiple)
-* ``-v, --visualize``: Whether to visualize results (y/n, default is y)
+* ``-v, --visualize``: Whether to visualize (y/n)
+* ``-r, --rdf_pairs``: Atom pairs for RDF analysis (comma-separated, format: atom1-atom2)
+* ``-m, --msd_list``: Atoms for MSD analysis (comma-separated)
+* ``-s, --smsd_list``: Atoms for single-particle MSD analysis (comma-separated)
+* ``-a, --autocorr_pairs``: Pairs for vector autocorrelation (comma-separated, format: atom1-atom2)
 
-For multiple trajectory analysis:
+Python API
+~~~~~~~~~~
 
-.. code-block:: bash
+.. code-block:: python
 
-    amaceing_ana -f="traj1.xyz,traj2.xyz" -p="pbc1.txt,pbc2.txt" -t="0.5,1.0" -v="y"
+    from amaceing_toolkit.workflow import analyzer_api
+    
+    # Configure the analysis
+    config = {
+        'traj_file': 'trajectory.xyz',
+        'pbc_file': 'pbc.dat',
+        'timestep': 0.5,
+        'analysis_types': ['rdf', 'msd'],
+        'rdf_pairs': [['O', 'H'], ['O', 'O']],
+        'msd_atoms': ['O', 'H'],
+        'visualize': True
+    }
+    
+    # Run the analysis
+    results = analyzer_api(config=config)
+
+Input File Formats
+------------------
+
+**Trajectory Files**:
+
+The analyzer accepts standard XYZ format trajectory files containing multiple frames:
+
+.. code-block:: text
+
+    N_atoms
+    comment line
+    atom_type_1 x1 y1 z1
+    atom_type_2 x2 y2 z2
+    ...
+    N_atoms
+    comment line
+    atom_type_1 x1 y1 z1
+    ...
+
+**PBC Files**:
+
+The PBC (periodic boundary condition) file format is a simple text file containing the simulation cell vectors:
+
+.. code-block:: text
+
+    A B C
+    D E F
+    G H I
+
 
 Output and Visualization
 ------------------------
 
-The Analyzer produces:
+For each analysis type, the analyzer produces:
 
-* CSV files with numerical results
-* Publication-quality plots for each analysis
-* Automatic calculation of diffusion coefficients from MSD data
-* Statistical analysis of sMSD results
-* A comprehensive LaTeX report summarizing all results
+1. **Raw Data**:
+   * CSV files containing the numerical results
+   * Data is organized for easy import into other analysis tools
 
-Technical Details
------------------
+2. **Visualizations**:
+   * Publication-quality plots generated using matplotlib
+   * Automatic formatting and styling for clarity
+   * PNG and PDF output formats
+
+3. **Derived Quantities**:
+   * Diffusion coefficients from MSD curves
+   * Coordination numbers from RDF peaks
+   * Correlation times from VACF decay
+
+4. **LaTeX Report** (optional):
+   * Comprehensive summary of all analyses
+   * Tables of derived quantities
+   * Embedded figures
+   * Ready to compile for publication or presentations
 
 * Diffusion coefficients are calculated by fitting the MSD curve in the time range 10-30 ps
 * For sMSD analysis, statistics include mean, standard deviation, median, and the five highest diffusion coefficients

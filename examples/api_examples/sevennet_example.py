@@ -14,7 +14,7 @@ def main():
     print("----------------------------")
     print("Running MD example")
     md_config = {
-        'project_name': 'system_md',
+        'project_name': '4koh_92h2o_md',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': '7net-mf-ompa',
@@ -27,7 +27,8 @@ def main():
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 10,
-        'print_ext_traj': 'y'
+        'print_ext_traj': 'y',
+        'simulation_environment': 'ase'
     }
     sevennet_api(run_type='MD', config=md_config)
     
@@ -38,7 +39,7 @@ def main():
     print("----------------------------")
     print("Running MULTI_MD example")
     multi_md_config = {
-        'project_name': 'system_multimd',
+        'project_name': '4koh_92h2o_md',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': ['7net-0', '7net-mf-ompa'],
@@ -51,7 +52,8 @@ def main():
         'write_interval': 10,
         'timestep': 0.5,
         'log_interval': 10,
-        'print_ext_traj': 'y'
+        'print_ext_traj': 'y',
+        'simulation_environment': 'ase'
     }
     sevennet_api(run_type='MULTI_MD', config=multi_md_config)
     
@@ -62,13 +64,15 @@ def main():
     print("----------------------------")
     print("Running FINETUNE example")
     finetune_config = {
-        'project_name': 'system_finetune',
-        'train_data_path': '../../../4KOH_92H2O_333K/data/train_file_7net.xyz',
+        'project_name': '4koh_92h2o_ft',
+        'device': 'cuda',
+        'train_file': '../../../4KOH_92H2O_333K/data/train_file_7net.xyz',
         'foundation_model': '7net-0',
         'epochs': 2,
         'batch_size': 4,
         'seed': 1,
-        'lr': 0.01
+        'lr': 0.01,
+        'force_loss_ratio': 1.0
     }
     sevennet_api(run_type='FINETUNE', config=finetune_config)
     
@@ -79,12 +83,13 @@ def main():
     print("----------------------------")
     print("Running RECALC example")
     recalc_config = {
-        'project_name': 'system_recalc',
+        'project_name': '4koh_92h2o_recalc',
         'coord_file': '../../../4KOH_92H2O_333K/data/system.xyz',
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': '7net-mf-ompa',
         'modal': 'mpa',
-        'dispersion_via_simenv': 'n'
+        'dispersion_via_simenv': 'n',
+        'simulation_environment': 'ase'
     }
     sevennet_api(run_type='RECALC', config=recalc_config)
     

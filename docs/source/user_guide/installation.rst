@@ -1,7 +1,5 @@
-Installation Guide
-==================
-
-The package is available on GitHub and can be installed via pip.
+Installation
+============
 
 Installation from Source
 ------------------------
@@ -16,32 +14,22 @@ Installation from Source
        conda activate atk                      # activate the environment
 
 2. **Install PyTorch**:
-   
-   - For CUDA 12.4:
-   
-     .. code-block:: bash
-     
-         pip install torch torchvision torchaudio
-   
-   - For CPU-only systems:
-   
-     .. code-block:: bash
-     
-         pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
-3. **Ensure OpenMPI is installed**:
-
-   .. code-block:: bash
+   Find the appropriate installation command for your system at the `PyTorch website <https://pytorch.org/get-started/locally/>`_.
    
-       mpirun --version
-   
-   If not installed:
+   For CUDA-enabled systems:
    
    .. code-block:: bash
+     
+       pip install torch torchvision torchaudio
    
-       conda install conda-forge::openmpi
+   For CPU-only systems:
+   
+   .. code-block:: bash
+     
+       pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
-4. **Clone and install the package**:
+3. **Clone and install the package**:
 
    .. code-block:: bash
    
@@ -50,31 +38,58 @@ Installation from Source
        pip install -r requirements.txt
        pip install .
 
-5. **Optional: Install additional packages for faster MACE**:
+   Verify installation with:
+
+   .. code-block:: bash
+   
+       amaceing_cp2k --help
+       pip show mace-torch
+
+4. **Optional: Install additional packages for accelerated MACE performance**:
+
+   For CUDA-enabled systems:
 
    .. code-block:: bash
    
        pip install cuequivariance==0.1.0 cuequivariance-torch==0.1.0 cuequivariance-ops-torch-cu12==0.1.0
 
-6. **Create a second environment for MatterSim and SevenNet**:
+5. **Create a separate environment for MatterSim and SevenNet**:
+
+   Due to conflicting dependencies (e3nn version differences), a separate environment is needed:
 
    .. code-block:: bash
    
        conda create -n atk_ms7n python=3.9
        conda activate atk_ms7n
-       pip install mattersim==1.1.2 sevenn==0.11.0
+       pip install torch torchvision torchaudio
+       pip install mattersim==1.1.2 sevenn==0.11.2
 
-7. **Create a third environment for fairchem**:
-    .. code-block:: bash
+6. **Create a separate environment for ORB**:
+
+   ORB models require Python 3.10:
+
+   .. code-block:: bash
     
-       conda create -n atk_uma python=3.12
-       conda activate atk_uma
-       pip install fairchem-core
+       conda create -n atk_orb python=3.10
+       conda activate atk_orb
+       git clone https://github.com/orbital-materials/orb-models.git
+       cd orb-models
+       pip install .
+
+7. **Create a separate environment for Grace**:
+
+   Grace models requires Python 3.11 and Tensorflow will be installed automatically:
+
+   .. code-block:: bash
+   
+       conda create -n atk_grace python=3.11
+       conda activate atk_grace
+       pip install tensorpotential
 
 Installation via pip
 --------------------
 
-This is the easiest way to install the package but has limitations (e.g., no direct MatterSim/SevenNet support).
+If you only need to create input files (not directly execute MatterSim/SevenNet simulations):
 
 1. **Create a virtual environment**:
 
@@ -84,18 +99,18 @@ This is the easiest way to install the package but has limitations (e.g., no dir
        conda activate atk
 
 2. **Install PyTorch**:
+
+   For CUDA-enabled systems:
    
-   - For CUDA 12.4:
+   .. code-block:: bash
    
-     .. code-block:: bash
-     
-         pip install torch torchvision torchaudio
+       pip install torch torchvision torchaudio
    
-   - For CPU-only systems:
+   For CPU-only systems:
    
-     .. code-block:: bash
-     
-         pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+   .. code-block:: bash
+   
+       pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
 3. **Install the package**:
 
@@ -103,38 +118,48 @@ This is the easiest way to install the package but has limitations (e.g., no dir
    
        pip install amaceing_toolkit
 
-After installation, verify with:
+   Verify installation with:
+
+   .. code-block:: bash
+   
+       amaceing_cp2k --help
+       pip show mace-torch
+
+Environment Configuration
+-------------------------
+
+The toolkit will automatically detect and use the appropriate environment for each model type. By default, it assumes the environment names are:
+
+- Main environment: ``atk``
+- MatterSim/SevenNet environment: ``atk_ms7n``  
+- ORB environment: ``atk_orb``
+- Grace environment: ``atk_grace``
+
+If you use different environment names, you'll need to update them in the runscript templates after your first run, located at:
+``/amaceing_toolkit/src/amaceing_toolkit/default_config/runscript_templates``
+
+Verification
+------------
+
+To verify successful installation, run any of these commands:
 
 .. code-block:: bash
 
     amaceing_cp2k --help
-    pip show mace-torch
+    amaceing_mace --help
+    amaceing_mattersim --help
+    amaceing_sevennet --help  
+    amaceing_orb --help
+    amaceing_grace --help
+    amaceing_ana --help
+    amaceing_utils --help
 
-4. **Optional: Install MatterSim and SevenNet**:
 
-    If you want to use the pip-package with MatterSim and SevenNet, install them in a separate environment:
-    
-    .. code-block:: bash
+Installation MLIP-supported LAMMPS 
+----------------------------------
 
-        conda create -n atk_ms7n python=3.9
-        conda activate atk_ms7n
-        # Install PyTorch for CUDA 12.4
-        pip install torch torchvision torchaudio
-        # Or for CPU-only systems
-        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-        # Install the packages
-        pip install mattersim==1.1.2 sevenn==0.11.0
+- Install LAMMPS compatible with MACE: `GPU Tutorial <https://mace-docs.readthedocs.io/en/latest/guide/lammps.html#instructions-for-gpu>`_, `CPU Tutorial <https://mace-docs.readthedocs.io/en/latest/guide/lammps.html#instructions-for-cpu>`_
 
-5. **Optional: Install fairchem**:
-    If you want to use the pip-package with fairchem, install it in a separate environment:
-    
-    .. code-block:: bash
+- Install LAMMPS compatible with SevenNet: `Tutorial <https://github.com/MDIL-SNU/SevenNet?tab=readme-ov-file#md-simulation-with-lammps>`_
 
-        conda create -n atk_uma python=3.12
-        conda activate atk_uma
-        # Install PyTorch for CUDA 12.4
-        pip install torch torchvision torchaudio
-        # Or for CPU-only systems
-        pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-        # Install fairchem
-        pip install uma
+- Install LAMMPS compatible with Grace: `Help <https://gracemaker.readthedocs.io/en/latest/gracemaker/install/#lammps-with-grace>`_

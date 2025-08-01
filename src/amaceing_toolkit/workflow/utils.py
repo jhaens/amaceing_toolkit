@@ -6,6 +6,9 @@ from ase.io import read, write
 import argparse, textwrap
 import sys
 
+import readline  # For command line input with tab completion
+import glob # For file name tab completion
+
 
 def print_logo():
     """
@@ -63,6 +66,25 @@ def cite_amaceing_toolkit():
     # """
     )
 
+try:
+    # Enable tab completion for file names, append '/' for directories
+    def complete(text, state):
+        matches = glob.glob(text + '*')
+        # Append '/' if match is a directory
+        matches = [
+            m + '/' if os.path.isdir(m) else m
+            for m in matches
+        ]
+        matches.append(None)
+        return matches[state]
+
+    readline.set_completer_delims(' \t\n;')
+    readline.parse_and_bind("tab: complete")
+    readline.set_completer(complete)
+except ImportError:
+    # If readline is not available, fallback to simple input
+    pass
+
 def atk_utils():
     """
     Main function for the aMACEing_toolkit utilities
@@ -71,19 +93,19 @@ def atk_utils():
 
     if len(sys.argv) > 1:
         parser = argparse.ArgumentParser(description='Build CP2K input files: (1) Via a short Q&A: NO arguments needed! (2) Directly from the command line with a dictionary: TWO arguments needed!', formatter_class=argparse.RawTextHelpFormatter)
-        parser.add_argument('-rt', '--run_type', type=str, help="[OPTIONAL] Which type of function do you want to run? ('EVAL_ERROR', 'PREPARE_EVAL_ERROR', 'EXTRACT_XYZ', 'MACE_CITATIONS')")
+        parser.add_argument('-rt', '--run_type', type=str, help="[OPTIONAL] Which type of function do you want to run? ('EVAL_ERROR', 'PREPARE_EVAL_ERROR', 'EXTRACT_XYZ', 'CITATIONS')")
         parser.add_argument('-c', '--config', type=str, help=textwrap.dedent("""[OPTIONAL] Dictionary with the configuration:\n 
         \033[1m EVAL_ERROR \033[0m: "{'ener_filename_ground_truth': 'PATH', 'force_filename_ground_truth': 'PATH', 'ener_filename_compare': 'PATH', 'force_filename_compare': 'PATH'}"\n
         \033[1m PREPARE_EVAL_ERROR \033[0m: "{'traj_file': 'traj.traj', 'each_nth_frame': 200, 'start_cp2k': 'y/n', 'log_file': 'mace_input.log/None', 'xc_funtional': 'BLYP(_SR)/PBE(_SR)'}"\n
         \033[1m EXTRACT_XYZ \033[0m: "{'coord_file': 'traj.xyz', 'each_nth_frame': 10}"\n
-        \033[1m MACE_CITATIONS \033[0m: "{'log_file': 'xxx_input.log'}" 
-        \033[1m BENCHMARK \033[0m: "{'mode': 'MD/RECALC', 'coord_file': 'PATH', 'pbc_list': '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'force_nsteps': 'INT/PATH', 'mace_model': '['mace_mp/...' 'small/...']', 'mattersim_model': 'small/large', 'sevennet_model': '['7net-mf-ompa/...' 'mpa/oma24/None']'}" """))
+        \033[1m CITATIONS \033[0m: "{'log_file': 'xxx_input.log'}" 
+        \033[1m BENCHMARK \033[0m: "{'mode': 'MD/RECALC', 'coord_file': 'PATH', 'pbc_list': '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'force_nsteps': 'INT/PATH', 'mace_model': '['mace_mp/...' 'small/...']', 'mattersim_model': 'small/large', 'sevennet_model': '['7net-mf-ompa/...' 'mpa/oma24/None']', 'orb_model': '['orb_v2/orb_v3_conservative_inf', 'mpa/omat/None']', 'grace_model': 'GRACE-1L-OMAT/GRACE-1L-OAM'}" """))
         parser.add_argument('-l','--logger', type=str, help='[OPTIONAL] Shows the logger output of the model_logger or the run_logger: "model" or "run"/"runexport".')
         args = parser.parse_args()
         if args.logger in ['model', 'run', 'runexport']:
             if args.logger == 'model':
                 from amaceing_toolkit.runs.model_logger import show_models
-                show_models()
+                show_models(all_model=True)
                 exit()
             elif args.logger == 'run':
                 from amaceing_toolkit.runs.run_logger import show_runs
@@ -123,13 +145,16 @@ def atk_utils():
             print(f"Extracted every {input_config['each_nth_frame']} frame from the file {input_config['coord_file']}.")
             print(f"Extracted frames are saved in the file {extracted_filename}.")
 
-        elif args.run_type == 'MACE_CITATIONS':
+        elif args.run_type == 'CITATIONS':
             print(input_config['log_file'])
             citation_grabber(input_config['log_file'])
 
         elif args.run_type == 'BENCHMARK':
-
-            pbc_list = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
+            print(input_config["pbc_list"])
+            try:
+                pbc_list = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
+            except TypeError:
+                pbc_list = f'[{input_config["pbc_list"][0]} 0.0 0.0 0.0 {input_config["pbc_list"][1]} 0.0 0.0 0.0 {input_config["pbc_list"][2]}]'
             if input_config['mode'] == 'MD':
                 setup_bechmark_dir(input_config['coord_file'], pbc_list, input_config['force_nsteps'], input_config['mace_model'], input_config['mattersim_model'], input_config['sevennet_model'])
             elif input_config['mode'] == 'RECALC':
@@ -137,10 +162,10 @@ def atk_utils():
             print("Benchmark directories created.")
 
     else:
-        util_type_dict = {'1': 'EVAL_ERROR', '2': 'PREPARE_EVAL_ERROR', '3': 'EXTRACT_XYZ', '4': 'MACE_CITATIONS', '5': 'BENCHMARK'}
+        util_type_dict = {'1': 'EVAL_ERROR', '2': 'PREPARE_EVAL_ERROR', '3': 'EXTRACT_XYZ', '4': 'CITATIONS', '5': 'BENCHMARK'}
         util_type = ' '
         while util_type not in ['1', '2', '3', '4', '5']:
-            util_type = input("Which type of calculation do you want to run? (1=EVAL_ERROR, 2=PREPARE_EVAL_ERROR, 3=EXTRACT_XYZ, 4=MACE_CITATIONS, 5=BENCHMARK): ")
+            util_type = input("Which type of calculation do you want to run? (1=EVAL_ERROR, 2=PREPARE_EVAL_ERROR, 3=EXTRACT_XYZ, 4=CITATIONS, 5=BENCHMARK): ")
             if util_type not in ['1', '2', '3', '4', '5']:
                 print("Invalid input! Please enter '1', '2', '3', '4' or '5'.")
         util_type = util_type_dict[util_type]
@@ -221,14 +246,26 @@ def atk_utils():
             print(f"Extracted frames are saved in the file {extracted_filename}.")
             input_config = {'coord_file': coord_file, 'each_nth_frame': each_nth_frame}
 
-        elif util_type == 'MACE_CITATIONS':
-            print("You have chosen to print the citations for aMACEing_toolkit.")
 
-            log_file = input("What is the name of the log file of the MACE run? ['mace_input.log'] ")
+        # ADD CITATIONS for all frameworks
+        elif util_type == 'CITATIONS':
+            print("You have chosen to print the citations for the production run.")
+
+            log_file = input("What is the name of the log file of the production run configured with the aMACEing_toolkit? ['mace_input.log'] ")
             if log_file == '':
-                log_file = 'mace_input.log'
+                log_file = 'mace_input.log'     
 
-            citation_grabber(log_file)
+            frameworks = ['MACE', 'MatterSim', 'SevenNet', 'Orb', 'CP2K', 'Grace']
+
+            for framework in frameworks:
+                if framework.lower() in log_file.split('/')[-1].split('.')[0].lower():
+                    print(f"Found {framework} in the log file name. Printing citations for {framework}.")
+                    break
+                else:
+                    continue
+            
+            citation_grabber(log_file, framework)
+            
             input_config = {'log_file': log_file}
 
         elif util_type == 'BENCHMARK':
@@ -311,7 +348,7 @@ def atk_utils():
             else:
                 foundation_model = foundation_model_dict[int(foundation_model)]
             if foundation_model == '7net-mf-ompa':
-                print("You chose the 7net-mf-ompa model. This model supports multi-fidelity learning to train simultaneously on the MPtrj, sAlex, and OMat24 datasets.")
+                print("You chose the 7net-mf-ompa model. This model supports multi-fidelity learning to train simultaneously on the MPtrj, Alex, and OMat24 datasets.")
                 modal = ask_for_yes_no("Do you want to produce PBE52 (MP) results (y) or PBE54 (OMAT24) results (n)?" , 'y')
                 if modal == 'y':
                     modal = 'mpa'
@@ -322,13 +359,51 @@ def atk_utils():
             sevennet_model[0] = foundation_model
             sevennet_model[1] = modal
 
+            # Orb model
+            orb_model = ['orb_v3_conservative_inf', 'omat']
+            foundation_model_dict = {1: 'orb_v3_conservative_inf', 2: 'orb_v2'}
+            foundation_model = ' '
+            while foundation_model not in ['1', '2', '']:
+                foundation_model = input(f"Which Orb foundational model do you want to use? (1=orb_v3_conservative_inf, 2=orb_v2): [{orb_model[0]}]: ")
+                if foundation_model not in ['1', '2', '']:
+                    print("Invalid input! Please enter '1' or '2'.")
+            if foundation_model == '':
+                foundation_model = orb_model[0]
+            else:
+                foundation_model = foundation_model_dict[int(foundation_model)]
+            if foundation_model == 'orb_v3_conservative_inf':
+                print("You chose the orb_v3_conservative_inf model. This model was trained on the MPtrj, Alex, and OMat24 datasets.")
+                modal = ask_for_yes_no("Do you want to produce MPA results (y) or OMAT24 results (n)?" , 'y')
+                if modal == 'y':
+                    modal = 'mpa'
+                else:
+                    modal = 'omat'
+            else:
+                modal = ''
+            orb_model[0] = foundation_model
+            orb_model[1] = modal
+
+            # Grace model
+            grace_model = 'GRACE-1L-OMAT'
+            foundation_model_dict = {1: 'GRACE-1L-OMAT', 2: 'GRACE-2L-OMAT', 3: 'GRACE-1L-OAM', 4: 'GRACE-2L-OAM'}
+            foundation_model = ' '
+            while foundation_model not in ['1', '2', '3', '4', '']:
+                foundation_model = input(f"Which Grace foundational model do you want to use? (1=GRACE-1L-OMAT, 2=GRACE-2L-OMAT, 3=GRACE-1L-OAM, 4=GRACE-2L-OAM): [{grace_model}]: ")
+                if foundation_model not in ['1', '2', '3', '4', '']:
+                    print("Invalid input! Please enter '1', '2', '3', or '4'.")
+            if foundation_model == '':
+                foundation_model = grace_model
+            else:
+                foundation_model = foundation_model_dict[int(foundation_model)]
+
+
             # Create the directories
             if mode == 'MD':
-                setup_bechmark_dir(coord_file, pbc_list, nsteps, mace_model, mattersim_model, sevennet_model)
-                input_config = {'mode': mode, 'coord_file': coord_file, 'pbc_list': pbc_list, 'force_nsteps': nsteps, 'mace_model': f"""'['{mace_model[0]}' '{mace_model[1]}']'""", 'mattersim_model': mattersim_model, 'sevennet_model': f"""'['{sevennet_model[0]}' '{sevennet_model[1]}']'"""}
+                setup_bechmark_dir(coord_file, pbc_list, nsteps, mace_model, mattersim_model, sevennet_model, orb_model, grace_model)
+                input_config = {'mode': mode, 'coord_file': coord_file, 'pbc_list': pbc_list, 'force_nsteps': nsteps, 'mace_model': f"""'['{mace_model[0]}' '{mace_model[1]}']'""", 'mattersim_model': mattersim_model, 'sevennet_model': f"""'['{sevennet_model[0]}' '{sevennet_model[1]}']'""", 'orb_model': f"""'['{orb_model[0]}' '{orb_model[1]}']'""", 'grace_model': grace_model}
             else:
-                recalc_bechmark_dir(coord_file, pbc_list, force_file, mace_model, mattersim_model, sevennet_model)
-                input_config = {'mode': mode, 'coord_file': coord_file, 'pbc_list': pbc_list, 'force_nsteps': force_file, 'mace_model': f"""'['{mace_model[0]}' '{mace_model[1]}']'""", 'mattersim_model': mattersim_model, 'sevennet_model': f"""'['{sevennet_model[0]}' '{sevennet_model[1]}']'"""}
+                recalc_bechmark_dir(coord_file, pbc_list, force_file, mace_model, mattersim_model, sevennet_model, orb_model, grace_model)
+                input_config = {'mode': mode, 'coord_file': coord_file, 'pbc_list': pbc_list, 'force_nsteps': force_file, 'mace_model': f"""'['{mace_model[0]}' '{mace_model[1]}']'""", 'mattersim_model': mattersim_model, 'sevennet_model': f"""'['{sevennet_model[0]}' '{sevennet_model[1]}']'""", 'orb_model': f"""'['{orb_model[0]}' '{orb_model[1]}']'""", 'grace_model': grace_model}
 
             input_config = str(input_config).replace('"', '')
 
@@ -529,7 +604,7 @@ def string_to_dict_multi(string):
             list = list.split(' ')
             list = [float(i) for i in list]
             pair_value = list
-        elif pair_key in ['foundation_model', 'model_size', 'dispersion_via_mace', 'mace_model',  'sevennet_model']:
+        elif pair_key in ['foundation_model', 'model_size', 'modal', 'dispersion_via_simenv', 'mace_model',  'sevennet_model']:
             pair_value = pair_value.strip(" ")
             pair_value = pair_value.strip("'")
             list = pair_value.strip('[ ]')
@@ -676,15 +751,19 @@ def e0_on_the_fly(atom, xc_functional):
     process.wait()
 
     # Run CP2K locally
-    from amaceing_toolkit.default_configs import local_run_cp2k
+    from amaceing_toolkit.default_configs.runscript_loader import RunscriptLoader
+    runscript_content = RunscriptLoader('cp2k_local', '_no_project_name', 'energy_cp2k.inp').load_runscript()
 
-    source_command, cp2k_command = local_run_cp2k()
+    # runscript_content is a string with two lines: the first is the source command, the second is the cp2k command
+    lines = runscript_content.strip().splitlines()
+    source_command = lines[0]
+    cp2k_command = lines[1]
 
     print("Running the following command:", source_command)
-    print("Running the following commands:", f"""{cp2k_command} energy_cp2k.inp > energy_cp2k.out """)
+    print("Running the following commands:", f"""{cp2k_command}""")
 
     # Run the CP2K calculation on the local machine within one process
-    process = subprocess.Popen(f"""{source_command} && {cp2k_command} energy_cp2k.inp > energy_cp2k.out""", shell=True, stdout=subprocess.PIPE)
+    process = subprocess.Popen(f"""{source_command} && {cp2k_command}""", shell=True, stdout=subprocess.PIPE)
     process.wait()
 
 
@@ -845,20 +924,182 @@ def xyz_writer(filename, atoms, coords, energies = "", forces = "", meta_data = 
     
     print("Wrote the file ", filename)
 
-def citation_grabber(log_file):
+def mace_citations(foundation_model = ""):
+    """
+    Function to print the citations for MACE
+    """
+    print("")
+    print(r""" 1. Ilyes Batatia, David Peter Kovacs, Gregor N. C. Simm, Christoph Ortner, Gábor Csányi, MACE: Higher Order Equivariant Message Passing Neural Networks for Fast and Accurate Force Fields, Advances in Neural Information Processing Systems, 2022, https://openreview.net/forum?id=YPpSngE-ZU
+@inproceedings{Batatia2022mace,
+  title={{MACE}: Higher Order Equivariant Message Passing Neural Networks for Fast and Accurate Force Fields},
+  author={Ilyes Batatia and David Peter Kovacs and Gregor N. C. Simm and Christoph Ortner and Gábor Csányi},
+  booktitle={Advances in Neural Information Processing Systems},
+  editor={Alice H. Oh and Alekh Agarwal and Danielle Belgrave and Kyunghyun Cho},
+  year={2022},
+  url={https://openreview.net/forum?id=YPpSngE-ZU}
+}""")
+    print("")
+    print(r""" 2. Ilyes Batatia, Simon Batzner, David Peter Kovacs, Albert Musaelian, Gregor N. C. Simm, Ralf Drautz, Christoph Ortner, Boris Kozinsky, Gábor Csányi, The Design Space of E(3)-Equivariant Atom-Centered Interatomic Potentials, arXiv:2205.06643, 2022, https://arxiv.org/abs/2205.06643
+@misc{Batatia2022Design,
+  title = {The Design Space of E(3)-Equivariant Atom-Centered Interatomic Potentials},
+  author = {Batatia, Ilyes and Batzner, Simon and Kov{\'a}cs, D{\'a}vid P{\'e}ter and Musaelian, Albert and Simm, Gregor N. C. and Drautz, Ralf and Ortner, Christoph and Kozinsky, Boris and Cs{\'a}nyi, G{\'a}bor},
+  year = {2022},
+  number = {arXiv:2205.06643},
+  eprint = {2205.06643},
+  eprinttype = {arxiv},
+  doi = {10.48550/arXiv.2205.06643},
+  archiveprefix = {arXiv}
+ }""")
+    if foundation_model == 'mace_mp':
+        print("")
+        print(r""" 3. Ilyes Batatia, Philipp Benner, Yuan Chiang, Alin M. Elena, Dávid P. Kovács, Janosh Riebesell, Xavier R. Advincula, Mark Asta, William J. Baldwin, Noam Bernstein, Arghya Bhowmik, Samuel M. Blau, Vlad Cărare, James P. Darby, Sandip De, Flaviano Della Pia, Volker L. Deringer, Rokas Elijošius, Zakariya El-Machachi, Edvin Fako, Andrea C. Ferrari, Annalena Genreith-Schriever, Janine George, Rhys E. A. Goodall, Clare P. Grey, Shuang Han, Will Handley, Hendrik H. Heenen, Kersti Hermansson, Christian Holm, Jad Jaafar, Stephan Hofmann, Konstantin S. Jakob, Hyunwook Jung, Venkat Kapil, Aaron D. Kaplan, Nima Karimitari, Namu Kroupa, Jolla Kullgren, Matthew C. Kuner, Domantas Kuryla, Guoda Liepuoniute, Johannes T. Margraf, Ioan-Bogdan Magdău, Angelos Michaelides, J. Harry Moore, Aakash A. Naik, Samuel P. Niblett, Sam Walton Norwood, Niamh O'Neill, Christoph Ortner, Kristin A. Persson, Karsten Reuter, Andrew S. Rosen, Lars L. Schaaf, Christoph Schran, Eric Sivonxay, Tamás K. Stenczel, Viktor Svahn, Christopher Sutton, Cas van der Oord, Eszter Varga-Umbrich, Tejs Vegge, Martin Vondrák, Yangshuai Wang, William C. Witt, Fabian Zills, Gábor Csányi, A foundation model for atomistic materials chemistry, arXiv:2401.00096, 2023, https://arxiv.org/abs/2401.00096
+@article{batatia2023foundation,
+  title={A foundation model for atomistic materials chemistry},
+  author={Ilyes Batatia and Philipp Benner and Yuan Chiang and Alin M. Elena and Dávid P. Kovács and Janosh Riebesell and Xavier R. Advincula and Mark Asta and William J. Baldwin and Noam Bernstein and Arghya Bhowmik and Samuel M. Blau and Vlad Cărare and James P. Darby and Sandip De and Flaviano Della Pia and Volker L. Deringer and Rokas Elijošius and Zakariya El-Machachi and Edvin Fako and Andrea C. Ferrari and Annalena Genreith-Schriever and Janine George and Rhys E. A. Goodall and Clare P. Grey and Shuang Han and Will Handley and Hendrik H. Heenen and Kersti Hermansson and Christian Holm and Jad Jaafar and Stephan Hofmann and Konstantin S. Jakob and Hyunwook Jung and Venkat Kapil and Aaron D. Kaplan and Nima Karimitari and Namu Kroupa and Jolla Kullgren and Matthew C. Kuner and Domantas Kuryla and Guoda Liepuoniute and Johannes T. Margraf and Ioan-Bogdan Magdău and Angelos Michaelides and J. Harry Moore and Aakash A. Naik and Samuel P. Niblett and Sam Walton Norwood and Niamh O'Neill and Christoph Ortner and Kristin A. Persson and Karsten Reuter and Andrew S. Rosen and Lars L. Schaaf and Christoph Schran and Eric Sivonxay and Tamás K. Stenczel and Viktor Svahn and Christopher Sutton and Cas van der Oord and Eszter Varga-Umbrich and Tejs Vegge and Martin Vondrák and Yangshuai Wang and William C. Witt and Fabian Zills and Gábor Csányi},
+  year={2023},
+  eprint={2401.00096},
+  archivePrefix={arXiv},
+  primaryClass={physics.chem-ph}
+}""")
+        print("")
+        print(r""" 4. Bowen Deng, Peichen Zhong, KyuJung Jun, Janosh Riebesell, Kevin Han, Christopher J. Bartel, Gerbrand Ceder, CHGNet: Pretrained universal neural network potential for charge-informed atomistic modeling, arXiv:2302.14231, 2023, https://arxiv.org/abs/2302.14231
+@article{deng2023chgnet,
+  title={CHGNet: Pretrained universal neural network potential for charge-informed atomistic modeling},
+  author={Bowen Deng and Peichen Zhong and KyuJung Jun and Janosh Riebesell and Kevin Han and Christopher J. Bartel and Gerbrand Ceder},
+  year={2023},
+  eprint={2302.14231},
+  archivePrefix={arXiv},
+  primaryClass={cond-mat.mtrl-sci}
+}
+""")
+        print("")
+    elif foundation_model == 'mace_off':
+        print("")
+        print(r""" 3. Dávid Péter Kovács, J. Harry Moore, Nicholas J. Browning, Ilyes Batatia, Joshua T. Horton, Venkat Kapil, William C. Witt, Ioan-Bogdan Magdău, Daniel J. Cole, Gábor Csányi, MACE-OFF23: Transferable Machine Learning Force Fields for Organic Molecules, arXiv:2312.15211, 2023, https://arxiv.org/abs/2312.15211
+@misc{kovacs2023maceoff23,
+  title={MACE-OFF23: Transferable Machine Learning Force Fields for Organic Molecules}, 
+  author={Dávid Péter Kovács and J. Harry Moore and Nicholas J. Browning and Ilyes Batatia and Joshua T. Horton and Venkat Kapil and William C. Witt and Ioan-Bogdan Magdău and Daniel J. Cole and Gábor Csányi},
+  year={2023},
+  eprint={2312.15211},
+  archivePrefix={arXiv},
+}        
+""")
+        print("")
+        
+def mattersim_citations():
+    """
+    Function to print the citations for Mattersim
+    """
+    print("")
+    print(r""" Han Yang, Chenxi Hu, Yichi Zhou, Xixian Liu, Yu Shi, Jielan Li, Guanzhi Li, Zekun Chen, Shuizhou Chen, Claudio Zeni, Matthew Horton, Robert Pinsler, Andrew Fowler, Daniel Zügner, Tian Xie, Jake Smith, Lixin Sun, Qian Wang, Lingyu Kong, Chang Liu, Hongxia Hao, Ziheng Lu, MatterSim: A Deep Learning Atomistic Model Across Elements, Temperatures and Pressures, arXiv:2405.04967, 2024, https://arxiv.org/abs/2405.04967
+@article{yang2024mattersim,
+title={MatterSim: A Deep Learning Atomistic Model Across Elements, Temperatures and Pressures},
+author={Han Yang and Chenxi Hu and Yichi Zhou and Xixian Liu and Yu Shi and Jielan Li and Guanzhi Li and Zekun Chen and Shuizhou Chen and Claudio Zeni and Matthew Horton and Robert Pinsler and Andrew Fowler and Daniel Zügner and Tian Xie and Jake Smith and Lixin Sun and Qian Wang and Lingyu Kong and Chang Liu and Hongxia Hao and Ziheng Lu},
+year={2024},
+eprint={2405.04967},
+archivePrefix={arXiv},
+primaryClass={cond-mat.mtrl-sci},
+url={https://arxiv.org/abs/2405.04967},
+journal={arXiv preprint arXiv:2405.04967}
+}
+""")
+    print("")
+    
+def sevennet_citations(foundation_model = ""):
+    """
+    Function to print the citations for SevenNet
+    """
+    print("")
+    print(r""" 1. Yutack Park, Jaesun Kim, Seungwoo Hwang, Seungwu Han, Scalable Parallel Algorithm for Graph Neural Network Interatomic Potentials in Molecular Dynamics Simulations, J. Chem. Theory Comput., 2024, 20 (11), pp 4857–4868, https://doi.org/10.1021/acs.jctc.4c00190
+@article{park_scalable_2024,
+	title = {Scalable Parallel Algorithm for Graph Neural Network Interatomic Potentials in Molecular Dynamics Simulations},
+	volume = {20},
+	doi = {10.1021/acs.jctc.4c00190},
+	number = {11},
+	journal = {J. Chem. Theory Comput.},
+	author = {Park, Yutack and Kim, Jaesun and Hwang, Seungwoo and Han, Seungwu},
+	year = {2024},
+	pages = {4857--4868},
+}
+""")
+    print("")
+    if foundation_model == '7net-mf-ompa':
+        print(r""" 2. Jaesun Kim, Jisu Kim, Jaehoon Kim, Jiho Lee, Yutack Park, Youngho Kang, Seungwu Han, Data-Efficient Multifidelity Training for High-Fidelity Machine Learning Interatomic Potentials, J. Am. Chem. Soc., 2024, 147 (1), pp 1042–1054, https://doi.org/10.1021/jacs.4c14455
+@article{kim_sevennet_mf_2024,
+	title = {Data-Efficient Multifidelity Training for High-Fidelity Machine Learning Interatomic Potentials},
+	volume = {147},
+	doi = {10.1021/jacs.4c14455},
+	number = {1},
+	journal = {J. Am. Chem. Soc.},
+	author = {Kim, Jaesun and Kim, Jisu and Kim, Jaehoon and Lee, Jiho and Park, Yutack and Kang, Youngho and Han, Seungwu},
+	year = {2024},
+	pages = {1042--1054},
+}
+""")
+        print("")
+
+def orb_citations(foundation_model = ""):
+    """
+    Function to print the citations for Orb
+    """
+    print("")
+    print(r""" 1. Mark Neumann, James Gin, Benjamin Rhodes, Steven Bennett, Zhiyi Li, Hitarth Choubisa, Arthur Hussey, Jonathan Godwin, Orb: A Fast, Scalable Neural Network Potential, arXiv:2410.22570, 2024, https://arxiv.org/abs/2410.22570
+@misc{neumann2024orbfastscalableneural,
+      title={Orb: A Fast, Scalable Neural Network Potential}, 
+      author={Mark Neumann and James Gin and Benjamin Rhodes and Steven Bennett and Zhiyi Li and Hitarth Choubisa and Arthur Hussey and Jonathan Godwin},
+      year={2024},
+      eprint={2410.22570},
+      archivePrefix={arXiv},
+      primaryClass={cond-mat.mtrl-sci},
+      url={https://arxiv.org/abs/2410.22570}, 
+}
+""")
+    print("")
+    if 'v3' in foundation_model:
+        print(r""" 2. Benjamin Rhodes, Sander Vandenhaute, Vaidotas Šimkus, James Gin, Jonathan Godwin, Tim Duignan, Mark Neumann, Orb-v3: atomistic simulation at scale, arXiv:2504.06231, 2025, https://arxiv.org/abs/2504.06231
+@misc{rhodes2025orbv3atomisticsimulationscale,
+      title={Orb-v3: atomistic simulation at scale}, 
+      author={Benjamin Rhodes and Sander Vandenhaute and Vaidotas Šimkus and James Gin and Jonathan Godwin and Tim Duignan and Mark Neumann},
+      year={2025},
+      eprint={2504.06231},
+      archivePrefix={arXiv},
+      primaryClass={cond-mat.mtrl-sci},
+      url={https://arxiv.org/abs/2504.06231}, 
+}
+""")
+        print("")
+
+def citation_grabber(log_file, framework):
     """
     Function to grab the citations from the log file
     """
-    from .mace_input_writer import mace_citations
 
     with open(log_file) as f:
         lines = f.readlines()
     
     config_line = lines[1]
 
-    input_file = string_to_dict(config_line)
-    foundation_model = input_file['foundation_model']
-    mace_citations(foundation_model)
+    config_line = config_line.split(',')
+    for config in config_line:
+        config = config.strip()
+        if 'foundation_model' in config:
+            foundation_model = config.split(':')[1].strip()
+            foundation_model = foundation_model.strip("'")
+            break
+
+    print(f"Found foundation model: {foundation_model}")
+
+    if framework == 'MACE':
+        mace_citations(foundation_model)
+    elif framework == 'Mattersim':
+        mattersim_citations()
+    elif framework == 'SevenNet':
+        sevennet_citations(foundation_model)
+    elif framework == 'CP2K':
+        print("Please refer to the CP2K log file for the citations.")
+    elif framework == 'Orb':
+        orb_citations(foundation_model)
+
 
 def frame_counter(file):
     """
@@ -892,11 +1133,11 @@ def extract_frames(file, each_nth_frame):
 
     return filename
 
-def setup_bechmark_dir(coord_data, pbc_data, nsteps, mace_model, mattersim_model, sevennet_model):
+def setup_bechmark_dir(coord_data, pbc_data, nsteps, mace_model, mattersim_model, sevennet_model, orb_model, grace_model):
     """
     Function to setup the benchmark directory
     """
-    for nn in ['mace', 'mattersim', 'sevennet']:
+    for nn in ['mace', 'mattersim', 'sevennet', 'orb', 'grace']:
         if os.path.isdir(nn):
             os.rmdir(nn)
         os.mkdir(nn)
@@ -904,13 +1145,13 @@ def setup_bechmark_dir(coord_data, pbc_data, nsteps, mace_model, mattersim_model
 
         if nn == 'mace':
             
-            command = r"""amaceing_mace --run_type="MD" --config="{ """+f"""'project_name': 'mace_benchmark', 'coord_file': '../{coord_data}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mace_model[0]}', 'model_size': '{mace_model[1]}', 'dispersion_via_ase': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '{nsteps}', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 10, 'print_ext_traj': 'y', 'simulation_environment': 'ase'"""+r"""}" """
+            command = r"""amaceing_mace --run_type="MD" --config="{ """+f"""'project_name': 'mace_benchmark', 'coord_file': '../{coord_data}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mace_model[0]}', 'model_size': '{mace_model[1]}', 'dispersion_via_simenv': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '{nsteps}', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 10, 'print_ext_traj': 'y', 'simulation_environment': 'ase'"""+r"""}" """
 
             print("Creating directory for MACE benchmark: including the MACE input file and runscript.")
         
         elif nn == 'mattersim':
 
-            command = r"""amaceing_mattersim --run_type="MD" --config="{"""+f"""'project_name': 'mattersim_benchmark', '../coord_file': '{coord_data}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mattersim_model}', 'dispersion_via_ase': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '{nsteps}', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ase_traj': 'y'"""+r"""}" """
+            command = r"""amaceing_mattersim --run_type="MD" --config="{"""+f"""'project_name': 'mattersim_benchmark', '../coord_file': '{coord_data}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mattersim_model}', 'dispersion_via_simenv': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '{nsteps}', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ase_traj': 'y'"""+r"""}" """
 
             print("Creating directory for Mattersim benchmark: including the Mattersim input file and runscript.")
 
@@ -920,22 +1161,34 @@ def setup_bechmark_dir(coord_data, pbc_data, nsteps, mace_model, mattersim_model
 
             print("Creating directory for SevenNet benchmark: including the SevenNet input file and runscript.")
 
+        elif nn == 'orb':
+            
+            command = r"""amaceing_orb --run_type="MD" --config="{"""+f"""'project_name': 'orb_benchmark', 'coord_file': '../{coord_data}', 'pbc_list': '{pbc_data}', 'foundation_model': '{orb_model[0]}', 'modal': '{orb_model[1]}', 'dispersion_via_simenv': 'n', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '{nsteps}', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ext_traj': 'y'"""+r"""}" """
+
+            print("Creating directory for Orb benchmark: including the Orb input file and runscript.")
+
+        elif nn == 'grace':
+
+            command = r"""amaceing_grace --run_type="MD" --config="{"""+f"""'project_name': 'grace_benchmark', 'coord_file': '../{coord_data}', 'pbc_list': '{pbc_data}', 'foundation_model': '{grace_model}', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '{nsteps}', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ext_traj': 'y'"""+r"""}" """
+
+            print("Creating directory for Grace benchmark: including the Grace input file and runscript.")
+
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         process.wait()
         os.chdir('..')
 
-def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_model, sevennet_model):
+def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_model, sevennet_model, orb_model, grace_model):
     """
     Function to recalc an AIMD trajectory with different ML packages
     """
-    nn_dict ={'mace': 0, 'mattersim': 0, 'sevennet': 0}
+    nn_dict ={'mace': 0, 'mattersim': 0, 'sevennet': 0, 'orb': 0, 'grace': 0}
 
     # Check if the reference trajectory is a relative path (add ../)
     if ref_traj[0] == '.':
         ref_traj = f'../{ref_traj}'
     
 
-    for nn in ['mace', 'mattersim', 'sevennet']:
+    for nn in ['mace', 'mattersim', 'sevennet', 'orb', 'grace']:
         if os.path.isdir(nn):
             os.rmdir(nn)
         os.mkdir(nn)
@@ -945,7 +1198,7 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
 
         if nn == 'mace':
 
-            command = r"""amaceing_mace --run_type="RECALC" --config="{ """+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mace_model[0]}', 'model_size': '{mace_model[1]}', 'dispersion_via_ase': 'n', 'simulation_environment': 'ase'"""+r"""}" """
+            command = r"""amaceing_mace --run_type="RECALC" --config="{ """+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{mace_model[0]}', 'model_size': '{mace_model[1]}', 'dispersion_via_simenv': 'n', 'simulation_environment': 'ase'"""+r"""}" """
             
             print("Creating directory for MACE benchmark and recalcing the reference trajectory...")
         
@@ -973,6 +1226,30 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
                 print("""amaceing_sevennet --run_type="RECALC" --config="{"""+f"'project_name': benchmark, 'coord_file': {ref_traj}, 'pbc_list': {pbc_data}, 'foundation_model': {sevennet_model[0]}, 'modal': {sevennet_model[1]}, 'dispersion_via_simenv': 'n', 'simulation_environment': 'ase'"+"""}" """)
                 command = "FAIL"
 
+        elif nn == 'orb':
+            
+            try:
+                import orb_models
+                command = """amaceing_orb --run_type="RECALC" --config="{"""+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{orb_model[0]}', 'modal': '{orb_model[1]}', 'dispersion_via_simenv': 'n', 'simulation_environment': 'ase'"""+r"""}" """
+                print("Creating directory for Orb benchmark and recalcing the reference trajectory...")
+            except ModuleNotFoundError:
+                print("Orb is currently not installed (in this environment). Please install it first or change to the respective environment.")
+                print("The Orb Run can be run via: ")
+                print("""amaceing_orb --run_type="RECALC" --config="{"""+f"'project_name': benchmark, 'coord_file': {ref_traj}, 'pbc_list': {pbc_data}, 'foundation_model': {orb_model[0]}, 'modal': {orb_model[1]}, 'dispersion_via_simenv': 'n'"+"""}" """)
+                command = "FAIL"
+
+        elif nn == 'grace':
+            
+            try:
+                import tensorpotential
+                command = """amaceing_grace --run_type="RECALC" --config="{"""+f"""'project_name': 'benchmark', 'coord_file': '{ref_traj}', 'pbc_list': '{pbc_data}', 'foundation_model': '{grace_model}', 'simulation_environment': 'ase'"""+r"""}" """
+                print("Creating directory for Grace benchmark and recalcing the reference trajectory...")
+            except ModuleNotFoundError:
+                print("Grace is currently not installed (in this environment). Please install it first or change to the respective environment.")
+                print("The Grace Run can be run via: ")
+                print("""amaceing_grace --run_type="RECALC" --config="{"""+f"'project_name': benchmark, 'coord_file': {ref_traj}, 'pbc_list': {pbc_data}, 'foundation_model': {grace_model}, 'simulation_environment': ase'"+"""}" """)
+                command = "FAIL"
+
         if command != "FAIL":
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
             process.wait()
@@ -990,7 +1267,7 @@ def recalc_bechmark_dir(ref_traj, pbc_data, force_file, mace_model, mattersim_mo
             print("Force file does not exist!")
 
 
-    for nn in ['mace', 'mattersim', 'sevennet']:
+    for nn in ['mace', 'mattersim', 'sevennet', 'orb', 'grace']:
         os.chdir(nn)
         print("""\n"""+f"Running the EVAL_ERROR workflow for {nn}..." + """\n""")
 

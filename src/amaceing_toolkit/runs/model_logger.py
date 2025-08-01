@@ -62,7 +62,7 @@ def model_logger(model_loc, project_name, foundation_model, model_size, lr, no_q
         print("The infos of this model was saved into the finetuned_models.log for later use. The finetuned_models.log file is located in the installation directory of aMACEing_toolkit.")
         return None
 
-def show_models():
+def show_models(all_model=False):
     """
     Show the models that are saved in the finetuned_models.log file
     """
@@ -72,8 +72,18 @@ def show_models():
 
         # Read the finetuned_models.log file
         with open(os.path.join(script_directory, 'finetuned_models.log'), 'r') as f:
-            for line in f:
-                print(line)
+            lines = f.readlines()
+            if all_model == False:
+                # Print the header
+                print(lines[0].strip())
+                # Print the last 10 lines
+                for line in lines[-10:]:
+                    print(line.strip())
+            else:
+                # Print all lines
+                print("All models saved in the finetuned_models.log file:")
+                for line in lines:
+                    print(line, end='')
     except FileNotFoundError:
         print("The model file finetuned_models.log does not exist in the installation directory of the aMACEing_toolkit: You did not save any models yet.")
     return None

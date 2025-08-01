@@ -1,128 +1,139 @@
 CP2K Module
 ===========
 
-Overview
---------
+The CP2K module provides tools for generating CP2K input files for a small set of calculations.
 
-The CP2K module is a core component of the aMACEing toolkit designed to facilitate the creation of CP2K input files through a user-friendly interface. It allows users to generate correctly formatted CP2K input files for various types of simulations without requiring extensive knowledge of CP2K's input syntax.
+`CP2K Website <https://www.cp2k.org/>`_
 
-Capabilities
-------------
+`CP2K Documentation <https://manual.cp2k.org/trunk/>`_
 
-The CP2K module supports the creation of input files for the following calculation types:
 
-Geometry Optimization (GEO_OPT)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Supported Calculation Types
+---------------------------
 
-* Optimizes atomic positions to find the minimum energy structure
-* Configurable convergence criteria and iteration limits
-* Options for printing forces during optimization
-
-Cell Optimization (CELL_OPT)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* Optimizes both atomic positions and cell parameters
-* Supports various symmetry constraints (cubic, triclinic, etc.)
-* Customizable convergence settings
-
-Molecular Dynamics (MD)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-* Supports different ensembles (NVE, NVT, NPT_F, NPT_I)
-* Configurable timestep, temperature, and run length
-* Options for equilibration runs prior to production
-* Customizable output frequency for forces and velocities
-
-Reference Trajectory Recalculation (REFTRAJ)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* Recomputes energies and forces along an existing trajectory
-* Configurable stride for processing only specific frames
-* Options for forces and velocities output
-
-Single Point Energy Calculation (ENERGY)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* Quick energy evaluation without geometry changes
-* Uses high accuracy SCF settings
+* Geometry Optimization (GEO_OPT)
+* Cell Optimization (CELL_OPT)
+* Molecular Dynamics (MD)
+* Reference Trajectory Recalculation (REFTRAJ)
+* Single Point Energy Calculation (ENERGY)
 
 Usage
 -----
 
-The CP2K module can be used in two ways:
+Command Line Interface
+~~~~~~~~~~~~~~~~~~~~~~
 
-Q&A Session
-~~~~~~~~~~~
-
-Start an interactive Q&A session with:
+**Interactive Q&A Mode**:
 
 .. code-block:: bash
 
     amaceing_cp2k
 
-This guides you through:
-
-1. Selecting a coordinate file
-2. Defining the simulation box
-3. Choosing the type of calculation
-4. Setting calculation-specific parameters
-5. Configuring optional settings
-
-The system will then generate:
-
-- The CP2K input file
-- A runscript for executing the calculation
-- A log file documenting your choices
-
-Command-line Usage
-~~~~~~~~~~~~~~~~~~
-
-Create input files directly with a single command:
+**Direct Command Line Mode**:
 
 .. code-block:: bash
 
     amaceing_cp2k -rt="RUN_TYPE" -c="{'parameter1': 'value1', 'parameter2': 'value2', ...}"
 
-Where RUN_TYPE is one of: GEO_OPT, CELL_OPT, MD, REFTRAJ, ENERGY
-
-Parameters vary by run type:
-
-For GEO_OPT:
+Example for GEO_OPT:
 
 .. code-block:: bash
 
-    amaceing_cp2k -rt="GEO_OPT" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'max_iter': '200', 'print_forces': 'ON', 'xc_functional': 'PBE', 'cp2k_newer_than_2023x': 'y'}"
+    amaceing_cp2k --run_type="GEO_OPT" --config="{'project_name': 'koh_h2o_geoopt', 'coord_file': 'system.xyz', 'pbc_list': '[14.20670 0 0 0 14.2067 0 0 0 14.2067]', 'max_iter': 10, 'xc_functional': 'BLYP', 'print_forces': 'OFF', 'cp2k_newer_than_2023x': 'y'}"
 
-For CELL_OPT:
+Python API
+~~~~~~~~~~
 
-.. code-block:: bash
+.. code-block:: python
 
-    amaceing_cp2k -rt="CELL_OPT" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'max_iter': '200', 'keep_symmetry': 'TRUE', 'symmetry': 'CUBIC', 'xc_functional': 'PBE', 'cp2k_newer_than_2023x': 'y'}"
+    from amaceing_toolkit.workflow import cp2k_api
+    
+    config = {
+        'project_name': 'koh_h2o_geoopt',
+        'coord_file': 'system.xyz',
+        'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
+        'max_iter': 100,
+        'print_forces': 'OFF',
+        'cp2k_newer_than_2023x': 'y',
+        'xc_functional': 'BLYP'
+    }
+    
+    cp2k_api(run_type='GEO_OPT', config=config)
 
-For MD:
+Key Parameters
+--------------
 
-.. code-block:: bash
+Common Parameters
+~~~~~~~~~~~~~~~~~
 
-    amaceing_cp2k -rt="MD" -c="{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[10 0 0 0 10 0 0 0 10]', 'ensemble': 'NVT', 'nsteps': '10000', 'timestep': '0.5', 'temperature': '300', 'print_forces': 'ON', 'print_velocities': 'ON', 'xc_functional': 'PBE', 'cp2k_newer_than_2023x': 'y'}"
+* ``project_name``: Name for the calculation (used for output files)
+* ``coord_file``: Path to the input geometry file (.xyz format)
+* ``pbc_list``: Periodic boundary conditions, as a list of 9 values representing the cell vectors
+* ``xc_functional``: Exchange-correlation functional (e.g., 'PBE', 'BLYP', 'PBE_SR', 'BLYP_SR')
+* ``cp2k_newer_than_2023x``: Flag to enable features for CP2K versions newer than 2023.x
 
-.. note::
-   Do **NOT** use double quotes inside the dictionary. Also do **NOT** use commas inside of lists in the dictionary.
+Run Type-Specific Parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**GEO_OPT**:
+  * ``max_iter``: Maximum optimization iterations
+  * ``print_forces``: Whether to print forces ('ON'/'OFF')
+
+**CELL_OPT**:
+  * ``max_iter``: Maximum optimization iterations
+  * ``keep_symmetry``: Whether to preserve cell symmetry ('TRUE'/'FALSE')
+  * ``symmetry``: Type of cell symmetry to maintain ('CUBIC', 'ORTHORHOMBIC', 'TRICLINIC', ...)
+
+**MD**:
+  * ``ensemble``: Type of ensemble ('NVE', 'NVT', 'NPT_F', 'NPT_I')
+  * ``nsteps``: Number of MD steps
+  * ``timestep``: MD timestep in fs
+  * ``temperature``: Target temperature in K
+  * ``equilibration_run``: Whether to perform equilibration ('y'/'n')
+  * ``equilibration_steps``: Number of equilibration steps
+
+**REFTRAJ**:
+  * ``ref_traj``: Path to the reference trajectory file
+  * ``nsteps``: Number of steps to process
+  * ``stride``: Step interval for processing
+  * ``print_forces``: Whether to print forces ('ON'/'OFF')
+
+**ENERGY**:
+  * No additional required parameters
 
 Output Files
 ------------
 
 The module generates:
 
-* CP2K input file (e.g., `geoopt_cp2k.inp`, `md_cp2k.inp`, etc.)
-* HPC runscript (`runscript.sh`)
-* Log file with configuration parameters (`cp2k_input.log`)
-* For MD with equilibration, additional equilibration input and runscript files
+* A CP2K input file (``<run_type>_cp2k.inp``)
+* A runscript for job submission (``runscript.sh``) 
+* A log file documenting the configuration (``cp2k_input.log``)
+* For MD with equilibration, additional equilibration input, runscript files and a python script that extracts the last step from the equilibration trajectory
+
+For MD:
+
+.. code-block:: bash
+
+    amaceing_cp2k --run_type="MD" --config="{'project_name': 'koh_h2o_md', 'coord_file': 'system.xyz', 'pbc_list': '[14.2067 0 0 0 14.2067 0 0 0 14.2067]', 'ensemble': 'NVT', 'nsteps': '10', 'timestep': 0.5, 'temperature': 300, 'print_forces': 'ON', 'print_velocities': 'OFF', 'xc_functional': 'BLYP', 'equilibration_run': 'y', 'equilibration_steps': '5', 'cp2k_newer_than_2023x': 'y'}"
+
+.. note::
+   Do **NOT** use double quotes inside the dictionary. Also do **NOT** use commas inside of lists in the dictionary.
+
+
+Implementation Details
+----------------------
+
+The CP2K module uses templates and configuration defaults that are stored in:
+
+* ``amaceing_toolkit/default_configs/cp2k_configs.py``: Default settings for all CP2K calculations
+* ``amaceing_toolkit/default_configs/kind_data_functionals.py``: Basis sets and pseudopotentials for different elements and functionals
+
 
 Technical Details
 -----------------
 
-* Exchange-correlation functionals: Supports PBE, BLYP and others with optional D3 dispersion correction
+* Exchange-correlation functionals: Supports PBE, BLYP and others with optional short-range (SR) variants
 * Basis sets: MOLOPT basis sets used by default
 * SCF: OT method with DIIS minimizer and FULL_SINGLE_INVERSE preconditioner
-* MD ensembles: Supports NVT, NPT_F (flexible cell), NPT_I (isotropic cell)
 * For MD simulations, global thermostats are used for production, massive thermostats for equilibration

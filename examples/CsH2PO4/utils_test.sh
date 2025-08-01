@@ -23,10 +23,10 @@ cd EXTRACT_XYZ
 amaceing_utils --run_type="EXTRACT_XYZ" --config="{'coord_file': '../../data/ref_trajectory.xyz', 'each_nth_frame': '2'}"
 cd ..
 echo ----------------------------
-echo Testing utils function: MACE_CITATIONS
-mkdir -p MACE_CITIATIONS
-cd MACE_CITIATIONS
-amaceing_utils --run_type="MACE_CITATIONS" --config="{'log_file': '../../data/mace_input.log'}"
+echo Testing utils function: CITATIONS
+mkdir -p CITIATIONS
+cd CITIATIONS
+amaceing_utils --run_type="CITATIONS" --config="{'log_file': '../../data/mace_input.log'}"
 cd ..
 echo ----------------------------
 echo Testing utils function: BENCHMARK1

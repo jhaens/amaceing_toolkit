@@ -8,19 +8,19 @@ echo ----------------------------
 echo Testing input file generation: MD 
 mkdir -p MD
 cd MD
-amaceing_mattersim --run_type="MD" --config="{'project_name': 'csh2po4_md', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'foundation_model': 'large', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '10', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ase_traj': 'y'}"
+amaceing_mattersim --run_type="MD" --config="{'project_name': 'csh2po4_md', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'foundation_model': 'large', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '10', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ext_traj': 'y'}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: MULTI_MD
 mkdir -p MULTI_MD
 cd MULTI_MD
-amaceing_mattersim --run_type="MULTI_MD" --config="{'project_name': 'csh2po4_md', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'foundation_model': '['small' 'large']', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '10', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ase_traj': 'y'}"
+amaceing_mattersim --run_type="MULTI_MD" --config="{'project_name': 'csh2po4_md', 'coord_file': '../../data/system.xyz', 'pbc_list': '[19.8196 0 0 0 19.8196 0 0 0 19.8196]', 'foundation_model': '['small' 'large']', 'temperature': '300', 'pressure': '1.0', 'thermostat': 'Langevin', 'nsteps': '10', 'write_interval': 10, 'timestep': 0.5, 'log_interval': 100, 'print_ext_traj': 'y'}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: FINETUNE
 mkdir -p FINETUNE
 cd FINETUNE
-amaceing_mattersim --run_type="FINETUNE" --config="{'project_name': 'csh2po4_ft', 'train_data_path': '../../data/train_file_ms.xyz', 'device': 'cuda', 'force_loss_ratio': 100.0, 'load_model_path': 'small', 'batch_size': 5, 'save_checkpoint': 'y', 'ckpt_interval': 25, 'epochs': 2, 'seed': 1, 'lr': 0.01, 'save_path': 'MatterSim_models', 'early_stopping': 'n'}"
+amaceing_mattersim --run_type="FINETUNE" --config="{'project_name': 'csh2po4_ft', 'train_file': '../../data/train_file_ms.xyz', 'device': 'cuda', 'force_loss_ratio': 100.0, 'foundation_model': 'small', 'batch_size': 5, 'save_checkpoint': 'y', 'ckpt_interval': 25, 'epochs': 2, 'seed': 1, 'lr': 0.01, 'save_path': 'MatterSim_models', 'early_stopping': 'n'}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: RECALC

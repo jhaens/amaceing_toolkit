@@ -11,7 +11,7 @@ def configs_mace(config_name):
         'simulation_environment': 'ase',
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_ase': 'n',
+        'dispersion_via_simenv': 'n',
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -25,7 +25,7 @@ def configs_mace(config_name):
         'simulation_environment': 'ase',
         'foundation_model': ['mace_mp', 'mace_mp', 'mace_off'],
         'model_size': ['small', 'medium', 'small'],
-        'dispersion_via_ase': ['n', 'n', 'n'],
+        'dispersion_via_simenv': ['n', 'n', 'n'],
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -40,14 +40,14 @@ def configs_mace(config_name):
         'max_iter': 1000,
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_ase': 'n'
+        'dispersion_via_simenv': 'n'
       },
       'CELL_OPT': {
         'simulation_environment': 'ase',
         'max_iter': 1000,
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_ase': 'n'
+        'dispersion_via_simenv': 'n'
       },
       'FINETUNE' : {
         'device': 'cuda',
@@ -61,7 +61,7 @@ def configs_mace(config_name):
         'batch_size': 5,
         'valid_batch_size': 2,
         'valid_fraction': 0.1,
-        'max_num_epochs': 200,
+        'epochs': 200,
         'seed': 1,
         'lr': 1e-2, 
         'dir': 'MACE_models'
@@ -77,7 +77,7 @@ def configs_mace(config_name):
         'batch_size': 5,
         'valid_batch_size': 2,
         'valid_fraction': 0.1,
-        'max_num_epochs': 200,
+        'epochs': 200,
         'seed': 1,
         'lr': 1e-2, 
         'dir': 'MACE_models'
@@ -86,7 +86,7 @@ def configs_mace(config_name):
         'simulation_environment': 'ase',
         'foundation_model': 'mace_mp',
         'model_size': 'small',
-        'dispersion_via_ase': 'n'
+        'dispersion_via_simenv': 'n'
       },
     },
 

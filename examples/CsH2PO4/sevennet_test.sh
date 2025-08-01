@@ -20,7 +20,7 @@ echo ----------------------------
 echo Testing input file generation: FINETUNE
 mkdir -p FINETUNE
 cd FINETUNE
-amaceing_sevennet --run_type="FINETUNE" --config="{'project_name': 'csh2po4_finetune', 'train_data_path': '../../data/train_file_7net.xyz', 'foundation_model': '7net-0', 'epochs': 2, 'batch_size': 4, 'seed': 1, 'lr': 0.01}"
+amaceing_sevennet --run_type="FINETUNE" --config="{'project_name': 'csh2po4_finetune', 'device': 'cuda', 'train_file': '../../data/train_file_7net.xyz', 'foundation_model': '7net-0', 'epochs': 2, 'batch_size': 4, 'seed': 1, 'lr': 0.01, 'force_loss_ratio': 1.0}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: RECALC

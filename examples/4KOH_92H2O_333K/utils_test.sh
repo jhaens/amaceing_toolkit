@@ -23,22 +23,22 @@ cd EXTRACT_XYZ
 amaceing_utils --run_type="EXTRACT_XYZ" --config="{'coord_file': '../../data/ref_trajectory.xyz', 'each_nth_frame': '2'}"
 cd ..
 echo ----------------------------
-echo Testing utils function: MACE_CITATIONS
-mkdir -p MACE_CITIATIONS
-cd MACE_CITIATIONS
-amaceing_utils --run_type="MACE_CITATIONS" --config="{'log_file': '../../data/mace_input.log'}"
+echo Testing utils function: CITATIONS
+mkdir -p CITIATIONS
+cd CITIATIONS
+amaceing_utils --run_type="CITATIONS" --config="{'log_file': '../../data/mace_input.log'}"
 cd ..
 echo ----------------------------
 echo Testing utils function: BENCHMARK1
 mkdir -p BENCHMARK_MD
-cd BENCBENCHMARK_MDHMARK
-amaceing_utils --run_type="BENCHMARK" --config="{'mode': 'MD', 'coord_file': '../../data/system.xyz', 'pbc_list': '[14.2067 14.2067 14.2067]', 'force_nsteps': '10', 'mace_model': '['mace_mp' 'small']', 'mattersim_model': 'large', 'sevennet_model': '['7net-mf-ompa' 'mpa']'}"
+cd BENCHMARK_MD
+amaceing_utils --run_type="BENCHMARK" --config="{'mode': 'MD', 'coord_file': '../../data/system.xyz', 'pbc_list': '[14.2067 14.2067 14.2067]', 'force_nsteps': '10', 'mace_model': '['mace_mp' 'small']', 'mattersim_model': 'large', 'sevennet_model': '['7net-mf-ompa' 'mpa']', 'orb_model': '['orb_v3_conservative_inf' 'omat']'}"
 cd ..
 echo ----------------------------
 echo Testing utils function: BENCHMARK2
 mkdir -p BENCHMARK_RECALC
 cd BENCHMARK_RECALC
-amaceing_utils --run_type="BENCHMARK" --config="{'mode': 'RECALC', 'coord_file': '../../data/dft_energies.xyz', 'pbc_list': '[14.2067 14.2067 14.2067]', 'force_nsteps': '../../data/dft_forces.xyz', 'mace_model': '['mace_mp' 'small']', 'mattersim_model': 'large', 'sevennet_model': '['7net-mf-ompa' 'mpa']'}"
+amaceing_utils --run_type="BENCHMARK" --config="{'mode': 'RECALC', 'coord_file': '../../data/dft_energies.xyz', 'pbc_list': '[14.2067 14.2067 14.2067]', 'force_nsteps': '../../data/dft_forces.xyz', 'mace_model': '['mace_mp' 'small']', 'mattersim_model': 'large', 'sevennet_model': '['7net-mf-ompa' 'mpa']', 'orb_model': '['orb_v3_conservative_inf' 'omat']'}"
 cd ..
 echo ----------------------------
 echo ============================

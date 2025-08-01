@@ -84,7 +84,7 @@ def main():
         'cp2k_newer_than_2023x': 'y'
     }
     cp2k_api(run_type='REFTRAJ', config=reftraj_config)
-    
+
     os.chdir("../..")  # Go back to main cp2k directory
     os.makedirs("cp2k/ENERGY", exist_ok=True)
     os.chdir("cp2k/ENERGY")

@@ -18,6 +18,28 @@ from amaceing_toolkit.workflow.utils import ask_for_yes_no_pbc
 from amaceing_toolkit.workflow.utils import xyz_reader
 from .default_analyzer import compute_analysis
 
+import readline  # For command line input with tab completion
+import glob # For file name tab completion
+
+
+try:
+    # Enable tab completion for file names, append '/' for directories
+    def complete(text, state):
+        matches = glob.glob(text + '*')
+        # Append '/' if match is a directory
+        matches = [
+            m + '/' if os.path.isdir(m) else m
+            for m in matches
+        ]
+        matches.append(None)
+        return matches[state]
+
+    readline.set_completer_delims(' \t\n;')
+    readline.parse_and_bind("tab: complete")
+    readline.set_completer(complete)
+except ImportError:
+    # If readline is not available, fallback to simple input
+    pass
 
 def atk_analyzer():
     """"
@@ -33,12 +55,20 @@ def atk_analyzer():
         parser.add_argument("-p", "--pbc", type=str, help="[OPTIONAL] Path to the PBC file. (multiple paths are possible: pbc1, pbc2, pbc3)")
         parser.add_argument("-t", "--timestep", type=str, help="[OPTIONAL] Timestep in fs. (multiple values are possible: 0.5, 1.0, 2.0)")
         parser.add_argument("-v", "--visualize", type=str, default="y", help="[OPTIONAL] Visualize the analysis, default is 'y'. (y/n)")
+        parser.add_argument("-r", "--rdf_pairs", type=str, help="[OPTIONAL] RDF pairs to consider. (multiple values are possible: pair1, pair2, pair3 with pair1 = atom1-atom2)")
+        parser.add_argument("-m", "--msd_list", type=str, help="[OPTIONAL] MSD atoms to consider. (multiple values are possible: atom1, atom2, atom3)")
+        parser.add_argument("-s", "--smsd_list", type=str, help="[OPTIONAL] sMSD atoms to consider. (multiple values are possible: atom1, atom2, atom3)")
+        parser.add_argument("-a", "--autocorr_pairs", type=str, help="[OPTIONAL] Autocorrelation pairs to consider. (multiple values are possible: pair1, pair2, pair3 with pair1 = atom1-atom2)")
         args = parser.parse_args()
 
         coord_file = args.file
         pbc = args.pbc
         timestep = args.timestep
         visualize = args.visualize
+        rdf_pairs = args.rdf_pairs
+        msd_list = args.msd_list
+        smsd_list = args.smsd_list
+        autocorr_pairs = args.autocorr_pairs
 
         print("")
         print("You selected the following parameters for the analysis: " + str(coord_file) + ", " + str(pbc) + ", " + str(timestep) + ", " + str(visualize))
@@ -74,17 +104,43 @@ def atk_analyzer():
             all_avail_atomtypes = available_atomtypes(coord_file)
             pbc = [pbc]
             coord_file = [coord_file]
-        
-        # Do smart proposal
-        msd_list, rdf_pairs = smart_proposal(all_avail_atomtypes)
-        print("")
-        print("The analysis plan (based on smart_proposal) considering the available atom types in the coordinate file(s):")
-        print(" ==> Radial distribution function of: " + str(rdf_pairs))
-        print(" ==> Mean square displacement of: " + str(msd_list))
-        print("")
-        # Do not calculate smsd autocorrelation via the one-line teriminal command
-        smsd_list = []
-        autocorr_pairs = []
+
+        if rdf_pairs == None and msd_list ==None and smsd_list == None and autocorr_pairs == None:
+            # Do smart proposal
+            msd_list, rdf_pairs = smart_proposal(all_avail_atomtypes)
+            print("")
+            print("The analysis plan (based on smart_proposal) considering the available atom types in the coordinate file(s):")
+            print(" ==> Radial distribution function of: " + str(rdf_pairs))
+            print(" ==> Mean square displacement of: " + str(msd_list))
+            print("")
+            # Do not calculate smsd autocorrelation via the one-line teriminal command
+            smsd_list = []
+            autocorr_pairs = []
+        else:
+            # Parse the rdf_pairs, msd_list, smsd_list, autocorr_pairs
+            if rdf_pairs is not None:
+                rdf_pairs = rdf_pairs.split(",")
+                rdf_pairs = [pair.strip().split("-") for pair in rdf_pairs]
+            else:
+                rdf_pairs = []
+
+            if msd_list is not None:
+                msd_list = msd_list.split(",")
+                msd_list = [atom.strip() for atom in msd_list]
+            else:
+                msd_list = []
+
+            if smsd_list is not None:
+                smsd_list = smsd_list.split(",")
+                smsd_list = [atom.strip() for atom in smsd_list]
+            else:
+                smsd_list = []
+
+            if autocorr_pairs is not None:
+                autocorr_pairs = autocorr_pairs.split(",")
+                autocorr_pairs = [pair.strip().split("-") for pair in autocorr_pairs]
+            else:
+                autocorr_pairs = []
 
         # Name the analyses
         ana_names = []
@@ -166,6 +222,8 @@ def atk_analyzer():
             smsd_table = ""
             crt_manuscript(filenames, msd_table, smsd_table)
 
+        # Write the input log file
+        write_input_log(coord_file, pbc, timestep, visualize, rdf_pairs, msd_list, smsd_list, autocorr_pairs)
 
     else:
         ana_form()
@@ -189,11 +247,14 @@ def ana_form():
     analyses_names = {}
     i = 0
     no_analyses = 1
+    unchanged_coord_paths = []
+    unchanged_pbc_paths = []
     while i < no_analyses:
         coord_file = input("What is the name of the trajecory file? [coord.xyz]: ")
         if coord_file == '':
             coord_file = "coord.xyz"
         assert os.path.isfile(coord_file), "Coordinate file does not exist!"
+        unchanged_coord_paths.append(coord_file)  # Store the original path for later use
     
         # Ask for the pbc file not to parse the actual number
         box_cubic = ask_for_yes_no_pbc("Is the box cubic? (y/n/pbc)", "pbc")
@@ -202,12 +263,15 @@ def ana_form():
             box_xyz = float(box_xyz)
             np.savetxt(f'pbc_{i}.txt', np.array([[box_xyz, 0, 0], [0, box_xyz, 0], [0, 0, box_xyz]]))
             pbc = f'pbc_{i}.txt'  # Ensure the file name includes the extension
+            unchanged_pbc_paths.append(None)  # Store None because the pbc path is not given
         elif box_cubic == 'n':
             pbc_mat = ask_for_non_cubic_pbc()
             np.savetxt(f'pbc_{i}.txt', pbc_mat)
             pbc = f'pbc_{i}.txt'  # Ensure the file name includes the extension
+            unchanged_pbc_paths.append(None)  # Store None because the pbc path is not given
         else:
             pbc_file = np.loadtxt(box_cubic)
+            unchanged_pbc_paths.append(box_cubic)  # Store the original path for later use
             assert pbc_file.shape == (3, 3), "PBC file is not in the right format!"
             np.savetxt(f'pbc_{i}.txt', pbc_file)
             pbc = f'pbc_{i}.txt'
@@ -598,7 +662,11 @@ def ana_form():
 
         crt_manuscript(filenames, msd_table, smsd_table)
 
-    
+        # Write the input log file
+        coord_file_list = unchanged_coord_paths
+        pbc_list = unchanged_pbc_paths
+        timestep_list = [ana[2] for ana in analyses.values()]
+        write_input_log(coord_file_list, pbc_list, timestep_list, vis_ana, rdf_pairs, msd_list, smsd_list, autocorr_pairs)
 
 
 def available_atomtypes(coord):
@@ -1260,8 +1328,9 @@ def tab_writer(file):
                 # Split the line into columns
                 columns = line.strip().split(",")
                 # Append the columns to the table content
+                if '_' in columns[0]:
+                    columns[0] = columns[0].replace("_", r"\_")
                 table_content.append(columns)
-
 
     table_text = r"""\begin{table}[h]
     \centering """
@@ -1337,3 +1406,50 @@ def tab_writer(file):
     
     """
     return table_text
+
+def write_input_log(coord_file, pbc, timestep, visualize, rdf_pairs, msd_list, smsd_list, autocorr_pairs):
+    """
+    Write a log file with the analysis input parameters and a ready-to-use terminal command.
+    """
+    print("The analysis input parameters will be written to the input_analysis.log file.")
+
+    log_lines = []
+    log_lines.append("Analysis input log generated by aMACEing toolkit\n")
+    log_lines.append(f"Coordinate file(s): {coord_file}\n")
+    log_lines.append(f"PBC file(s): {pbc}\n")
+    log_lines.append(f"Timestep(s): {timestep}\n")
+    log_lines.append(f"Visualize: {visualize}\n")
+    log_lines.append(f"RDF pairs: {rdf_pairs}\n")
+    log_lines.append(f"MSD list: {msd_list}\n")
+    log_lines.append(f"sMSD list: {smsd_list}\n")
+    log_lines.append(f"Autocorr pairs: {autocorr_pairs}\n")
+
+    # Prepare command-line arguments
+    def list_to_str(val):
+        if isinstance(val, list):
+            # Flatten list of lists for pairs
+            if val and isinstance(val[0], list):
+                return ",".join(["-".join(map(str, pair)) for pair in val])
+            else:
+                return ",".join(map(str, val))
+        return str(val)
+
+    cmd = "amaceing_ana"
+    cmd += f" --file={list_to_str(coord_file)}"
+    cmd += f" --pbc={list_to_str(pbc)}"
+    cmd += f" --timestep={list_to_str(timestep)}"
+    cmd += f" --visualize={visualize}"
+    if rdf_pairs and len(rdf_pairs) > 0:
+        cmd += f" --rdf_pairs={list_to_str(rdf_pairs)}"
+    if msd_list and len(msd_list) > 0:
+        cmd += f" --msd_list={list_to_str(msd_list)}"
+    if smsd_list and len(smsd_list) > 0:
+        cmd += f" --smsd_list={list_to_str(smsd_list)}"
+    if autocorr_pairs and len(autocorr_pairs) > 0:
+        cmd += f" --autocorr_pairs={list_to_str(autocorr_pairs)}"
+
+    log_lines.append("\n# To repeat this analysis from the terminal, use:\n")
+    log_lines.append(cmd + "\n")
+
+    with open("input_analysis.log", "w") as f:
+        f.writelines(log_lines)    

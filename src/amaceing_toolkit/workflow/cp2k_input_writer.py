@@ -18,7 +18,7 @@ from amaceing_toolkit.runs.run_logger import run_logger1
 from amaceing_toolkit.default_configs import configs_cp2k
 from amaceing_toolkit.default_configs import kind_data_functionals 
 from amaceing_toolkit.default_configs import available_functionals
-from amaceing_toolkit.default_configs import cp2k_runscript
+from amaceing_toolkit.default_configs.runscript_loader import RunscriptLoader
 
 
 def atk_cp2k():
@@ -954,7 +954,31 @@ def write_log(input_config):
         #input_config = str(input_config).replace("'", '')
         output.write(f"{input_config}")
 
-def write_runscript(project_name,run_type,equi_run=''):
+def write_runscript(project_name, run_type, equi_run=''):
+    """
+    Write runscript for CP2K calculations
+    """
+
+    run_type_inp_names = {'GEO_OPT': 'geoopt_cp2k.inp', 'CELL_OPT': 'cellopt_cp2k.inp', 'MD': ['md_cp2k.inp', 'md_equilibration_cp2k.inp'], 'REFTRAJ': 'reftraj_cp2k.inp', 'ENERGY': 'energy_cp2k.inp'}
+    
+    if run_type == 'MD':
+        with open('runscript.sh', 'w') as output:
+            output.write(RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type][0]).load_runscript())
+        os.system('chmod +x runscript.sh')
+        print("Runscript for the production run created: runscript.sh")
+        if equi_run == 'y':
+            with open('runscript_equilibration.sh', 'w') as output2:
+                output2.write(RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type][1]).load_runscript())
+            print("Runscript for the equilibration run created: runscript_equilibration.sh")
+            os.system('chmod +x runscript_equilibration.sh')
+
+    else: 
+        with open('runscript.sh', 'w') as output:
+            output.write(RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type]).load_runscript())
+        print("Runscript created: runscript.sh")
+        os.system('chmod +x runscript.sh')
+
+def write_runscript_old(project_name,run_type,equi_run=''):
     """
     Write runscript for CP2K calculations: default runscript for cp2k is in the default_configs/runscript_templates.py
     """
