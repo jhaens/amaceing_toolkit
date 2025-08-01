@@ -1069,6 +1069,30 @@ def orb_citations(foundation_model = ""):
 """)
         print("")
 
+def grace_citations(foundation_model = ""):
+    """
+    Function to print the citations for Grace
+    """
+    print("")
+    print(r""" Anton Bochkarev, Yury Lysogorskiy, Ralf Drautz, Graph Atomic Cluster Expansion for Semilocal Interactions beyond Equivariant Message Passing, Phys. Rev. X 14, 021036 (2024), https://doi.org/10.1103/PhysRevX.14.021036
+@article{PhysRevX.14.021036,
+  title = {Graph Atomic Cluster Expansion for Semilocal Interactions beyond Equivariant Message Passing},
+  author = {Bochkarev, Anton and Lysogorskiy, Yury and Drautz, Ralf},
+  journal = {Phys. Rev. X},
+  volume = {14},
+  issue = {2},
+  pages = {021036},
+  numpages = {28},
+  year = {2024},
+  month = {Jun},
+  publisher = {American Physical Society},
+  doi = {10.1103/PhysRevX.14.021036},
+  url = {https://link.aps.org/doi/10.1103/PhysRevX.14.021036}
+}
+          """)
+    print("")
+    
+
 def citation_grabber(log_file, framework):
     """
     Function to grab the citations from the log file
@@ -1099,6 +1123,8 @@ def citation_grabber(log_file, framework):
         print("Please refer to the CP2K log file for the citations.")
     elif framework == 'Orb':
         orb_citations(foundation_model)
+    elif framework == 'Grace':
+       grace_citations()
 
 
 def frame_counter(file):
