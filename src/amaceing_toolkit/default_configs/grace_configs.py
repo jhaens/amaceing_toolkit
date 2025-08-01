@@ -52,7 +52,7 @@ def configs_grace(config_name):
         'seed': 1,
         'force_file': 'force.xyz',
         'lr': 0.001,
-        'force_energy_ratio': 5.0,
+        'force_loss_ratio': 5.0,
       },
       'RECALC' : {
         'simulation_environment': 'ase',

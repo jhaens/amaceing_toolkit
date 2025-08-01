@@ -22,17 +22,16 @@ class FTInputGenerator:
         """
         Generate the runscript for the input file: CPU and GPU version.
         """
-        if mattersim_string is None:
+        if self.framework.lower() == 'grace':
             device = 'gpu' if device == 'cuda' else 'cpu'
-        
-            # Generate the runscript content
-            runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'py', device).load_runscript
-        elif self.framework == 'grace':
             # Generate the runscript content for Grace finetuning
             runscript_content = RunscriptLoader('grace_ft', self.config['project_name'], filename, 'py', device).load_runscript
+        elif mattersim_string is None:
+            device = 'gpu' if device == 'cuda' else 'cpu'
+            # Generate the runscript content
+            runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'py', device).load_runscript
         else:
             runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'py', 'gpu', mattersim_string).load_runscript
-
         rs_name = {'cpu': 'runscript.sh', 'gpu': 'gpu_script.job'}
         
         # Write the runscript files
@@ -79,7 +78,7 @@ class FTInputGenerator:
     def _check_extxyz_keys(self, train_file):
         """Check if the keys in the extxyz file match the expected keys."""
         expected_keys = {
-            'energy_key': ['REF_TotEnergy', 'REF_Energy', 'REF_TotEner', 'REF_Ener', 'ref_TotEnergy', 'ref_Energy', 'ref_TotEner', 'ref_Ener', 'TotEnergy', 'Energy', 'TotEner', 'Ener', 'totenergy', 'energy', 'totener', 'ener', 'REF_TotEnergies', 'REF_Energies', 'TotEnergies', 'Energies','totenergies', 'energies'],
+            'energy_key': ['REF_TotEnergy', 'REF_Energy', 'REF_TotEner', 'REF_Ener', 'ref_TotEnergy', 'ref_Energy', 'ref_TotEner', 'ref_Ener', 'TotEnergy', 'Energy', 'TotEner', 'Ener', 'totenergy', 'energy', 'totener', 'ener', 'REF_TotEnergies', 'REF_Energies', 'TotEnergies', 'Energies','totenergies', 'energies', 'free_energy', 'free_energies', 'REF_FreeEnergy', 'REF_FreeEnergies', 'ref_FreeEnergy', 'ref_FreeEnergies'],
             'forces_key': ['REF_Force', 'REF_Forces', 'Force', 'Forces', 'ref_force', 'ref_forces', 'force', 'forces', 'frc', 'frcs', 'REF_Frc', 'REF_Frcs', 'REF_frc', 'REF_frcs', 'ref_Frc', 'ref_Frcs', 'ref_frc', 'ref_frcs'],
         }
         # Read the first two lines of the train file to check the keys, forget the first line
@@ -718,7 +717,12 @@ if __name__ == "__main__":
                 file.write(filedata)
 
         # Create the dataframe via Grace: extxyz2df
-        os.system(f"extxyz2df {config['train_file']}")
+        try:
+            import tensorpotential
+            os.system(f"extxyz2df {config['train_file']}")
+        except ImportError:
+            print(f"WARNING: The dataset {config['train_file']} could not be converted to the appropriate format (because TensorPotential is not installed)!")
+            print(f"WARNING: Please do: 'extxyz2df {config['train_file']}' to convert the dataset to a dataframe format.")
 
         config['train_file'] = config['train_file'].replace('.xyz', '.pkl.gz')
 
@@ -743,7 +747,7 @@ potential:
 fit:
   loss: {
     energy: { weight: 1, type: huber , delta: 0.01 },
-    forces: { weight: """+float(config('force_energy_ratio'))+""", type: huber , delta: 0.01 },
+    forces: { weight: """+str(config['force_loss_ratio'])+""", type: huber , delta: 0.01 },
   }
 
   maxiter: """+str(config['epochs'])+""" # Number of epochs / iterations
