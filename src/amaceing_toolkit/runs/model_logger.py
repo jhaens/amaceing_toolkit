@@ -106,6 +106,7 @@ def get_model(no_model):
                     folder = line.split('::')[4]
                     name = line.split('::')[2]
                     path_to_model = os.path.join(folder, name)
+                    path_to_model = path_to_model.strip()
                     break
                 elif i > no_model:
                     print("The model number you entered does not exist in the finetuned_models.log file.")

@@ -48,7 +48,7 @@ def configs_grace(config_name):
       'FINETUNE' : {
         'foundation_model': 'GRACE-1L-OAM',
         'batch_size': 4,
-        'epochs': 200,
+        'epochs': 500,
         'seed': 1,
         'force_file': 'force.xyz',
         'lr': 0.001,

@@ -120,7 +120,7 @@ class ASEInputGenerator:
         elif thermostat == 'NoseHooverChainNVT':
             return {
                 'import': 'from ase.md.nose_hoover_chain import NoseHooverChainNVT',
-                'dynamics': f'dyn = NoseHooverChainNVT(atoms, {timestep} * units.fs, temperature_K={temperature}, taut=50 * units.fs)'
+                'dynamics': f'dyn = NoseHooverChainNVT(atoms, {timestep} * units.fs, {temperature}, 50 * units.fs)'
             }
         elif thermostat == 'Bussi':
             return {
@@ -303,7 +303,7 @@ dyn.attach(MDLogger(dyn, atoms, 'md.log', header=True, stress=False, peratom=Fal
 """
         lines_traj_file = f"""
 # Trajectory file
-dyn.attach(Trajectory('{config['project_name']}_md.traj', atoms), interval={int(config['write_interval'])})
+dyn.attach(Trajectory('{config['project_name']}_md.traj', 'a', atoms), interval={int(config['write_interval'])})
 """
 
         return f"""import time
