@@ -1430,10 +1430,10 @@ class UniversalMLIPInputWriter:
             f_model_size = ' ' 
         loc_of_execution = os.getcwd()
         folder_dict = {
-            'mace': self.config.get('dir', '.'),
-            'sevennet': '.',
+            'mace': self.config.get('dir', ''),
+            'sevennet': '',
             'mattersim': self.config.get('save_path','MatterSim_models'),
-            'orb': '.',
+            'orb': '',
             'grace': f'seed/{self.config["seed"]}/final_model',
         }
         file_end_dict = {
@@ -1444,7 +1444,7 @@ class UniversalMLIPInputWriter:
             'grace': '',
         }
         model_logger(
-            os.path.join(loc_of_execution, folder_dict.get(self.framework, '.'), file_end_dict.get(self.framework, '')),
+            os.path.join(loc_of_execution, folder_dict.get(self.framework, ''), file_end_dict.get(self.framework, '')),
             self.config['project_name'],
             f_model,
             f_model_size,
