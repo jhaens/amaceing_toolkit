@@ -495,13 +495,15 @@ class MLIPFrameworkHandler:
 
         if foundation_model == 'small':
             return {
-                'import': """from mattersim.forcefield import MatterSimCalculator'
+                'import': """from mattersim.forcefield import MatterSimCalculator
+import torch
 device = "cuda" if torch.cuda.is_available() else "cpu" """,
                 'model': f"MatterSimCalculator(load_path='MatterSim-v1.0.0-1M.pth', device=device)"
             }
         elif foundation_model == 'large':
             return {
                 'import': """from mattersim.forcefield import MatterSimCalculator
+import torch
 device = "cuda" if torch.cuda.is_available() else "cpu" """,
                 'model': f"MatterSimCalculator(load_path='MatterSim-v1.0.0-5M.pth', device=device)"
             }
@@ -509,6 +511,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu" """,
             # Fine-tuned model
             return {
                 'import': """from mattersim.forcefield import MatterSimCalculator
+import torch
 device = "cuda" if torch.cuda.is_available() else "cpu" """,
                 'model': f"MatterSimCalculator(load_path='{foundation_model}', device=device)"
             }
@@ -580,6 +583,7 @@ model = getattr(pretrained, base_model)(
             return {
                 'import': f"""from orb_models.forcefield import pretrained
 from orb_models.forcefield.calculator import ORBCalculator
+import torch
 device = "cuda" if torch.cuda.is_available() else "cpu"
 orbff = pretrained.{foundation_model_disp}(
   device=device,
