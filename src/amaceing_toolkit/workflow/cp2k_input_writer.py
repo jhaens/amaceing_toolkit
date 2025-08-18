@@ -193,7 +193,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
     Create dictionary for create_input
     """
     # Tranlsate dictionaries
-    onoff_dict = {'y': 'ON', 'n': 'OFF'}
+    onoff_dict = {'y': 'ON', 'n': 'OFF', 'ON': 'ON', 'OFF': 'OFF'}
     truefalse_dict = {'y': 'TRUE', 'n': 'FALSE'}
 
     # Use default input data
