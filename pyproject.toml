@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "amaceing_toolkit"
-version = "0.5.0"
-description = "A Python package for the creation of input files for CP2K, MACE-torch, MatterSim, SevenNet, ORB and Grace as well as the post-processing and evaluation of these simulations."
+version = "0.5.1"
+description = "A Python package for the creation of input files for CP2K, MACE-torch, MatterSim, SevenNet, ORB, and Grace as well as the post-processing and evaluation of these simulations."
 readme = "README.md"
 requires-python = ">=3.9"
 license = {file = "LICENSE"}
