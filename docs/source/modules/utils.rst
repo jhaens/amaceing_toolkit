@@ -46,8 +46,10 @@ Benchmarking (BENCHMARK)
 * Supports MACE, MatterSim, SevenNet and ORB potentials
 * Enables direct comparison of performance across models
 * Provides two operating modes:
-  - MD: Forward simulation with identical starting conditions
-  - RECALC: Recalculation of forces/energies from a reference trajectory
+    - MD: Forward simulation with identical starting conditions
+    - RECALC: Recalculation of forces/energies from a reference trajectory
+* Supports flexible model selection and configuration for each potential
+* Automatically organizes results and logs for reproducibility
 * Automatically generates comparison statistics when using RECALC mode
 
 Logger Access

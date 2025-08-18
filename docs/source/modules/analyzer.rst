@@ -21,6 +21,7 @@ Where:
 - n(r) is the number of atoms in a shell of width Δr at distance r
 
 Implementation features:
+
 * Bin-based histogram calculation with configurable resolution
 * Automatic normalization for correct physical interpretation
 * Support for arbitrary atom pairs
@@ -34,16 +35,16 @@ The MSD measures how far atoms travel from their initial positions as a function
 
 .. math::
 
-   \text{MSD}(t) = \left\langle |r_i(t) - r_i(0)|^2 \right\rangle_i
+   \text{MSD}(t) = \left\langle |r_i(t+\tau) - r_i(t)|^2 \right\rangle_{t,i}
 
 Where:
 - r_i(t) is the position of atom i at time t
 - The average is taken over all atoms of a given type
 
 Implementation features:
+
 * Automatic unwrapping of trajectories with periodic boundary conditions
 * Calculation of diffusion coefficients using Einstein relation
-* Error estimation for diffusion coefficients
 * Supports multiple atom types in a single analysis run
 
 Single-particle Mean Square Displacement (sMSD)
@@ -53,12 +54,13 @@ The sMSD tracks displacement for individual atoms rather than ensemble averages:
 
 .. math::
 
-   \text{sMSD}_i(t) = |r_i(t) - r_i(0)|^2
+   \text{sMSD}_i(t) = \left\langle |r_i(t+\tau) - r_i(t)|^2 \right\rangle_t
 
 Implementation features:
-* Individual trajectories for each particle
+
 * Statistical distribution of single-particle diffusion coefficients
 * Identification of outlier particles with anomalous diffusion
+* Supports multiple atom types in a single analysis run
 
 Vector Autocorrelation Function (VACF)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,9 +72,9 @@ The VACF measures how a particle's velocity remains correlated with its initial 
    \text{VACF}(t) = \left\langle v_i(t) \cdot v_i(0) \right\rangle_i
 
 Implementation features:
-* Support for different vector quantities (velocity, dipole, etc.)
-* Normalized and unnormalized correlation functions
-* Fourier transform for spectral analysis
+
+* Supports multiple atom pairs in a single analysis run
+
 
 Usage
 -----
@@ -169,24 +171,28 @@ Output and Visualization
 For each analysis type, the analyzer produces:
 
 1. **Raw Data**:
-   * CSV files containing the numerical results
-   * Data is organized for easy import into other analysis tools
+   
+   - CSV files containing the numerical results
+   - Data is organized for easy import into other analysis tools
 
 2. **Visualizations**:
-   * Publication-quality plots generated using matplotlib
-   * Automatic formatting and styling for clarity
-   * PNG and PDF output formats
+   
+   - Publication-quality plots generated using matplotlib
+   - Automatic formatting and styling for clarity
+   - PNG and PDF output formats
 
 3. **Derived Quantities**:
-   * Diffusion coefficients from MSD curves
-   * Coordination numbers from RDF peaks
-   * Correlation times from VACF decay
+
+   - Diffusion coefficients from MSD curves
+   - Coordination numbers from RDF peaks
+   - Correlation times from VACF decay
 
 4. **LaTeX Report** (optional):
-   * Comprehensive summary of all analyses
-   * Tables of derived quantities
-   * Embedded figures
-   * Ready to compile for publication or presentations
+
+   - Comprehensive summary of all analyses
+   - Tables of derived quantities
+   - Embedded figures
+   - Ready to compile for publication or presentations
 
 * Diffusion coefficients are calculated by fitting the MSD curve in the time range 10-30 ps
 * For sMSD analysis, statistics include mean, standard deviation, median, and the five highest diffusion coefficients
