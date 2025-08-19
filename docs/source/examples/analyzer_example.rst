@@ -41,12 +41,14 @@ Generated Files
 ```````````````
 
 For RDF analysis:
+
 - ``rdf_O-H.csv``: Raw RDF data for O-H pairs
 - ``rdf_O-O.csv``: Raw RDF data for O-O pairs
 - ``rdf_O-H.png``: Plot of O-H RDF
 - ``rdf_O-O.png``: Plot of O-O RDF
 
 For MSD analysis:
+
 - ``msd_O.csv``: Raw MSD data for oxygen atoms
 - ``msd_H.csv``: Raw MSD data for hydrogen atoms
 - ``msd.png``: Plot of MSD curves
