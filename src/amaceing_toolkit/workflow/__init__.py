@@ -441,7 +441,7 @@ def grace_api(run_type=None, config=None):
     finally:
         sys.argv = old_args
 
-def analyzer_api(file=None, pbc=None, timestep=None, visualize=None):
+def analyzer_api(file=None, pbc=None, timestep=None, visualize=None, rdf_pairs=None, msd_list=None, smsd_list=None, autocorr_pairs=None):
     """
     API function for trajectory analysis
     
@@ -455,7 +455,15 @@ def analyzer_api(file=None, pbc=None, timestep=None, visualize=None):
         Timestep in fs
     visualize : str, optional
         Whether to generate visualization ('y' or 'n')
-        
+    rdf_pairs : str, optional
+        RDF pairs to analyze, comma separated
+    msd_list : str, optional
+        List of atoms for MSD analysis, comma separated
+    smsd_list : str, optional
+        List of atoms for SMSD analysis, comma separated
+    autocorr_pairs : str, optional
+        List of atom pairs for autocorrelation analysis, comma separated
+
     Returns
     -------
     None
@@ -464,7 +472,7 @@ def analyzer_api(file=None, pbc=None, timestep=None, visualize=None):
     Examples
     --------
     >>> from amaceing_toolkit.workflow import analyzer_api
-    >>> analyzer_api(file='traj.xyz', pbc='pbc_file', timestep=50.0, visualize='y')
+    >>> analyzer_api(file="trajectory.xyz", pbc="pbc_file", timestep=50.0, visualize="y", rdf_pairs="O-H,O-O", msd_list="H"
     """
     import sys
     old_args = sys.argv
@@ -478,6 +486,15 @@ def analyzer_api(file=None, pbc=None, timestep=None, visualize=None):
             sys.argv.extend(["--timestep", str(timestep)])
         if visualize is not None:
             sys.argv.extend(["--visualize", visualize])
+        if rdf_pairs is not None:
+            sys.argv.extend(["--rdf_pairs", rdf_pairs])
+        if msd_list is not None:
+            sys.argv.extend(["--msd_list", msd_list])
+        if smsd_list is not None:
+            sys.argv.extend(["--smsd_list", smsd_list])
+        if autocorr_pairs is not None:
+            sys.argv.extend(["--autocorr_pairs", autocorr_pairs])
+
         from ..trajec_ana import atk_analyzer
         atk_analyzer()
     finally:

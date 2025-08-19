@@ -26,7 +26,7 @@ def main():
         shutil.copy('../koh1.xyz', 'trajectory.xyz')
         # Create a sample PBC file if it doesn't exist
         with open('pbc_file', 'w') as f:
-            f.write("14.20 0.0 0.0 0.0 14.20 0.0 0.0 0.0 14.20\n")  # Sample PBC values
+            f.write("13.8452 0.0 0.0 0.0 13.8452 0.0 0.0 0.0 13.8452\n")  # Sample PBC values
     except:
         print("Failed to copy trajectory file. Make sure it exists.")
         return
@@ -38,7 +38,9 @@ def main():
         file="trajectory.xyz",
         pbc="pbc_file",
         timestep=50.0,
-        visualize="y"
+        visualize="y",
+        rdf_pairs="O-H,O-O",
+        msd_list="H"
     )
     
     # Compile the LaTeX document if available
@@ -60,9 +62,9 @@ def main():
         shutil.copy('../koh2.xyz', 'trajectory2.xyz')
         # Create sample PBC files
         with open('pbc_file1', 'w') as f:
-            f.write("14.20 0.0 0.0 0.0 14.20 0.0 0.0 0.0 14.20\n")  # Sample PBC values
+            f.write("13.8452 0.0 0.0 0.0 13.8452 0.0 0.0 0.0 13.8452\n")  # Sample PBC values
         with open('pbc_file2', 'w') as f:
-            f.write("14.20 0.0 0.0 0.0 14.20 0.0 0.0 0.0 14.20\n")  # Different sample PBC values
+            f.write("13.8452 0.0 0.0 0.0 13.8452 0.0 0.0 0.0 13.8452\n")  # Different sample PBC values
     except:
         print("Failed to create trajectory files. Make sure source files exist.")
         return
@@ -82,49 +84,7 @@ def main():
         subprocess.run(["pdflatex", "analysis.tex"], check=False)  # Run twice for references
     except FileNotFoundError:
         print("pdflatex not found. Skipping PDF generation.")
-    
-    os.chdir("..")  # Go back to root directory
-    
-    # Create directory for advanced analysis
-    os.makedirs("ana_advanced", exist_ok=True)
-    os.chdir("ana_advanced")
-    
-    # Create copies of trajectory files for advanced analysis
-    try:
-        shutil.copy('../koh1.xyz', 'trajectory.xyz')
-        with open('pbc_file', 'w') as f:
-            f.write("14.20 0.0 0.0 0.0 14.20 0.0 0.0 0.0 14.20\n")  # Sample PBC values
-    except:
-        print("Failed to create trajectory files. Make sure source files exist.")
-        return
-    
-    print("----------------------------")
-    print("Running advanced analysis with config dictionary")
-    
-    # Use a config dictionary with advanced options
-    config = {
-        'file': 'trajectory.xyz',
-        'pbc': 'pbc_file',
-        'timestep': 50.0,
-        'visualize': 'y',
-        'rdf_pairs': ['O-H', 'O-O'],
-        'msd_list': ['H', 'O'],
-        'smsd_list': ['H', 'O'],
-        'autocorr_pairs': ['O-H', 'O-O'],
-        'drift_corr': 'y',
-        'fold_back': 'y',
-        'h_bonds': 'y'
-    }
-    
-    analyzer_api(config=config)
-    
-    # Compile the LaTeX document if available
-    try:
-        subprocess.run(["pdflatex", "analysis.tex"], check=False)
-        subprocess.run(["pdflatex", "analysis.tex"], check=False)  # Run twice for references
-    except FileNotFoundError:
-        print("pdflatex not found. Skipping PDF generation.")
-        
+
     os.chdir("..")  # Go back to root directory
     print("----------------------------")
     print("Analyzer API examples completed")

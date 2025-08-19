@@ -16,7 +16,7 @@ Command Line Example
 
 .. code-block:: bash
 
-    amaceing_ana -f="trajectory.xyz" -p="pbc.dat" -t="0.5" -v="y" -r="O-H,O-O" -m="O,H"
+    amaceing_ana --file=../data/koh1.xyz --pbc=../data/pbc_koh1 --timestep=50.0 --visualize=y --rdf_pairs=O-O,O-H --msd_list=H
 
 Python API Example
 ``````````````````
@@ -26,33 +26,43 @@ Python API Example
     from amaceing_toolkit.workflow import analyzer_api
     
     config = {
-        'traj_file': 'trajectory.xyz',
-        'pbc_file': 'pbc.dat',
-        'timestep': 0.5,
-        'analysis_types': ['rdf', 'msd'],
-        'rdf_pairs': [['O', 'H'], ['O', 'O']],
-        'msd_atoms': ['O', 'H'],
-        'visualize': True
+        file="trajectory.xyz",
+        pbc="pbc_file",
+        timestep=50.0,
+        visualize="y",
+        rdf_pairs="O-H,O-O",
+        msd_list="H"
     }
     
-    results = analyzer_api(config=config)
+    analyzer_api(config=config)
 
-Generated Files
-```````````````
+Generated Files in /ana_koh
+```````````````````````````
 
 For RDF analysis:
 
-- ``rdf_O-H.csv``: Raw RDF data for O-H pairs
-- ``rdf_O-O.csv``: Raw RDF data for O-O pairs
-- ``rdf_O-H.png``: Plot of O-H RDF
-- ``rdf_O-O.png``: Plot of O-O RDF
+- ``koh1_ana/rdf_OH.csv``: Raw RDF data for O-H pairs
+- ``koh1_ana/rdf_OO.csv``: Raw RDF data for O-O pairs
+- ``rdf_OH.png``: Plot of O-H RDF
+- ``rdf_OO.png``: Plot of O-O RDF
 
 For MSD analysis:
 
-- ``msd_O.csv``: Raw MSD data for oxygen atoms
-- ``msd_H.csv``: Raw MSD data for hydrogen atoms
-- ``msd.png``: Plot of MSD curves
-- ``diffusion_coefficients.csv``: Calculated diffusion coefficients
+- ``koh1_ana/msd_H.csv``: Raw MSD data for hydrogen atoms
+- ``koh1_ana/diff_coeff_H.csv``: Calculated diffusion coefficients for hydrogen atoms
+- ``msd_H_plot.png``: Plot of MSD curves
+- ``overview_diffcoeff.csv``: Calculated diffusion coefficients
+
+General File:
+
+- ``input_analysis.log``: aMACEing_toolkit analysis log file
+
+Visualizing Results:
+
+- ``analysis.tex``: LaTeX file for compiling the analysis report
+- ``analysis.pdf``: Compiled PDF report of the analysis 
+- ``/img_dir``: Directory containing all generated images
+
 
 Multiple Trajectory Analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -64,7 +74,7 @@ Command Line Example
 
 .. code-block:: bash
 
-    amaceing_ana -f="traj1.xyz,traj2.xyz" -p="pbc1.dat,pbc2.dat" -t="0.5,0.5" -v="y" -r="O-H,O-O" -m="O,H"
+    amaceing_ana --file=../data/koh1.xyz,../data/koh2.xyz --pbc=../data/pbc_koh1,../data/pbc_koh2 --timestep=50.0,50.0 --visualize=y
 
 Python API Example
 ``````````````````
@@ -74,19 +84,15 @@ Python API Example
     from amaceing_toolkit.workflow import analyzer_api
     
     config = {
-        'traj_files': ['traj1.xyz', 'traj2.xyz'],
-        'pbc_files': ['pbc1.dat', 'pbc2.dat'],
-        'timesteps': [0.5, 0.5],
-        'analysis_types': ['rdf', 'msd'],
-        'rdf_pairs': [['O', 'H'], ['O', 'O']],
-        'msd_atoms': ['O', 'H'],
-        'visualize': True,
-        'labels': ['System 1', 'System 2']
+        file="trajectory1.xyz,trajectory2.xyz",  # Comma-separated files
+        pbc="pbc_file1,pbc_file2",               # Comma-separated pbc files
+        timestep="50.0,50.0",                    # Comma-separated timesteps
+        visualize="y"
     }
     
-    results = analyzer_api(config=config)
+    analyzer_api(config=config)
 
 Generated Files
 ```````````````
 
-Similar to single trajectory analysis, but with comparative plots showing data from all trajectories on the same graphs.
+Similar to single trajectory analysis (additionally including MSD for oxygen atoms), but with comparative plots showing data from all trajectories on the same graphs.
