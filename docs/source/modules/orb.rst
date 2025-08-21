@@ -55,7 +55,7 @@ For FINETUNE:
 
 .. code-block:: bash
 
-    amaceing_orb -rt="FINETUNE" -c="{'project_name': 'NAME', 'foundation_model': 'orb_v2', 'train_file': 'FILE', 'batch_size': 'INT', 'epochs': 'INT', 'seed': '1', 'lr': '0.01'}"
+    amaceing_orb -rt="FINETUNE" -c="{'project_name': 'NAME', 'foundation_model': 'orb_v2', 'train_file': 'FILE', 'batch_size': 'INT', 'epochs': 'INT', 'seed': '1', 'lr': '0.01', 'force_loss_ratio': '1.0'}"
 
 For RECALC:
 
@@ -71,7 +71,7 @@ Python API
 
 .. code-block:: python
 
-    from amaceing_toolkit.workflow import sevennet_api
+    from amaceing_toolkit.workflow import orb_api
     
     config = {
         'project_name': 'koh_h2o_geoopt',
@@ -83,17 +83,17 @@ Python API
         'dispersion_via_simenv': 'n'
     }
 
-    sevennet_api(run_type='GEO_OPT', config=config)
+    orb_api(run_type='GEO_OPT', config=config)
 
 Output Files
 ------------
 
 The module generates:
 
-* Python script for the calculation (`<runtype>_sevennet.py`)
+* Python script for the calculation (`<runtype>_orb.py`)
 * HPC runscripts for execution (`runscript.sh` and `gpu_script.job`)
 * For fine-tuning: YAML configuration file (`config_finetune.yml`)
-* Log file with configuration parameters (`sevennet_input.log`)
+* Log file with configuration parameters (`orb_input.log`)
 * For recalculation: Files with recalculated energies and forces
 * For multi-configuration MD: Directory structure with files for each configuration
 

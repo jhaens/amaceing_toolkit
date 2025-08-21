@@ -36,7 +36,7 @@ Fine-tunes an ORB foundation model with custom training data:
 
 .. code-block:: bash
 
-    amaceing_orb --run_type="FINETUNE" --config="{'project_name': '4koh_92h2o_ft', 'train_file': '../../data/train_file_7net.xyz', 'foundation_model': 'orb_v2', 'epochs': 2, 'batch_size': 4, 'seed': 1, 'lr': 0.0003}"
+    amaceing_orb --run_type="FINETUNE" --config="{'project_name': '4koh_92h2o_ft', 'train_file': '../../data/train_file_7net.xyz', 'foundation_model': 'orb_v2', 'epochs': 2, 'batch_size': 4, 'seed': 1, 'lr': 0.0003, 'force_loss_ratio': 1.0}"
 
 Energy Recalculation (RECALC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -157,7 +157,8 @@ The same functionality can be accessed programmatically through the Python API:
         'epochs': 2,
         'batch_size': 4,
         'seed': 1,
-        'lr': 0.0003
+        'lr': 0.0003,
+        'force_loss_ratio': 1.0
     }
 
     orb_api(run_type='FINETUNE', config=ft_config)

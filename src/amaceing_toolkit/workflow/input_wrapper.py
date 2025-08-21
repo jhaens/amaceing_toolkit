@@ -140,7 +140,7 @@ class UniversalMLIPInputWriter:
             'mace': "'project_name': 'NAME', 'train_file': 'FILE', 'device': 'cuda/cpu', 'stress_weight': 'FLOAT', 'forces_weight': 'FLOAT', 'energy_weight': 'FLOAT', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'prevent_catastrophic_forgetting': 'y/n', 'batch_size': 'INT', 'valid_fraction': 'FLOAT', 'valid_batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT', 'xc_functional_of_dataset': 'BLYP/PBE', 'dir': 'PATH'",
             'sevennet': "'project_name': 'NAME', 'train_file': 'FILE', 'foundation_model': 'NAME/PATH', 'modal': 'None/mpa/omat24', 'batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'force_loss_ratio': 'FLOAT', 'lr': 'FLOAT'",
             'mattersim': "'project_name': 'NAME', 'train_file': 'FILE', 'foundation_model': 'NAME/PATH', 'batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'force_loss_ratio': 'FLOAT', 'lr': 'FLOAT'",
-            'orb': "'project_name': 'NAME', 'train_file': 'FILE', 'foundation_model': 'NAME/PATH', 'modal': 'small/medium/large/none', 'batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT'",
+            'orb': "'project_name': 'NAME', 'train_file': 'FILE', 'foundation_model': 'NAME/PATH', 'modal': 'small/medium/large/none', 'batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT', 'force_loss_ratio': 'FLOAT'",
             'grace': "'project_name': 'NAME', 'train_file': 'FILE', 'foundation_model': 'NAME/PATH', 'batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT', 'force_loss_ratio': 'FLOAT'"
         }
         return textwrap.dedent("""
@@ -761,7 +761,7 @@ class UniversalMLIPInputWriter:
             ft_config = base_config.get('FINETUNE', {})
             self.config.update({
                 #'device': 'cuda' if ask_for_yes_no("Use GPU (CUDA)? (y/n)", 'y') == 'y' else 'cpu',
-                #'force_loss_ratio': ask_for_float_int("Force-Energy-Loss Ratio:", str(ft_config.get('force_loss_ratio', 10.0))),
+                'force_loss_ratio': ask_for_float_int("Force-Energy-Loss Ratio:", str(ft_config.get('force_loss_ratio', 10.0))),
                 'batch_size': ask_for_int("Batch size:", str(ft_config.get('batch_size', 10))),
                 'epochs': ask_for_int("Maximum epochs:", str(ft_config.get('epochs', 100))),
                 'lr': ask_for_float_int("Learning rate:", str(ft_config.get('lr', 0.01))),

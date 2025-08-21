@@ -424,7 +424,7 @@ from typing import Dict, Optional, Union
 import torch
 import tqdm
 from torch.optim.lr_scheduler import _LRScheduler
-from torch.utils.data import BatchSampler, DataLoader, RandomSampler
+from torch.utils.data import BatchSampler, DataLoader, RandomSampler, random_split 
 
 from orb_models import utils
 from orb_models.dataset import augmentations
@@ -490,7 +490,7 @@ def finetune(
 
         with torch.autocast("cuda", enabled=False):
             batch_outputs = model.loss(batch)
-            loss = batch_outputs.loss
+            loss = batch_outputs.log["forces_loss"] * force_loss_ratio + batch_outputs.log["energy_loss"]
             metrics.update(batch_outputs.log)
 
         if torch.isnan(loss):
@@ -504,7 +504,6 @@ def finetune(
 
         metrics.update(step_metrics)
 
-        # Log metrics once per epoch (since log_freq == num_steps)
         if (i + 1) % log_freq == 0:
             metrics_dict = metrics.get_metrics()
             log_msg = (
@@ -517,7 +516,6 @@ def finetune(
             )
             logging.info(log_msg)
 
-
         i += 1
 
     if clip_grad is not None:
@@ -526,24 +524,49 @@ def finetune(
 
     return metrics.get_metrics()
 
-def build_train_loader(
+def evaluate(
+    model: torch.nn.Module,
+    dataloader: DataLoader,
+    device: torch.device = torch.device("cpu"),
+    epoch: int = 0,
+):
+    model.eval()
+    metrics = utils.ScalarMetricTracker()
+
+    with torch.no_grad():
+        for batch in dataloader:
+            batch = batch.to(device)
+            with torch.autocast("cuda", enabled=False):
+                batch_outputs = model.loss(batch)
+                metrics.update(batch_outputs.log)
+
+    metrics_dict = metrics.get_metrics()
+    log_msg = (
+        f"Epoch {epoch:03d} | Test loss={metrics_dict.get('loss', 0):.6f} | "
+        f"energy_loss={metrics_dict.get('energy_loss', 0):.6f} | "
+        f"forces_loss={metrics_dict.get('forces_loss', 0):.6f} | "
+        f"energy_mae={metrics_dict.get('energy_mae_raw', 0):.3f} | "
+        f"forces_mae={metrics_dict.get('forces_mae_raw', 0):.3f}"
+    )
+    logging.info(log_msg)
+    return metrics_dict
+
+    
+def build_dataloaders(
     dataset_name: str,
     dataset_path: str,
     num_workers: int,
     batch_size: int,
     system_config: atomic_system.SystemConfig,
-    augmentation: Optional[bool] = True,
     target_config: Optional[Dict] = None,
+    augmentation: Optional[bool] = True,
+    split_ratio: float = 0.8,   # default 80% train, 20% test
     **kwargs,
-) -> DataLoader:
-
-    log_train = "Loading train datasets:\n"
-    aug = []
-    if augmentation:
-        aug = [augmentations.rotate_randomly]
+):
+    aug = [augmentations.rotate_randomly] if augmentation else []
 
     target_config = property_definitions.instantiate_property_config(target_config)
-    dataset = AseSqliteDataset(
+    full_dataset = AseSqliteDataset(
         dataset_name,
         dataset_path,
         system_config=system_config,
@@ -552,26 +575,38 @@ def build_train_loader(
         **kwargs,
     )
 
-    log_train += f"Total train dataset size: {len(dataset)} samples"
-    logging.info(log_train)
+    train_size = int(split_ratio * len(full_dataset))
+    test_size = len(full_dataset) - train_size
+    train_dataset, test_dataset = random_split(full_dataset, [train_size, test_size])
 
-    sampler = RandomSampler(dataset)
+    logging.info(f"Dataset split into {train_size} train and {test_size} test samples.")
 
-    batch_sampler = BatchSampler(
-        sampler,
-        batch_size=batch_size,
-        drop_last=False,
-    )
-
-    train_loader: DataLoader = DataLoader(
-        dataset,
+    # --- Train loader ---
+    train_sampler = RandomSampler(train_dataset)
+    train_batch_sampler = BatchSampler(train_sampler, batch_size=batch_size, drop_last=False)
+    train_loader = DataLoader(
+        train_dataset,
         num_workers=num_workers,
         worker_init_fn=utils.worker_init_fn,
         collate_fn=base.batch_graphs,
-        batch_sampler=batch_sampler,
+        batch_sampler=train_batch_sampler,
         timeout=10 * 60 if num_workers > 0 else 0,
     )
-    return train_loader, len(dataset)
+
+    # --- Test loader ---
+    test_sampler = RandomSampler(test_dataset)
+    test_batch_sampler = BatchSampler(test_sampler, batch_size=batch_size, drop_last=False)
+    test_loader = DataLoader(
+        test_dataset,
+        num_workers=num_workers,
+        worker_init_fn=utils.worker_init_fn,
+        collate_fn=base.batch_graphs,
+        batch_sampler=test_batch_sampler,
+        timeout=10 * 60 if num_workers > 0 else 0,
+    )
+
+    return train_loader, test_loader, len(train_dataset)
+
 
 def run(args):
 
@@ -595,8 +630,6 @@ def run(args):
 
     model_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     logging.info(f"Model has {model_params} trainable parameters.")
-
-    # Move model to correct device.
     model.to(device=device)
     
     loader_args = dict(
@@ -606,11 +639,13 @@ def run(args):
         batch_size=args.batch_size,
         target_config={"graph": ["energy"], "node": ["forces"]},
     )
-    train_loader, num_steps = build_train_loader(
-        **loader_args,
-        system_config=model.system_config,
-        augmentation=True,
+    train_loader, test_loader, num_steps = build_dataloaders(
+    **loader_args,
+    system_config=model.system_config,
+    augmentation=True,
+    split_ratio=0.8,
     )
+
     logging.info("Starting training!")
 
     # num_steps divided by the batch size:
@@ -619,6 +654,7 @@ def run(args):
     total_steps = args.max_epochs * num_steps
     optimizer, lr_scheduler = utils.get_optim(args.lr, total_steps, model)
 
+    best_test_loss = float("inf")
     start_epoch = 0
 
     for epoch in range(start_epoch, args.max_epochs):
@@ -634,6 +670,20 @@ def run(args):
             epoch=epoch,
         )
 
+        test_metrics = evaluate(model, test_loader, device=device, epoch=epoch)
+        test_loss = test_metrics.get("loss", float("inf"))
+
+        if test_loss < best_test_loss:
+            best_test_loss = test_loss
+            if not os.path.exists(args.checkpoint_path):
+                os.makedirs(args.checkpoint_path)
+            torch.save(
+                model.state_dict(),
+                os.path.join(args.checkpoint_path, f"best_model.ckpt"),
+            )
+            logging.info(f"New best model saved with test loss {test_loss:.6f}")
+
+
         # Save every X epochs and final epoch
         if (epoch % args.save_every_x_epochs == 0) or (epoch == args.max_epochs - 1):
             # create ckpts folder if it does not exist
@@ -646,25 +696,30 @@ def run(args):
             logging.info(f"Checkpoint saved to {args.checkpoint_path}")
 
 def after_run():
-    if not os.path.exists('models'):
-        raise FileNotFoundError("The 'models' directory does not exist. Please ensure the finetuning script has been run and the models directory is created.")          
-    max_epoch = -1
-    last_checkpoint = None
-    for filename in os.listdir('models'):
-        if filename.startswith('checkpoint_epoch') and filename.endswith('.ckpt'):
-            epoch_number = int(filename.split('epoch')[-1].split('.')[0])
-            if epoch_number > max_epoch:
-                max_epoch = epoch_number
-                last_checkpoint = filename
+    models_dir = 'models'
+    best_model_file = os.path.join(models_dir, 'best_model.ckpt')
+
+    if not os.path.exists(models_dir):
+        raise FileNotFoundError(
+            "The 'models' directory does not exist. Please ensure the finetuning script has been run and the models directory is created."
+        )
 
 """+f"""                
+def after_run():
+    models_dir = 'models'
+    best_model_file = os.path.join(models_dir, 'best_model.ckpt')
 
-    if last_checkpoint:
-        # Copy the last checkpoint to the current working directory
-        os.rename(os.path.join('models', last_checkpoint), os.path.join(os.getcwd(), '{config['project_name'] + '.ckpt'}'))  """+r"""
-        print(f"Last checkpoint '{last_checkpoint}' has been saved to the current working directory.")
+    if not os.path.exists(models_dir):
+        raise FileNotFoundError(
+            "The 'models' directory does not exist. Please ensure the finetuning script has been run and the models directory is created."
+        )
+
+    if os.path.exists(best_model_file):
+        target_file = os.path.join(os.getcwd(), '{config['project_name'] + '.ckpt'}') """+r"""
+        os.rename(best_model_file, target_file)
+        print(f"Best model '{best_model_file}' has been saved to '{target_file}'.")
     else:
-        print("No checkpoint found.")
+        print("No best_model.ckpt found in models directory.")
 
 """+f"""
 
@@ -679,10 +734,11 @@ def main():
         batch_size={config['batch_size']},
         gradient_clip_val=0.5,
         max_epochs={config['epochs']},
-        save_every_x_epochs=10,
+        save_every_x_epochs=25,
         checkpoint_path=os.path.join(os.getcwd(), "models"),
         lr={config['lr']},
         base_model="{foundation_model}",
+        force_loss_ratio={config['force_loss_ratio']}
     )
     run(args)
 

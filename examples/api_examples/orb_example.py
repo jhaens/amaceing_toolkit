@@ -69,6 +69,7 @@ def main():
         'batch_size': 4,
         'seed': 1,
         'lr': 0.01,
+        'force_loss_ratio': 1.0
     }
     orb_api(run_type='FINETUNE', config=finetune_config)
 

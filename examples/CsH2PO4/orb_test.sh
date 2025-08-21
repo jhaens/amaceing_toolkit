@@ -20,7 +20,7 @@ echo ----------------------------
 echo Testing input file generation: FINETUNE
 mkdir -p FINETUNE
 cd FINETUNE
-amaceing_orb --run_type="FINETUNE" --config="{'project_name': 'csh2po4_ft', 'train_file': '../../data/train_file_7net.xyz', 'foundation_model': 'orb_v2', 'epochs': 2, 'batch_size': 4, 'seed': 1, 'lr': 0.0003}"
+amaceing_orb --run_type="FINETUNE" --config="{'project_name': 'csh2po4_ft', 'train_file': '../../data/train_file_7net.xyz', 'foundation_model': 'orb_v2', 'epochs': 2, 'batch_size': 4, 'seed': 1, 'lr': 0.0003, 'force_loss_ratio': 1.0}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: RECALC

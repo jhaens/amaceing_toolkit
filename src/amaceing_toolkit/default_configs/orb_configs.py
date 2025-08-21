@@ -56,6 +56,7 @@ def configs_orb(config_name):
         'seed': 1,
         'force_file': 'force.xyz',
         'lr': 3e-4,
+        'force_loss_ratio': 1.0,
       },
       'RECALC' : {
         'simulation_environment': 'ase',
