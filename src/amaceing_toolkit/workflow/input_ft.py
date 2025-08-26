@@ -55,7 +55,8 @@ class FTInputGenerator:
         if foundation_model[0] == 'mace_mp':
             if foundation_model[1] == 'medium-mpa-0':
                 return 'mpa_medium'
-            return foundation_model[1]
+            else:
+                return foundation_model[1]
         elif foundation_model[0] == 'mace_off':
             return f"{foundation_model[1]}_off"
         elif foundation_model[0] == 'mp_anicc':
@@ -144,7 +145,7 @@ name: "{config['project_name']}"
 train_file: "{config['train_file']}" 
 E0s: "{config['E0s']}"
 batch_size: {config['batch_size']}
-epochs: {config['epochs']}
+max_num_epochs: {config['epochs']}
 seed: {config['seed']}
 lr: {config['lr']}
 energy_key: "{keys[0]}"
@@ -202,7 +203,7 @@ name: "{config['project_name']}"
 multiheads_finetuning: True
 {heads_config}
 batch_size: {config['batch_size']}
-epochs: {config['epochs']}
+max_num_epochs: {config['epochs']}
 seed: {config['seed']}
 lr: {config['lr']}
 stress_weight: {config['stress_weight']}

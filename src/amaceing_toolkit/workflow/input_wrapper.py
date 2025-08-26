@@ -632,12 +632,14 @@ class UniversalMLIPInputWriter:
         # Basic configuration
         self.config['project_name'] = project_name
         self.config['train_file'] = train_file
+        if self.config['model_size'] is not None:
+            self.config['foundation_model'] = [self.config['foundation_model'], self.config['model_size']]
 
         if use_default == False:
 
             # Get foundation model
             foundation_model, model_size = self._ask_for_foundation_model(base_config)
-            if model_size:
+            if model_size is not None:
                 self.config['foundation_model'] = [foundation_model, model_size]
             else:
                 self.config['foundation_model'] = foundation_model
@@ -1455,6 +1457,7 @@ class UniversalMLIPInputWriter:
     def _execute_training_run(self):
         """Execute training runs (FINETUNE, FINETUNE_MULTIHEAD)"""
         if self.framework == 'mace':
+            print(self.config)
             FTInputGenerator(self.config, self.run_type, self.framework).mace_ft()
         elif self.framework == 'sevennet':
             FTInputGenerator(self.config, self.run_type, self.framework).sevennet_ft()
