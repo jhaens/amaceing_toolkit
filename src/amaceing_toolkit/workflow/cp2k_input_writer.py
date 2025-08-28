@@ -249,10 +249,11 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
             
     # Ask user for input data
     else:
+        yesno_dict = {'ON': 'y', 'OFF': 'n'}
         if run_type == 'GEO_OPT':
             max_iter = ask_for_int("What is the maximum number of iterations?", cp2k_config['GEO_OPT']['max_iter'])
 
-            print_forces = ask_for_yes_no("Do you want to print the forces? (y/n)", cp2k_config['GEO_OPT']['print_forces'])
+            print_forces = ask_for_yes_no("Do you want to print the forces? (y/n)", yesno_dict[cp2k_config['GEO_OPT']['print_forces']])
             print_forces = onoff_dict[print_forces]
             
             print(f"Available exchange-correlation functionals: {available_functionals()}")
@@ -316,10 +317,10 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
 
             temperature = ask_for_float_int("What is the temperature in K?", cp2k_config['MD']['temperature'])
                 
-            print_forces = ask_for_yes_no("Do you want to print the forces? (y/n)", cp2k_config['MD']['print_forces'])
+            print_forces = ask_for_yes_no("Do you want to print the forces? (y/n)", yesno_dict[cp2k_config['MD']['print_forces']])
             print_forces = onoff_dict[print_forces]
 
-            print_velocities = ask_for_yes_no("Do you want to print the velocities? (y/n)", cp2k_config['MD']['print_velocities'])
+            print_velocities = ask_for_yes_no("Do you want to print the velocities? (y/n)", yesno_dict[cp2k_config['MD']['print_velocities']])
             print_velocities = onoff_dict[print_velocities]
 
             print(f"Available exchange-correlation functionals: {available_functionals()}")
@@ -354,10 +355,10 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
             
             stride = ask_for_float_int("What is the stride in steps?", cp2k_config['REFTRAJ']['stride'])
 
-            print_forces = ask_for_yes_no("Do you want to print the forces? (y/n)", cp2k_config['REFTRAJ']['print_forces'])
+            print_forces = ask_for_yes_no("Do you want to print the forces? (y/n)", yesno_dict[cp2k_config['REFTRAJ']['print_forces']])
             print_forces = onoff_dict[print_forces]
 
-            print_velocities = ask_for_yes_no("Do you want to print the velocities? (y/n)", cp2k_config['REFTRAJ']['print_velocities'])
+            print_velocities = ask_for_yes_no("Do you want to print the velocities? (y/n)", yesno_dict[cp2k_config['REFTRAJ']['print_velocities']])
             print_velocities = onoff_dict[print_velocities]
 
             print(f"Available exchange-correlation functionals: {available_functionals()}")
