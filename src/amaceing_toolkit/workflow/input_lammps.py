@@ -668,7 +668,6 @@ pair_coeff    * * {model_path} {element_list}
         foundation_model = self.config['foundation_model'][0] if isinstance(self.config['foundation_model'], list) else self.config['foundation_model']
         modal = self.config['foundation_model'][1] if isinstance(self.config['foundation_model'], list) else None
         
-        
         if foundation_model.endswith('.pt'):
             print(f"Model {foundation_model} is already in LAMMPS format.")
             return foundation_model
@@ -677,23 +676,23 @@ pair_coeff    * * {model_path} {element_list}
         if "." not in foundation_model:
             # Foundation model name
             if modal:
-                convert_command = f"sevennnet_get_model {foundation_model} -m {modal} -o {foundation_model}.pt"
+                convert_command = f"sevenn_get_model {foundation_model} -m {modal} -o {foundation_model}.pt"
             else:
-                convert_command = f"sevennnet_get_model {foundation_model} -o {foundation_model}.pt"
+                convert_command = f"sevenn_get_model {foundation_model} -o {foundation_model}.pt"
             
             model_file = f"{foundation_model}.pt"
             
         elif foundation_model.endswith('.pth'):
             # Convert .pth to .pt
             if modal:
-                convert_command = f"sevennnet_get_model {foundation_model} -m {modal} -o {foundation_model.replace('.pth', '.pt')}"
+                convert_command = f"sevenn_get_model {foundation_model} -m {modal} -o {foundation_model.replace('.pth', '.pt')}"
             else:
-                convert_command = f"sevennnet_get_model {foundation_model} -o {foundation_model.replace('.pth', '.pt')}"
+                convert_command = f"sevenn_get_model {foundation_model} -o {foundation_model.replace('.pth', '.pt')}"
             
             model_file = foundation_model.replace('.pth', '.pt')
         else:
             raise ValueError("SevenNet model file must be .pt, .pth, or a foundation model name")
-        
+
         print(f"Converting SevenNet model {foundation_model} to LAMMPS format...")
         
         try:

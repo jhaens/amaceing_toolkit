@@ -457,7 +457,15 @@ class UniversalMLIPInputWriter:
                 self.config['foundation_model'] = [foundation_model, model_size]
             else:
                 self.config['foundation_model'] = foundation_model
-                
+                try:
+                    del self.config['model_size']
+                except:
+                    pass
+                try:
+                    del self.config['modal']
+                except:
+                    pass
+
             # Ask for dispersion
             # Integration of dispersion correction is not available for all frameworks and simulation environments
             disp_avail = {'mace': ['ase'], 'sevennet': ['ase', 'lammps'], 'mattersim': []}
@@ -504,10 +512,11 @@ class UniversalMLIPInputWriter:
         
         # Thermostat selection
         thermostat_dict = {'1': 'Langevin', '2': 'NoseHooverChainNVT', '3': 'Bussi', '4': 'NPT'}
-        thermostat_dict_reversed = {v: k for k, v in thermostat_dict.items()}
+        thermostat_dict_reversed = {'Langevin': '1', 'NoseHooverChainNVT': '2', 'Bussi': '3', 'NPT': '4'}
         thermostat = ''
         while thermostat not in ['1', '2', '3', '4']:
-            thermostat = input(f"Which thermostat do you want to use (or NPT run)? (1=Langevin, 2=NoseHooverChainNVT, 3=Bussi, 4=NPT) [{thermostat_dict_reversed[self.config['thermostat']]}]: ")
+            thermostat = ask_for_int("Which thermostat do you want to use (or NPT run)? (1=Langevin, 2=NoseHooverChainNVT, 3=Bussi, 4=NPT)", thermostat_dict_reversed[self.config['thermostat']])
+            thermostat = str(thermostat)
             if thermostat not in ['1', '2', '3', '4']:
                 print("Invalid input! Please enter '1', '2', '3', or '4'.")
         self.config['thermostat'] = thermostat_dict[thermostat]
@@ -644,6 +653,7 @@ class UniversalMLIPInputWriter:
             else:
                 self.config['foundation_model'] = foundation_model
 
+
             # Ask for training parameters with defaults
             ft_config = base_config.get('FINETUNE', {})
             self.config.update({
@@ -691,13 +701,13 @@ class UniversalMLIPInputWriter:
         if use_default == False:
 
             # Get foundation model
-            print("Finetuning SevenNet is only available for the SevenNet-0 Model. This will be used.")
-            foundation_model = '7net-0'
-            # foundation_model, modal = self._ask_for_foundation_model(base_config)
-            # if modal:
-            #     self.config['foundation_model'] = [foundation_model, modal]
-            # else:
-            #     self.config['foundation_model'] = foundation_model
+            # print("Finetuning SevenNet is only available for the SevenNet-0 Model. This will be used.")
+            # foundation_model = '7net-0'
+            foundation_model, modal = self._ask_for_foundation_model(base_config)
+            if modal:
+                self.config['foundation_model'] = [foundation_model, modal]
+            else:
+                self.config['foundation_model'] = foundation_model
 
             # Ask for training parameters with defaults
             ft_config = base_config.get('FINETUNE', {})
@@ -1182,7 +1192,6 @@ class UniversalMLIPInputWriter:
                 legend += f"{key}={value[0]}, "
             legend = legend[:-2]
 
-            modal = None
             while modal not in modal_options:
                 modal = input(f"Model size ({legend}): ")
                 if modal not in modal_options:
@@ -1646,8 +1655,17 @@ class UniversalMLIPInputWriter:
             if type(input_config['foundation_model']) == list:
                 input_config['model_size'] = input_config['foundation_model'][1]
                 input_config['foundation_model'] = input_config['foundation_model'][0]
-                
-        
+            else:
+                # Delete model_size or model
+                try:
+                    del input_config['model_size']
+                except:
+                    pass
+                try:
+                    del input_config['modal']
+                except:
+                    pass
+
         try:
             if type(input_config['dispersion_via_simenv']) == list:
                 # Build a string with the list elements separated by a space
