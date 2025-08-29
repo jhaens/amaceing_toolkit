@@ -448,6 +448,7 @@ def finetune(
     log_freq: Optional[int] = None,  # will be auto-set below
     device: torch.device = torch.device("cpu"),
     epoch: int = 0,
+    force_loss_ratio: float = 1.0,
 ):
     if clip_grad is not None:
         hook_handles = utils.gradient_clipping(model, clip_grad)
@@ -669,6 +670,7 @@ def run(args):
             device=device,
             num_steps=num_steps,
             epoch=epoch,
+            force_loss_ratio=args.force_loss_ratio,
         )
 
         test_metrics = evaluate(model, test_loader, device=device, epoch=epoch)
