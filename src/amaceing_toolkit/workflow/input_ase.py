@@ -470,6 +470,12 @@ class MLIPFrameworkHandler:
                     'import': 'from mace.calculators import mace_mp',
                     'model': f"mace_mp(model='{model_size}' {dispersion} {cuequivariance})"
                 }
+            elif foundation_model == 'mace_omol':
+                model_size = model_size.replace('-', '_')
+                return {
+                    'import': 'from mace.calculators import mace_omol',
+                    'model': f"mace_omol(model='{model_size}' {dispersion} {cuequivariance})"
+                }
             elif foundation_model == 'mace_off':
                 return {
                     'import': 'from mace.calculators import mace_off',

@@ -110,6 +110,8 @@ Foundation Models
 The module supports various foundation models:
 
 * **mace_mp**: Materials Project foundation model (small, medium, large, medium-mpa-0)
+* Additional **mace_mp** variants: (small-omat-0, medium-omat-0, medium-matpes-pbe-0, medium-matpes-r2scan-0) *NEW SINCE v0.3.13 and v.0.3.11*
+* **mace_omol**: Organic molecules foundation model (extra-large) *NEW SINCE v0.3.14*
 * **mace_off**: Organic molecules foundation model (small, medium, large)
 * **mace_anicc**: ANI-CC foundation model
 * **custom**: User-provided model path

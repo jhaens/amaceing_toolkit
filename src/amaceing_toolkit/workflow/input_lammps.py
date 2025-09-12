@@ -636,12 +636,19 @@ pair_coeff    * * {model_path} {element_list}
                 'mpa_medium': 'https://github.com/ACEsuit/mace-mp/releases/download/mace_mpa_0/mace-mpa-0-medium.model',
                 'off_small': 'https://github.com/ACEsuit/mace-off/blob/main/mace_off23/MACE-OFF23_small.model',
                 'off_medium': 'https://github.com/ACEsuit/mace-off/blob/main/mace_off23/MACE-OFF23_medium.model',
-                'off_large': 'https://github.com/ACEsuit/mace-off/blob/main/mace_off23/MACE-OFF23_large.model'
+                'off_large': 'https://github.com/ACEsuit/mace-off/blob/main/mace_off23/MACE-OFF23_large.model',
+                'omol_extra-large': "https://github.com/ACEsuit/mace-foundations/releases/download/mace_omol_0/MACE-omol-0-extra-large-1024.model",
+                'small-omat-0': 'https://github.com/ACEsuit/mace-foundations/releases/download/mace_omat_0/mace-omat-0-small.model',
+                'medium-omat-0': 'https://github.com/ACEsuit/mace-mp/releases/download/mace_omat_0/mace-omat-0-medium.model',
+                'medium-matpes-pbe-0': 'https://github.com/ACEsuit/mace-foundations/releases/download/mace_matpes_0/MACE-matpes-pbe-omat-ft.model',
+                'medium-matpes-r2scan-0': 'https://github.com/ACEsuit/mace-foundations/releases/download/mace_matpes_0/MACE-matpes-r2scan-omat-ft.model',
             }
             
             # Build model key
             if model_size == 'medium-mpa-0':
                 model_key = 'mpa_medium'
+            elif 'matpes' in model_size or 'omat' in model_size:
+                model_key = model_size
             else:
                 model_key = f"{foundation_model.split('_')[-1]}_{model_size}"
             

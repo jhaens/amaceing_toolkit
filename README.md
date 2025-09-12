@@ -191,7 +191,7 @@ If you use aMACEing_toolkit in your research, please cite:
 
 ## Roadmap
 
-- [ ] The MACE module will be updated to support the latest features in the next release.
+- [x] The MACE module will be updated to support the latest features in the next release.
 
 ## License
 

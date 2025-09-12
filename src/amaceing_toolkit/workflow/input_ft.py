@@ -57,6 +57,8 @@ class FTInputGenerator:
                 return 'mpa_medium'
             else:
                 return foundation_model[1]
+        elif foundation_model[0] == 'mace_omol':
+            return f"{foundation_model[1]}_omol"
         elif foundation_model[0] == 'mace_off':
             return f"{foundation_model[1]}_off"
         elif foundation_model[0] == 'mp_anicc':

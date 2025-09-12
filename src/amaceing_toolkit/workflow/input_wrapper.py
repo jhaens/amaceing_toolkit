@@ -808,7 +808,7 @@ class UniversalMLIPInputWriter:
 
     def _configure_finetune_multihead(self, coord_file: str, pbc_mat: np.ndarray, project_name: str, base_config: dict):
         """Configure MACE multihead finetuning parameters"""
-        num_heads = ask_for_int("How many heads (datasets) do you want to use?", "2")
+        num_heads = int(ask_for_int("How many heads (datasets) do you want to use?", "2"))
         
         train_files = []
         xc_functionals = []
@@ -834,21 +834,23 @@ class UniversalMLIPInputWriter:
             else:
                 print(f"Warning: E0s for the XC functional '{xc_functional}' on head {i+1} not available. Have to be entered manually.")
                 e0s.append(input("Please provide the E0s [eV] yourself for each element in the dataset in the following format: {1:-12.4830138479, ...}: "))          
-        
+
+
         # Load default configuration
-        self.config, use_default = self._default_config_loader(self)
+        self.config, use_default = self._default_config_loader()
 
         # Basic configuration
-        self.config = {
+        self.config.update({
             'project_name': project_name,
             'train_file': train_files,
             'prevent_catastrophic_forgetting': 'y', # Multihead finetuning enabled
-        }
+            'E0s': e0s
+        })
         
         if use_default == False:
             # Get foundation model
             foundation_model, model_size = self._ask_for_foundation_model(base_config)
-            if model_size:
+            if model_size is not None:
                 self.config['foundation_model'] = [foundation_model, model_size]
             else:
                 self.config['foundation_model'] = foundation_model
@@ -866,6 +868,48 @@ class UniversalMLIPInputWriter:
                 'lr': ask_for_float_int("Learning rate:", str(ft_config.get('lr', 0.01))),
                 'seed': ask_for_int("Random seed:", str(ft_config.get('seed', 123))),
             })
+
+                # Write Python file to extract the heads
+        model_path = os.path.join(os.getcwd(), self.config["dir"], f"{self.config['project_name']}_run-1.model")
+        head_names = [f"head_{i}" for i in range(0, num_heads)]
+
+        content = f"""import warnings
+import sys
+import logging
+from mace.cli.select_head import main as mace_select_head_main
+
+warnings.filterwarnings("ignore")
+
+def select_head(model, head_name, output_file=None):
+    logging.getLogger().handlers.clear()
+
+    sys.argv = [
+        "program",              
+        model,
+        "--head_name", head_name,
+    ]
+
+    if output_file is not None:
+        sys.argv += ["--output_file", output_file]
+
+    mace_select_head_main()
+
+
+model_name = "{model_path}"
+heads = {head_names}
+"""+r"""
+for head in heads:
+    out_file = f"{model_name.split('/')[-1].split('.')[0]}_{head}.model"
+    select_head(model_name, head, out_file)
+    print(f"Saved head {head} -> {out_file}")
+
+"""
+        script_path = os.path.join(os.getcwd(), f"extract_heads.py")
+        with open(script_path, 'w') as file:
+            file.write(content)
+        print(f"\nA script to extract the heads from the multihead model has been written to {script_path}.")
+        print("You can run it after the finetuning is finished.")
+        print("")
         
 
     def _load_framework_config(self, config_name: str) -> dict:
@@ -1064,7 +1108,8 @@ class UniversalMLIPInputWriter:
             '1': 'mace_off',
             '2': 'mace_anicc',
             '3': 'mace_mp',
-            '4': 'custom'
+            '4': 'mace_omol',
+            '5': 'custom'
         }
         legend = ""
         for key, value in model_options.items():
@@ -1103,18 +1148,25 @@ class UniversalMLIPInputWriter:
             return custom_path, None
         
         model_size = None
-        if foundation_model in ['mace_off', 'mace_mp']:
+        if foundation_model in ['mace_off', 'mace_mp', 'mace_omol']:
             size_options = {
                 'mace_off': {
                     '1': 'small',
                     '2': 'medium',
                     '3': 'large',
                 },
+                'mace_omol': {
+                    '1': 'extra-large',
+                },
                 'mace_mp': {
                     '1': 'small',
                     '2': 'medium',
                     '3': 'medium-mpa-0',
-                    '4': 'large'
+                    '4': 'large',
+                    '5': 'small-omat-0',
+                    '6': 'medium-omat-0',
+                    '7': 'medium-matpes-pbe-0',
+                    '8': 'medium-matpes-r2scan-0'
                 }
             }
 
@@ -1466,7 +1518,6 @@ class UniversalMLIPInputWriter:
     def _execute_training_run(self):
         """Execute training runs (FINETUNE, FINETUNE_MULTIHEAD)"""
         if self.framework == 'mace':
-            print(self.config)
             FTInputGenerator(self.config, self.run_type, self.framework).mace_ft()
         elif self.framework == 'sevennet':
             FTInputGenerator(self.config, self.run_type, self.framework).sevennet_ft()
