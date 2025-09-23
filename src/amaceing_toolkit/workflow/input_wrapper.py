@@ -846,6 +846,8 @@ class UniversalMLIPInputWriter:
             'prevent_catastrophic_forgetting': 'y', # Multihead finetuning enabled
             'E0s': e0s
         })
+        if self.config['model_size'] is not None:
+            self.config['foundation_model'] = [self.config['foundation_model'], self.config['model_size']]
         
         if use_default == False:
             # Get foundation model
