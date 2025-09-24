@@ -10,7 +10,7 @@ Installation from Source
 
    .. code-block:: bash
 
-       conda create -n atk python=3.9          # create the environment
+       conda create -n atk python=3.12         # create the environment
        conda activate atk                      # activate the environment
 
 2. **Install PyTorch**:
@@ -50,7 +50,11 @@ Installation from Source
    For CUDA-enabled systems:
 
    .. code-block:: bash
-   
+       # CUDA 11
+       pip install cuequivariance cuequivariance-torch cuequivariance-ops-torch-cu11
+       # CUDA 12
+       pip install cuequivariance cuequivariance-torch cuequivariance-ops-torch-cu12
+       # Older MACE Versions (< 0.3.11):
        pip install cuequivariance==0.1.0 cuequivariance-torch==0.1.0 cuequivariance-ops-torch-cu12==0.1.0
 
 5. **Create a separate environment for MatterSim and SevenNet**:
