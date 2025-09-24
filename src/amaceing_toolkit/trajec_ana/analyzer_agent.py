@@ -662,11 +662,11 @@ def ana_form():
 
         crt_manuscript(filenames, msd_table, smsd_table)
 
-        # Write the input log file
-        coord_file_list = unchanged_coord_paths
-        pbc_list = unchanged_pbc_paths
-        timestep_list = [ana[2] for ana in analyses.values()]
-        write_input_log(coord_file_list, pbc_list, timestep_list, vis_ana, rdf_pairs, msd_list, smsd_list, autocorr_pairs)
+    # Write the input log file
+    coord_file_list = unchanged_coord_paths
+    pbc_list = unchanged_pbc_paths
+    timestep_list = [ana[2] for ana in analyses.values()]
+    write_input_log(coord_file_list, pbc_list, timestep_list, vis_ana, rdf_pairs, msd_list, smsd_list, autocorr_pairs)
 
 
 def available_atomtypes(coord):
