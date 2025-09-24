@@ -47,15 +47,25 @@ Installation from Source
 
 4. **Optional: Install additional packages for accelerated MACE performance**:
 
-   For CUDA-enabled systems:
+   For CUDA12:
 
    .. code-block:: bash
-       # CUDA 11
-       pip install cuequivariance cuequivariance-torch cuequivariance-ops-torch-cu11
-       # CUDA 12
+
        pip install cuequivariance cuequivariance-torch cuequivariance-ops-torch-cu12
-       # Older MACE Versions (< 0.3.11):
+
+   For CUDA11: 
+
+   .. code-block:: bash
+
+       pip install cuequivariance cuequivariance-torch cuequivariance-ops-torch-cu11
+
+
+   For older MACE versions (< 0.3.11):
+   
+   .. code-block:: bash
+
        pip install cuequivariance==0.1.0 cuequivariance-torch==0.1.0 cuequivariance-ops-torch-cu12==0.1.0
+
 
 5. **Create a separate environment for MatterSim and SevenNet**:
 
