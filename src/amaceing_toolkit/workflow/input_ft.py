@@ -25,18 +25,21 @@ class FTInputGenerator:
         if self.framework.lower() == 'grace':
             device = 'gpu' if device == 'cuda' else 'cpu'
             # Generate the runscript content for Grace finetuning
-            runscript_content = RunscriptLoader('grace_ft', self.config['project_name'], filename, 'py', device).load_runscript
+            runscript_content = RunscriptLoader('grace_ft', self.config['project_name'], filename, 'py', device).load_runscript()
         elif mattersim_string is None:
             device = 'gpu' if device == 'cuda' else 'cpu'
             # Generate the runscript content
-            runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'py', device).load_runscript
+            runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'py', device).load_runscript()
         else:
-            runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'py', 'gpu', mattersim_string).load_runscript
+            runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'py', 'gpu', mattersim_string).load_runscript()
         rs_name = {'cpu': 'runscript.sh', 'gpu': 'gpu_script.job'}
         
-        # Write the runscript files
+        if runscript_content == '0':
+            return
+
+        # Save the runscript files
         with open(rs_name[device], 'w') as file:
-            file.write(runscript_content())
+            file.write(runscript_content)
         os.chmod(rs_name[device], 0o755)  # Make the script executable
 
         print(f"Runscript for {device} has been written to {rs_name[device]}")
