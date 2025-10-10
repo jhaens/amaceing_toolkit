@@ -38,6 +38,7 @@ class RunscriptLoader:
             script_directory = os.path.dirname(os.path.abspath(__file__))
             with open(os.path.join(script_directory, 'hpc_setup_path.txt'), 'w') as f:
                 f.write('NO_RUNSCRIPT_GENERATION')
+            return 'NO_RUNSCRIPT_GENERATION'
 
         use_predefined_rs = ask_for_yes_no("Do you want to use predefined runscript for the HPC at TU Ilmenau?", 'y')
         if use_predefined_rs == 'y':
