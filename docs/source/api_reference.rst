@@ -249,7 +249,7 @@ Analyzer API
 Utility Functions
 -----------------
 
-.. py:function:: amaceing_toolkit.amaceing_utils(operation, config=None)
+.. py:function:: amaceing_toolkit.utils_api(operation, config=None)
 
    API function for various utility operations.
    
@@ -261,7 +261,7 @@ Utility Functions
    
 **Examples**::
 
-     from amaceing_toolkit import amaceing_utils
+     from amaceing_toolkit import utils_api
 
      # Evaluate error between ground truth and comparison files
      eval_config = {
@@ -270,7 +270,7 @@ Utility Functions
           'ener_filename_compare': 'test_energies.txt',
           'force_filename_compare': 'test_forces.txt'
      }
-     amaceing_utils('EVAL_ERROR', config=eval_config)
+     utils_api('EVAL_ERROR', config=eval_config)
 
      # Prepare files for error evaluation from a trajectory
      prep_config = {
@@ -280,20 +280,20 @@ Utility Functions
           'log_file': 'mace_input.log',
           'xc_funtional': 'BLYP'
      }
-     amaceing_utils('PREPARE_EVAL_ERROR', config=prep_config)
+     utils_api('PREPARE_EVAL_ERROR', config=prep_config)
 
      # Extract XYZ coordinates from a trajectory
      extract_config = {
           'coord_file': 'traj.xyz',
           'each_nth_frame': 10
      }
-     amaceing_utils('EXTRACT_XYZ', config=extract_config)
+     utils_api('EXTRACT_XYZ', config=extract_config)
 
      # Get citations from a log file
      citations_config = {
           'log_file': 'xxx_input.log'
      }
-     amaceing_utils('CITATIONS', config=citations_config)
+     utils_api('CITATIONS', config=citations_config)
 
      # Benchmark example
      benchmark_config = {
@@ -307,5 +307,5 @@ Utility Functions
           'orb_model': ['orb_v3_conservative_inf', 'omat'],
           'grace_model': ['GRACE-1L-OMAT']
      }
-     amaceing_utils('BENCHMARK', config=benchmark_config)
+     utils_api('BENCHMARK', config=benchmark_config)
 

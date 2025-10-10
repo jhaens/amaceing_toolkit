@@ -390,7 +390,7 @@ class UniversalMLIPInputWriter:
         
         run_type = ''
         while run_type not in num_list:
-            prompt = (f"Which type of calculation do you want to run? ({legend}): [{base_config['run_type']}]: ")
+            prompt = (f"Which type of calculation do you want to run? ({legend}) [{base_config['run_type']}]: ")
             run_type = input(prompt)
             if run_type == '':
                 run_type = base_config['run_type']

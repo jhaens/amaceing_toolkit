@@ -122,7 +122,23 @@ def cp2k_form():
     if project_name == '':
         project_name = f'{run_type}_{datetime.datetime.now().strftime("%Y%m%d")}'
 
-    print("Default settings for this run type: " + str(cp2k_config[run_type]))
+    print("Default settings for this run type: ")
+    items = list(cp2k_config[run_type].items())
+        
+    # Calculate max key and value lengths for formatting
+    max_key_len = max(len(str(k)) for k, _ in items)
+    max_val_len = max(len(str(v)) for _, v in items)
+    col_width = max_key_len + max_val_len + 6  # extra space for ": " and padding
+
+    for i in range(0, len(items), 3):
+        line = "|| "
+        for j in range(3):
+            if i + j < len(items):
+                k, v = items[i + j]
+                pair_str = f"{k}: {v}"
+                # Pad each pair to col_width
+                line += pair_str.ljust(col_width)
+        print(line.strip())
 
     use_default_input = ask_for_yes_no("Do you want to use the default input settings? (y/n)", cp2k_config['use_default_input'])
     if use_default_input == 'y':
@@ -256,7 +272,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
             print_forces = ask_for_yes_no("Do you want to print the forces? (y/n)", yesno_dict[cp2k_config['GEO_OPT']['print_forces']])
             print_forces = onoff_dict[print_forces]
             
-            print(f"Available exchange-correlation functionals: {available_functionals()}")
+            print(f"Available exchange-correlation functionals (SR uses pseudo potentials with shorter range, used for solids): {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['GEO_OPT']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['GEO_OPT']['xc_functional']
@@ -284,7 +300,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
                 elif symmetry != 'CUBIC' and symmetry != 'TRICLINIC' and symmetry != 'NONE' and symmetry != 'MONOCLINIC' and symmetry != 'ORTHORHOMBIC' and symmetry != 'TETRAGONAL' and symmetry != 'TRIGONAL' and symmetry != 'HEXAGONAL':
                     print("Invalid input. Please enter a valid symmetry: CUBIC, NONE, TRICLINIC, TETRAGONAL, MONOCLINIC, TRIGONAL, HEXAGONAL, ORTHOROMBIC.")
             
-            print(f"Available exchange-correlation functionals: {available_functionals()}")
+            print(f"Available exchange-correlation functionals (SR uses pseudo potentials with shorter range, used for solids): {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['CELL_OPT']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['CELL_OPT']['xc_functional']
@@ -301,7 +317,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
         elif run_type == 'MD':
             ensemble = ' '
             while ensemble != 'NVT' and ensemble != 'NPT_F' and ensemble != 'NPT_I':
-                ensemble = input("What is the ensemble? " + "[" + cp2k_config['MD']['ensemble'] + "]: ")
+                ensemble = input("What is the ensemble? (NVT, NPT_F, NPT_I) " + "[" + cp2k_config['MD']['ensemble'] + "]: ")
                 if ensemble == '':
                     ensemble = cp2k_config['MD']['ensemble']
                 elif ensemble != 'NVT' and ensemble != 'NPT_F' and ensemble != 'NPT_I':
@@ -323,7 +339,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
             print_velocities = ask_for_yes_no("Do you want to print the velocities? (y/n)", yesno_dict[cp2k_config['MD']['print_velocities']])
             print_velocities = onoff_dict[print_velocities]
 
-            print(f"Available exchange-correlation functionals: {available_functionals()}")
+            print(f"Available exchange-correlation functionals (SR uses pseudo potentials with shorter range, used for solids): {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['MD']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['MD']['xc_functional']
@@ -361,7 +377,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
             print_velocities = ask_for_yes_no("Do you want to print the velocities? (y/n)", yesno_dict[cp2k_config['REFTRAJ']['print_velocities']])
             print_velocities = onoff_dict[print_velocities]
 
-            print(f"Available exchange-correlation functionals: {available_functionals()}")
+            print(f"Available exchange-correlation functionals (SR uses pseudo potentials with shorter range, used for solids): {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['REFTRAJ']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['MD']['xc_functional']
@@ -378,7 +394,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
             
         elif run_type == 'ENERGY':
 
-            print(f"Available exchange-correlation functionals: {available_functionals()}")
+            print(f"Available exchange-correlation functionals (SR uses pseudo potentials with shorter range, used for solids): {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['ENERGY']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['ENERGY']['xc_functional']
@@ -404,7 +420,7 @@ def create_input(input_config, run_type, equi_prod=''):
         ignore_convergence_failure = ""
 
     # Obtain the description of the kind of the atoms in the system
-    kind_data = kind_data_functionals(input_config['xc_functional'])
+    kind_data = kind_data_functionals(input_config['xc_functional'], input_config['coord_file'])
 
     if run_type == 'GEO_OPT':
         return f"""
@@ -448,7 +464,7 @@ def create_input(input_config, run_type, equi_prod=''):
                 XC_SMOOTH_RHO NN10
                 XC_DERIV NN10_SMOOTH
             &END XC_GRID
-            &XC_FUNCTIONAL {input_config['xc_functional'].split('_SR')[0]}
+            &XC_FUNCTIONAL {functional_code(input_config['xc_functional'].split('_SR')[0])}
             &END XC_FUNCTIONAL
             &VDW_POTENTIAL
                 POTENTIAL_TYPE PAIR_POTENTIAL
@@ -535,7 +551,7 @@ def create_input(input_config, run_type, equi_prod=''):
                 XC_SMOOTH_RHO NN10
                 XC_DERIV NN10_SMOOTH
             &END XC_GRID
-            &XC_FUNCTIONAL {input_config['xc_functional'].split('_SR')[0]}
+            &XC_FUNCTIONAL {functional_code(input_config['xc_functional'].split('_SR')[0])}
             &END XC_FUNCTIONAL
             &VDW_POTENTIAL
                 POTENTIAL_TYPE PAIR_POTENTIAL
@@ -647,7 +663,7 @@ def create_input(input_config, run_type, equi_prod=''):
                 XC_SMOOTH_RHO NN10
                 XC_DERIV NN10_SMOOTH
             &END XC_GRID
-            &XC_FUNCTIONAL {input_config['xc_functional'].split('_SR')[0]}
+            &XC_FUNCTIONAL {functional_code(input_config['xc_functional'].split('_SR')[0])}
             &END XC_FUNCTIONAL
             &VDW_POTENTIAL
                 POTENTIAL_TYPE PAIR_POTENTIAL
@@ -760,7 +776,7 @@ def create_input(input_config, run_type, equi_prod=''):
                 XC_SMOOTH_RHO NN10
                 XC_DERIV NN10_SMOOTH
             &END XC_GRID
-            &XC_FUNCTIONAL {input_config['xc_functional'].split('_SR')[0]}
+            &XC_FUNCTIONAL {functional_code(input_config['xc_functional'].split('_SR')[0])}
             &END XC_FUNCTIONAL
             &VDW_POTENTIAL
                 POTENTIAL_TYPE PAIR_POTENTIAL
@@ -842,7 +858,7 @@ def create_input(input_config, run_type, equi_prod=''):
                 XC_SMOOTH_RHO NN10
                 XC_DERIV NN10_SMOOTH
             &END XC_GRID
-            &XC_FUNCTIONAL {input_config['xc_functional'].split('_SR')[0]}
+            &XC_FUNCTIONAL {functional_code(input_config['xc_functional'].split('_SR')[0])}
             &END XC_FUNCTIONAL
         &END XC
         &SCF
@@ -895,6 +911,24 @@ def barostat_setup(input_config):
 &END BAROSTAT"""
     else:
         return ""
+    
+def functional_code(xc_functional):
+    if xc_functional in ["PBE", "BLYP"]:
+        return xc_functional
+    elif xc_functional == "REVPBE":
+        return """
+                &PBE 
+                        PARAMETRIZATION REVPBE
+                &END PBE """
+    elif xc_functional == "RPBE":
+        return """
+                &PBE
+                      SCALE_X 0.0
+                      SCALE_C 1.0
+                &END PBE
+                &GGA_X_RPBE
+                      SCALE 1.0
+                &END GGA_X_RPBE """
 
 # Write functions
 def write_input(input_config, run_type):
@@ -977,30 +1011,6 @@ def write_runscript(project_name, run_type, equi_run=''):
         with open('runscript.sh', 'w') as output:
             output.write(RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type]).load_runscript())
         print("Runscript created: runscript.sh")
-        os.system('chmod +x runscript.sh')
-
-def write_runscript_old(project_name,run_type,equi_run=''):
-    """
-    Write runscript for CP2K calculations: default runscript for cp2k is in the default_configs/runscript_templates.py
-    """
-    run_type_inp_names = {'GEO_OPT': 'geoopt_cp2k.inp', 'CELL_OPT': 'cellopt_cp2k.inp', 'MD': ['md_cp2k.inp', 'md_equilibration_cp2k.inp'], 'REFTRAJ': 'reftraj_cp2k.inp', 'ENERGY': 'energy_cp2k.inp'}
-    
-
-    if run_type == 'MD':
-        with open('runscript.sh', 'w') as output:
-            output.write(cp2k_runscript(project_name, run_type_inp_names[run_type][0])[0])
-        os.system('chmod +x runscript.sh')
-        print("Runscript for the production run created: " + cp2k_runscript(project_name, run_type_inp_names[run_type][0])[1])
-        if equi_run == 'y':
-            with open('runscript_equilibration.sh', 'w') as output2:
-                output2.write(cp2k_runscript(project_name, run_type_inp_names[run_type][1])[0])
-            print("Runscript for the equilibration run created: " + cp2k_runscript(project_name, run_type_inp_names[run_type][1])[1])
-            os.system('chmod +x runscript_equilibration.sh')
-
-    else: 
-        with open('runscript.sh', 'w') as output:
-            output.write(cp2k_runscript(project_name, run_type_inp_names[run_type])[0])
-        print("Runscript created: " + cp2k_runscript(project_name, run_type_inp_names[run_type])[1])
         os.system('chmod +x runscript.sh')
 
 def create_frame0(ref_traj, project_name):

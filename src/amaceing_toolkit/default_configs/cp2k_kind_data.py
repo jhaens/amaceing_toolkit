@@ -1,610 +1,126 @@
 #data from: https://github.com/cp2k/cp2k/blob/master/data/POTENTIAL && https://github.com/cp2k/cp2k/blob/master/data/BASIS_MOLOPT
-# to do: add more functionals and atom types
+from amaceing_toolkit.workflow.utils import xyz_reader
+
 def available_functionals():
-    return ["PBE", "PBE_SR", "BLYP", "BLYP_SR"]
-
-def kind_data_functionals(functional):
-    if functional == 'PBE':
-        return"""
-#KIND DATA from kind_data.py (PBE Functional)
-
-&KIND H
-    BASIS_SET DZVP-MOLOPT-GTH-q1
-    POTENTIAL GTH-PBE-q1
-&END KIND
-
-&KIND He
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q2
-    POTENTIAL GTH-PBE-q2
-&END KIND
-
-&KIND Li
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-PBE-q3
-&END KIND
-
-&KIND Be
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q4
-    POTENTIAL GTH-PBE-q4
-&END KIND
-
-&KIND B
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-PBE-q3
-&END KIND
-
-&KIND C
-    BASIS_SET DZVP-MOLOPT-GTH-q4
-    POTENTIAL GTH-PBE-q4
-&END KIND
-
-&KIND N
-    BASIS_SET DZVP-MOLOPT-GTH-q5
-    POTENTIAL GTH-PBE-q5
-&END KIND
-
-&KIND O
-    BASIS_SET DZVP-MOLOPT-GTH-q6
-    POTENTIAL GTH-PBE-q6
-&END KIND
-
-&KIND F
-    BASIS_SET DZVP-MOLOPT-GTH-q7
-    POTENTIAL GTH-PBE-q7
-&END KIND
-
-&KIND Ne
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q8
-    POTENTIAL GTH-PBE-q8
-&END KIND
-
-&KIND Na
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-PBE-q9
-&END KIND
-
-&KIND Mg
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q10
-    POTENTIAL GTH-PBE-q10
-&END KIND
-
-&KIND Al
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-PBE-q3
-&END KIND
-
-&KIND Si
-    BASIS_SET DZVP-MOLOPT-GTH-q4
-    POTENTIAL GTH-PBE-q4
-&END KIND
-
-&KIND P
-    BASIS_SET DZVP-MOLOPT-GTH-q5
-    POTENTIAL GTH-PBE-q5
-&END KIND
-
-&KIND S
-    BASIS_SET DZVP-MOLOPT-GTH-q6
-    POTENTIAL GTH-PBE-q6
-&END KIND
-
-&KIND Cl
-    BASIS_SET DZVP-MOLOPT-GTH-q7
-    POTENTIAL GTH-PBE-q7
-&END KIND
-
-&KIND Ar
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q8
-    POTENTIAL GTH-PBE-q8
-&END KIND
-
-&KIND K
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-PBE-q9
-&END KIND
-
-&KIND Ca
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q10
-    POTENTIAL GTH-PBE-q10
-&END KIND
-
-&KIND Sc
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q11
-    POTENTIAL GTH-PBE-q11
-&END KIND
-
-&KIND Ti
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q12
-    POTENTIAL GTH-PBE-q12
-&END KIND
-
-&KIND V
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q13
-    POTENTIAL GTH-PBE-q13
-&END KIND
-
-&KIND Se
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q6
-    POTENTIAL GTH-PBE-q6
-&END KIND
-
-&KIND Br 
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q7
-    POTENTIAL GTH-PBE-q7
-&END KIND
-
-&KIND Mo
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q14
-    POTENTIAL GTH-PBE-q14
-&END KIND
-
-&KIND Cs
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-PBE-q9
-&END KIND
-
-&KIND W
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q14
-    POTENTIAL GTH-PBE-q14
-&END KIND
-
-&KIND Ga
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q13
-    POTENTIAL GTH-PBE-q13
-&END KIND
-
-#KIND DATA from kind_data.py (PBE Functional)
-        """
-
-    elif functional == 'PBE_SR':
-        return"""
-#KIND DATA from kind_data.py (PBE Functional)
-
-&KIND H
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q1
-    POTENTIAL GTH-PBE-q1
-&END KIND
-
-&KIND He
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q2
-    POTENTIAL GTH-PBE-q2
-&END KIND
-
-&KIND Li
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-PBE-q3
-&END KIND
-
-&KIND Be
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q4
-    POTENTIAL GTH-PBE-q4
-&END KIND
-
-&KIND B
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-PBE-q3
-&END KIND
-
-&KIND C
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q4
-    POTENTIAL GTH-PBE-q4
-&END KIND
-
-&KIND N
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q5
-    POTENTIAL GTH-PBE-q5
-&END KIND
-
-&KIND O
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q6
-    POTENTIAL GTH-PBE-q6
-&END KIND
-
-&KIND F
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q7
-    POTENTIAL GTH-PBE-q7
-&END KIND
-
-&KIND Ne
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q8
-    POTENTIAL GTH-PBE-q8
-&END KIND
-
-&KIND Na
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-PBE-q9
-&END KIND
-
-&KIND Mg
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q10
-    POTENTIAL GTH-PBE-q10
-&END KIND
-
-&KIND Al
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-PBE-q3
-&END KIND
-
-&KIND Si
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q4
-    POTENTIAL GTH-PBE-q4
-&END KIND
-
-&KIND P
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q5
-    POTENTIAL GTH-PBE-q5
-&END KIND
-
-&KIND S
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q6
-    POTENTIAL GTH-PBE-q6
-&END KIND
-
-&KIND Cl
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q7
-    POTENTIAL GTH-PBE-q7
-&END KIND
-
-&KIND Ar
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q8
-    POTENTIAL GTH-PBE-q8
-&END KIND
-
-&KIND K
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-PBE-q9
-&END KIND
-
-&KIND Ca
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q10
-    POTENTIAL GTH-PBE-q10
-&END KIND
-
-&KIND Sc
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q11
-    POTENTIAL GTH-PBE-q11
-&END KIND
-
-&KIND Ti
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q12
-    POTENTIAL GTH-PBE-q12
-&END KIND
-
-&KIND V
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q13
-    POTENTIAL GTH-PBE-q13
-&END KIND
-
-&KIND Se
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q6
-    POTENTIAL GTH-PBE-q6
-&END KIND
-
-&KIND Br 
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q7
-    POTENTIAL GTH-PBE-q7
-&END KIND
-
-&KIND Mo
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q14
-    POTENTIAL GTH-PBE-q14
-&END KIND
-
-&KIND Cs
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-PBE-q9
-&END KIND
-
-&KIND W
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q14
-    POTENTIAL GTH-PBE-q14
-&END KIND
-
-&KIND Ga
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q13
-    POTENTIAL GTH-PBE-q13
-&END KIND
-
-#KIND DATA from kind_data.py (PBE Functional)
-        """
-
-
-    elif functional == 'BLYP':
-        return """
-#KIND DATA from kind_data.py (BLYP Functional)
-
-&KIND H
-    BASIS_SET DZVP-MOLOPT-GTH-q1
-    POTENTIAL GTH-BLYP-q1
-&END KIND
-
-&KIND He
-    BASIS_SET  DZVP-MOLOPT-SR-GTH-q2
-    POTENTIAL GTH-BLYP-q2
-&END KIND
-
-&KIND Li
-    BASIS_SET  DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-BLYP-q3
-&END KIND
-
-&KIND Be
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q4
-    POTENTIAL GTH-BLYP-q4
-&END KIND
-
-&KIND B
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-BLYP-q3
-&END KIND
-
-&KIND C
-    BASIS_SET DZVP-MOLOPT-GTH-q4
-    POTENTIAL GTH-BLYP-q4
-&END KIND
-
-&KIND N
-    BASIS_SET DZVP-MOLOPT-GTH-q5
-    POTENTIAL GTH-BLYP-q5
-&END KIND
-
-&KIND O
-    BASIS_SET DZVP-MOLOPT-GTH-q6
-    POTENTIAL GTH-BLYP-q6
-&END KIND
-
-&KIND F
-    BASIS_SET DZVP-MOLOPT-GTH-q7
-    POTENTIAL GTH-BLYP-q7
-&END KIND
-
-&KIND Ne
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q8
-    POTENTIAL GTH-BLYP-q8
-&END KIND
-
-&KIND Na
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-BLYP-q9
-&END KIND
-
-&KIND Mg
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q10
-    POTENTIAL GTH-BLYP-q10
-&END KIND
-
-&KIND Al
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-BLYP-q3
-&END KIND
-
-&KIND Si
-    BASIS_SET DZVP-MOLOPT-GTH-q4
-    POTENTIAL GTH-BLYP-q4
-&END KIND
-
-&KIND P
-    BASIS_SET DZVP-MOLOPT-GTH-q5
-    POTENTIAL GTH-BLYP-q5
-&END KIND
-
-&KIND S
-    BASIS_SET DZVP-MOLOPT-GTH-q6
-    POTENTIAL GTH-BLYP-q6
-&END KIND
-
-&KIND Cl
-    BASIS_SET DZVP-MOLOPT-GTH-q7
-    POTENTIAL GTH-BLYP-q7
-&END KIND
-
-&KIND Ar
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q8
-    POTENTIAL GTH-BLYP-q8
-&END KIND
-
-&KIND K
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-BLYP-q9
-&END KIND
-
-&KIND Ca
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q10
-    POTENTIAL GTH-BLYP-q10
-&END KIND
-
-&KIND Sc
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q11
-    POTENTIAL GTH-BLYP-q11
-&END KIND
-
-&KIND Ti
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q12
-    POTENTIAL GTH-BLYP-q12
-&END KIND
-
-&KIND V
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q13
-    POTENTIAL GTH-BLYP-q13
-&END KIND
-
-&KIND Se
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q6
-    POTENTIAL GTH-BLYP-q6
-&END KIND
-
-&KIND Br 
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q7
-    POTENTIAL GTH-BLYP-q7
-&END KIND
-
-&KIND Mo
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q14
-    POTENTIAL GTH-BLYP-q14
-&END KIND
-
-&KIND Cs
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-BLYP-q9
-&END KIND
-
-&KIND W
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q14
-    POTENTIAL GTH-BLPY-q14
-&END KIND
-#KIND DATA from kind_data.py (BLYP Functional)
-        """
-    elif functional == 'BLYP_SR':
-        return """
-#KIND DATA from kind_data.py (BLYP Functional)
-
-&KIND H
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q1
-    POTENTIAL GTH-BLYP-q1
-&END KIND
-
-&KIND He
-    BASIS_SET  DZVP-MOLOPT-SR-GTH-q2
-    POTENTIAL GTH-BLYP-q2
-&END KIND
-
-&KIND Li
-    BASIS_SET  DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-BLYP-q3
-&END KIND
-
-&KIND Be
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q4
-    POTENTIAL GTH-BLYP-q4
-&END KIND
-
-&KIND B
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-BLYP-q3
-&END KIND
-
-&KIND C
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q4
-    POTENTIAL GTH-BLYP-q4
-&END KIND
-
-&KIND N
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q5
-    POTENTIAL GTH-BLYP-q5
-&END KIND
-
-&KIND O
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q6
-    POTENTIAL GTH-BLYP-q6
-&END KIND
-
-&KIND F
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q7
-    POTENTIAL GTH-BLYP-q7
-&END KIND
-
-&KIND Ne
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q8
-    POTENTIAL GTH-BLYP-q8
-&END KIND
-
-&KIND Na
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-BLYP-q9
-&END KIND
-
-&KIND Mg
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q10
-    POTENTIAL GTH-BLYP-q10
-&END KIND
-
-&KIND Al
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q3
-    POTENTIAL GTH-BLYP-q3
-&END KIND
-
-&KIND Si
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q4
-    POTENTIAL GTH-BLYP-q4
-&END KIND
-
-&KIND P
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q5
-    POTENTIAL GTH-BLYP-q5
-&END KIND
-
-&KIND S
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q6
-    POTENTIAL GTH-BLYP-q6
-&END KIND
-
-&KIND Cl
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q7
-    POTENTIAL GTH-BLYP-q7
-&END KIND
-
-&KIND Ar
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q8
-    POTENTIAL GTH-BLYP-q8
-&END KIND
-
-&KIND K
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-BLYP-q9
-&END KIND
-
-&KIND Ca
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q10
-    POTENTIAL GTH-BLYP-q10
-&END KIND
-
-&KIND Sc
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q11
-    POTENTIAL GTH-BLYP-q11
-&END KIND
-
-&KIND Ti
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q12
-    POTENTIAL GTH-BLYP-q12
-&END KIND
-
-&KIND V
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q13
-    POTENTIAL GTH-BLYP-q13
-&END KIND
-
-&KIND Se
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q6
-    POTENTIAL GTH-BLYP-q6
-&END KIND
-
-&KIND Br 
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q7
-    POTENTIAL GTH-BLYP-q7
-&END KIND
-
-&KIND Mo
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q14
-    POTENTIAL GTH-BLYP-q14
-&END KIND
-
-&KIND Cs
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q9
-    POTENTIAL GTH-BLYP-q9
-&END KIND
-
-&KIND W
-    BASIS_SET DZVP-MOLOPT-SR-GTH-q14
-    POTENTIAL GTH-BLPY-q14
-&END KIND
-#KIND DATA from kind_data.py (BLYP Functional)
-        """
-
-    elif functional == 'XXX':
-        return """ 
-#KIND DATA from kind_data.py (XXX Functional)
-        """
+    return ["PBE", "PBE_SR", "BLYP", "BLYP_SR", "REVPBE", "REVPBE_SR", "RPBE", "RPBE_SR"]
+
+def kind_data_functionals(functional, coord_file=None):
+    output_string = f"#KIND DATA from cp2k_kind_data.py ({functional.split('_')[0]} Functional)"
+    atom_list = []
+
+    if coord_file is not None:
+        # Read the first frame of the coordinate file and get only the atoms
+        atoms = xyz_reader(coord_file, only_atoms=True)[0]
+
+        # Search for individual atoms in the atom array
+        atom_list = []
+        for atom in atoms:
+            if atom not in atom_list:
+                atom_list.append(atom)
     else:
-        return """
-#KIND DATA not found. Please add the functional data you want to use!
-        """
+        atom_list = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "Ta", "W", "Ir", "Pt", "Au", "Tl", "Pb", "Bi"]
+
+    if atom_list in ["Cd", "Tc", "Sn", "Xe", "Nb", "Cs", "Ta", "Ir", "Pt", "Tl"] and functional in ["BLYP", "BLYP_SR"]:
+        print(
+            f"WARNING: Unable to locate a CP2K GTH pseudopotential / MOLOPT basis combination for element '{atom}' "
+            f"when using functional '{functional}'.\n"
+            "Reason: The distributed CP2K POTENTIAL/BASIS_MOLOPT sets do not provide data for this element.\n"
+            "Suggested resolutions: Switch to a supported functional such as 'PBE' (preferred for broad element coverage)\n"
+            "Action: Aborting to prevent running with incomplete KIND definitions."
+        )
+        exit(1)
+
+    dict_atom_ppot_velec = {
+        'H': 1,
+        'He': 2,
+        'Li': 3,
+        'Be': 4,
+        'B': 3,
+        'C': 4,
+        'N': 5,
+        'O': 6,
+        'F': 7,
+        'Ne': 8,
+        'Na': 9,
+        'Mg': 10,
+        'Al': 3,
+        'Si': 4,
+        'P': 5,
+        'S': 6,
+        'Cl': 7,
+        'Ar': 8,
+        'K': 9,
+        'Ca': 10,
+        'Sc': 11,
+        'Ti': 12,
+        'V': 13,
+        'Cr': 14,
+        'Mn': 15,
+        'Fe': 16,
+        'Co': 17,
+        'Ni': 18,
+        'Cu': 11,
+        'Zn': 12,
+        'Ga': 13,
+        'Ge': 4,
+        'As': 5,
+        'Se': 6,
+        'Br': 7,
+        'Kr': 8,
+        'Rb': 9,
+        'Sr': 10,
+        'Y': 11,
+        'Zr': 12,
+        'Nb': 13,
+        'Mo': 14,
+        'Tc': 15,
+        'Ru': 16,
+        'Rh': 17,
+        'Pd': 18,
+        'Ag': 11,
+        'Cd': 12,
+        'In': 13,
+        'Sn': 4,
+        'Sb': 5,
+        'Te': 6,
+        'I': 7,
+        'Xe': 8,
+        'Cs': 9,
+        'Ba': 10,
+        'Ta': 13,
+        'W': 14,
+        'Ir': 17,
+        'Pt': 18,
+        'Au': 11,
+        'Tl': 13, 
+        'Pb': 4,
+        'Bi': 5
+    }
+
+    short_range = False
+    if "SR" in functional:
+        functional = functional.replace("_SR", "")
+        short_range = True
+
+    if functional in ["REVPBE", "RPBE"]:
+        functional = "PBE"  # Use PBE pseudopotentials
+
+    for atom in atom_list:
+        if atom in dict_atom_ppot_velec:
+            if not short_range and atom in ["H", "C", "N", "O", "F", "Si", "P", "S", "Cl"]:
+                output_string += f"""
+    &KIND {atom}
+        BASIS_SET DZVP-MOLOPT-GTH-q{dict_atom_ppot_velec[atom]}
+        POTENTIAL GTH-{functional}-q{dict_atom_ppot_velec[atom]}
+    &END KIND
+
+"""
+            else:
+                output_string += f"""
+    &KIND {atom}
+        BASIS_SET DZVP-MOLOPT-SR-GTH-q{dict_atom_ppot_velec[atom]}
+        POTENTIAL GTH-{functional}-q{dict_atom_ppot_velec[atom]}
+    &END KIND
+
+"""
+    return output_string
