@@ -1002,16 +1002,20 @@ def write_runscript(project_name, run_type, equi_run=''):
         os.system('chmod +x runscript.sh')
         print("Runscript for the production run created: runscript.sh")
         if equi_run == 'y':
-            with open('runscript_equilibration.sh', 'w') as output2:
-                output2.write(RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type][1]).load_runscript())
-            print("Runscript for the equilibration run created: runscript_equilibration.sh")
-            os.system('chmod +x runscript_equilibration.sh')
+            runscript_content = RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type][1]).load_runscript()
+            if runscript_content != '0':
+                with open('runscript_equilibration.sh', 'w') as output2:
+                    output2.write(runscript_content)
+                print("Runscript for the equilibration run created: runscript_equilibration.sh")
+                os.system('chmod +x runscript_equilibration.sh')
 
-    else: 
-        with open('runscript.sh', 'w') as output:
-            output.write(RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type]).load_runscript())
-        print("Runscript created: runscript.sh")
-        os.system('chmod +x runscript.sh')
+    else:
+        runscript_content = RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type]).load_runscript()
+        if runscript_content != '0':
+            with open('runscript.sh', 'w') as output:
+                output.write(runscript_content)
+            print("Runscript created: runscript.sh")
+            os.system('chmod +x runscript.sh')
 
 def create_frame0(ref_traj, project_name):
     coord_file_name = project_name.split('.')[0] + "_frame0.xyz"

@@ -57,7 +57,7 @@ class RunscriptLoader:
         hpc_setup_path = self._first_hit()
 
         if hpc_setup_path == 'NO_RUNSCRIPT_GENERATION':
-            return None
+            return "0"
 
         # Load the runscript based on the framework, simulation environment, and device
         if self.framework == 'cp2k':

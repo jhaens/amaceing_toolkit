@@ -72,18 +72,21 @@ class LAMMPSInputGeneratorWrapper:
         Generate the runscript for the input file: CPU and GPU version.
         """
         # Generate the runscript content
-        cpu_runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'lmp', 'cpu').load_runscript
-        gpu_runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'lmp', 'gpu').load_runscript
+        cpu_runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'lmp', 'cpu').load_runscript()
+        gpu_runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'lmp', 'gpu').load_runscript()
+
+        if cpu_runscript_content == '0' or gpu_runscript_content == '0':
+            return
 
         rs_name = {'cpu': 'runscript.sh', 'gpu': 'gpu_script.job'}
 
         # Save the runscript files
         with open(rs_name['cpu'], 'w') as f_cpu:
-            f_cpu.write(cpu_runscript_content())
+            f_cpu.write(cpu_runscript_content)
         os.chmod(rs_name['cpu'], 0o755)
 
         with open(rs_name['gpu'], 'w') as f_gpu:
-            f_gpu.write(gpu_runscript_content())
+            f_gpu.write(gpu_runscript_content)
         os.chmod(rs_name['gpu'], 0o755)
 
         print(f"Runscripts written to: {rs_name['cpu']} and {rs_name['gpu']}")
