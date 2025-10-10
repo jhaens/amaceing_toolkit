@@ -35,7 +35,9 @@ class RunscriptLoader:
         use_runscript_generator = ask_for_yes_no("Do want to get runscript prepared for every toolkit run?", 'y')
         if use_runscript_generator == 'n':
             print("Runscript generation is disabled.")
-            return 'NO_RUNSCRIPT_GENERATION'
+            script_directory = os.path.dirname(os.path.abspath(__file__))
+            with open(os.path.join(script_directory, 'hpc_setup_path.txt'), 'w') as f:
+                f.write('NO_RUNSCRIPT_GENERATION')
 
         use_predefined_rs = ask_for_yes_no("Do you want to use predefined runscript for the HPC at TU Ilmenau?", 'y')
         if use_predefined_rs == 'y':

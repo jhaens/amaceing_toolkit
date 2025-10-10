@@ -997,17 +997,19 @@ def write_runscript(project_name, run_type, equi_run=''):
     run_type_inp_names = {'GEO_OPT': 'geoopt_cp2k.inp', 'CELL_OPT': 'cellopt_cp2k.inp', 'MD': ['md_cp2k.inp', 'md_equilibration_cp2k.inp'], 'REFTRAJ': 'reftraj_cp2k.inp', 'ENERGY': 'energy_cp2k.inp'}
     
     if run_type == 'MD':
-        with open('runscript.sh', 'w') as output:
-            output.write(RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type][0]).load_runscript())
-        os.system('chmod +x runscript.sh')
-        print("Runscript for the production run created: runscript.sh")
-        if equi_run == 'y':
-            runscript_content = RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type][1]).load_runscript()
-            if runscript_content != '0':
-                with open('runscript_equilibration.sh', 'w') as output2:
-                    output2.write(runscript_content)
-                print("Runscript for the equilibration run created: runscript_equilibration.sh")
-                os.system('chmod +x runscript_equilibration.sh')
+        runscript_content = RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type][0]).load_runscript()
+        if runscript_content != '0':
+            with open('runscript.sh', 'w') as output:
+                output.write(runscript_content)
+            os.system('chmod +x runscript.sh')
+            print("Runscript for the production run created: runscript.sh")
+            if equi_run == 'y':
+                runscript_content = RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type][1]).load_runscript()
+                if runscript_content != '0':
+                    with open('runscript_equilibration.sh', 'w') as output2:
+                        output2.write(runscript_content)
+                    print("Runscript for the equilibration run created: runscript_equilibration.sh")
+                    os.system('chmod +x runscript_equilibration.sh')
 
     else:
         runscript_content = RunscriptLoader('cp2k', project_name, run_type_inp_names[run_type]).load_runscript()
