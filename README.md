@@ -72,7 +72,7 @@ The toolkit offers:
    pip install .
    ```
 
-4. (Optional) For accelerated MACE performance:
+4. (Optional) For accelerated MACE performance on CUDA systems:
    ```bash
    # CUDA 11
    pip install cuequivariance cuequivariance-torch cuequivariance-ops-torch-cu11
@@ -109,7 +109,7 @@ The toolkit offers:
 ### (ii) Installation via pip
 
 ```bash
-conda create -n atk python=3.9
+conda create -n atk python=3.12
 conda activate atk
 pip install torch torchvision torchaudio
 pip install amaceing_toolkit
@@ -174,6 +174,7 @@ The documentation provides:
 - Configuration guides
 - Example workflows
 - Tutorials for common use cases: 
+  - **NEW: Getting Started with aMACEing_toolkit** [Introduction to aMACEing_toolkit](https://colab.research.google.com/drive/1brd82x-yWesVKbeUJTC6kR8wx2YIYSKG?usp=sharing)
   - [Tutorial A](https://colab.research.google.com/drive/17sz84cj8PTPJPxAjs4IHuFamNq2g5mBM?usp=sharing)
   - [Tutorial B](https://colab.research.google.com/drive/1laGokzPIKxsPjj3GXn383Cu22Fq_ihb2?usp=sharing)
 
