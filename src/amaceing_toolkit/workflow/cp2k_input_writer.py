@@ -420,7 +420,10 @@ def create_input(input_config, run_type, equi_prod=''):
         ignore_convergence_failure = ""
 
     # Obtain the description of the kind of the atoms in the system
-    kind_data = kind_data_functionals(input_config['xc_functional'], input_config['coord_file'])
+    if run_type == 'REFTRAJ':
+        kind_data = kind_data_functionals(input_config['xc_functional'], input_config['ref_traj'])
+    else:
+        kind_data = kind_data_functionals(input_config['xc_functional'], input_config['coord_file'])
 
     if run_type == 'GEO_OPT':
         return f"""

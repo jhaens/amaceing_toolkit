@@ -433,7 +433,7 @@ def run_eval_error(filenames):
     if filenames[3].split('.')[-1] == 'xyz':
         force_compare = xyz_reader(filenames[3])[1]
     elif filenames[3].split('.')[-1] == 'lammpstrj':
-        force_compare = lmp_reader(filenames[3])[1]
+        force_compare, _ = lmp_reader(filenames[3])[1]
 
     # Rescale the ground truth (AIMD) forces and energies
     force_ground_truth *= 51.4221
@@ -463,28 +463,42 @@ def run_eval_error(filenames):
 
 def run_prepare_eval_error(traj_file, each_nth_frame, start_cp2k, log_file="", xc_functional=""):
     # Read the frames
+    each_nth_frame = int(each_nth_frame)
 
     if traj_file.split('.')[-1] == 'xyz':
+        pbc_mat = None
         atom, coord = xyz_reader(traj_file)[:2]
         force_file = input("What is the name of the force LAMMPS (.lammpstrj) or xyz file? ")
         assert os.path.isfile(force_file), "Trajectory file does not exist!"
         if force_file.split('.')[-1] == 'xyz':
             force = xyz_reader(force_file)[1]
         elif force_file.split('.')[-1] == 'lammpstrj':
-            force = lmp_reader(force_file)
+            force, pbc_mat = lmp_reader(force_file)
         if "E" in traj_file:
             ener = xyz_reader(traj_file)[2]
         else:
             ener_file = input("What is the name of the energy file? ")
             assert os.path.isfile(ener_file), "Energy file does not exist!"
-            ener = np.loadtxt(ener_file)
+            ener = np.loadtxt(ener_file, skiprows=1)
+
+        if pbc_mat is None:
+            box_cubic = ask_for_yes_no_pbc("Is the box cubic? (y/n/pbc)", 'pbc')
+            if box_cubic == 'y':
+                box_xyz = ask_for_float_int("What is the length of the box in Å?", str(10.0))
+                pbc_mat = np.array([[box_xyz, 0.0, 0.0],[0.0, box_xyz, 0.0],[0.0, 0.0, box_xyz]])
+            elif box_cubic == 'n':
+                pbc_mat = ask_for_non_cubic_pbc()
+            else:
+                pbc_mat = np.loadtxt(box_cubic)
+        pbc_list = [pbc_mat[0,0], pbc_mat[0,1], pbc_mat[0,2], pbc_mat[1,0], pbc_mat[1,1], pbc_mat[1,2], pbc_mat[2,0], pbc_mat[2,1], pbc_mat[2,2]]
 
         # Extract the nth frames and save them
         coord = coord[::each_nth_frame]
         force = force[::each_nth_frame]
         ener = ener[::each_nth_frame]
-        xyz_writer("mace_coord.xyz", atom, coord, ener)
-        xyz_writer("mace_force.xyz", atom, force)
+        xyz_writer("mlip_coord.xyz", atom, coord, ener)
+        xyz_writer("mlip_force.xyz", atom, force)
+        np.savetxt("pbc", pbc_mat)
     else:
         atoms = read(traj_file, index = f":: {each_nth_frame}")
 
@@ -504,16 +518,16 @@ def run_prepare_eval_error(traj_file, each_nth_frame, start_cp2k, log_file="", x
 
         # Extract the pbc from the first frame
         pbc= atoms[0].get_cell()
-        pbc_list = [pbc[0,0], pbc[1,1], pbc[2,2]]
+        pbc_list = [pbc[0,0], pbc[0,1], pbc[0,2], pbc[1,0], pbc[1,1], pbc[1,2], pbc[2,0], pbc[2,1], pbc[2,2]]
 
         # Write the files
-        xyz_writer("mace_coord.xyz", atom, coord, ener)
-        xyz_writer("mace_force.xyz", atom, force)
+        xyz_writer("mlip_coord.xyz", atom, coord, ener)
+        xyz_writer("mlip_force.xyz", atom, force)
         np.savetxt("pbc", pbc)
 
     # Print the information
     print(f"Extracted every {each_nth_frame} frame from the file {traj_file}.")
-    print(f"Extracted frames are saved in the files mace_coord.xyz and mace_force.xyz.")
+    print(f"Extracted frames are saved in the files mlip_coord.xyz and mlip_force.xyz.")
 
     # Initialize the CP2K run
     if start_cp2k == 'y':
@@ -523,9 +537,9 @@ def run_prepare_eval_error(traj_file, each_nth_frame, start_cp2k, log_file="", x
         #input_mace = string_to_dict(lines[-1])
 
         run_type = "REFTRAJ"
-        config_dict = {'project_name': 'eval_run', 'ref_traj': '../mace_coord.xyz', 'pbc_list': f'[{pbc_list[0]} {pbc_list[1]} {pbc_list[2]}]', 'nsteps': f'{coord.shape[0]}', 'stride': '1', 'print_velocities': 'OFF', 'print_forces': 'ON', 'xc_functional': xc_functional, 'cp2k_newer_than_2023x': 'y'}
+        config_dict = {'project_name': 'eval_run', 'ref_traj': '../mlip_coord.xyz', 'pbc_list': f'[{pbc_list[0]} {pbc_list[1]} {pbc_list[2]} {pbc_list[3]} {pbc_list[4]} {pbc_list[5]} {pbc_list[6]} {pbc_list[7]} {pbc_list[8]}]', 'nsteps': f'{coord.shape[0]}', 'stride': '1', 'print_velocities': 'OFF', 'print_forces': 'ON', 'xc_functional': xc_functional, 'cp2k_newer_than_2023x': 'y'}
 
-       # Call amaceing_cp2k 
+        # Call amaceing_cp2k 
         command = f"""amaceing_cp2k --run_type="{run_type}" --config="{config_dict}" """ 
 
         if not os.path.exists('eval_data'):
@@ -538,10 +552,14 @@ def run_prepare_eval_error(traj_file, each_nth_frame, start_cp2k, log_file="", x
         process.wait()
 
         # Starting CP2K on the HPC
-        from amaceing_toolkit.default_configs import cp2k_runscript
+        from amaceing_toolkit.default_configs.runscript_loader import RunscriptLoader
 
-        start_command = cp2k_runscript('.', 'reftraj_cp2k.inp')[1]
-        print(start_command)
+        rs_content = RunscriptLoader('cp2k', 'reftraj_cp2k', 'reftraj_cp2k.inp').load_runscript()
+
+        start_command = rs_content.split("mpirun")[1]
+        start_command = start_command.split("$INFILE")[0]
+
+        print(f"Starting command: mpirun {start_command.strip()} reftraj_cp2k.inp > reftraj_cp2k.log &")
 
         print("Please run the following command after the CP2K calculation finished:")
         print("amaceing_utils and choose EVAL_ERROR")
@@ -552,7 +570,7 @@ def run_prepare_eval_error(traj_file, each_nth_frame, start_cp2k, log_file="", x
         # Print the relevant commands
         print("Please run the following commands to evaluate the error:")
         print("1. Create the CP2K input file to obtain the ground truth energy and forces:")
-        print("""amaceing_cp2k --run_type="REFTRAJ" --config="{'project_name' : 'NAME', 'ref_traj' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT]', 'nsteps': 'INT', 'stride': '1', 'print_velocities': 'OFF', 'print_forces': 'ON', 'xc_functional': PBE(_SR)/BLYP(_SR), 'cp2k_newer_than_2023x': 'y'}" """)
+        print("""amaceing_cp2k --run_type="REFTRAJ" --config="{'project_name' : 'NAME', 'ref_traj' : 'FILE', 'pbc_list' = '[FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT FLOAT]', 'nsteps': 'INT', 'stride': '1', 'print_velocities': 'OFF', 'print_forces': 'ON', 'xc_functional': PBE(_SR)/BLYP(_SR), 'cp2k_newer_than_2023x': 'y'}" """)
         print("2. Run the CP2K calculation on your HPC.")
         print("3. Run the following command to evaluate the error:")
         print("amaceing_utils and choose EVAL_ERROR")
@@ -1314,8 +1332,14 @@ def lmp_reader(file):
     """
     Read an LAMMPS dump file and return positions or forces
     """
-    if "fx" in file:
-        # Replace the fx, fy, fz with x, y, z in the file
+    # Load the first 10 lines to check if fx, fy, fz are present
+    with open(file, 'r') as f:
+        lines = f.readlines()
+        first_10_lines = lines[:10]
+        first_10_lines = ''.join(first_10_lines)
+    
+    if "fx" in first_10_lines:
+        # Replace the fx, fy, fz with x, y, z in the 8th line of the file
         with open(file, 'r') as f:
             content = f.read()
         content = content.replace('fx', 'x')
@@ -1326,13 +1350,14 @@ def lmp_reader(file):
         frames = read("tmp.lammpstrj", index=":")
         os.remove("tmp.lammpstrj")
     else:
-        frames = read("10steps.lammpstrj", index=":") 
+        frames = read(file, index=":")
     positions = []
     for frame in frames:
         positions.append(frame.get_positions())
     positions = np.array(positions)
-
-    return positions
+    pbc_mat = frames[0].get_cell()
+    pbc_mat = np.reshape(pbc_mat, (3, 3))
+    return positions, pbc_mat
 
 # Question functions
 def ask_for_float_int(question, default):
