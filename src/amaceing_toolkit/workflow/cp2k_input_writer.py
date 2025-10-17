@@ -294,11 +294,11 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
             # to do: include the right symmetry options
             symmetry = ' '
             while symmetry != 'CUBIC' and symmetry != 'TRICLINIC' and symmetry != 'NONE' and symmetry != 'MONOCLINIC' and symmetry != 'ORTHORHOMBIC' and symmetry != 'TETRAGONAL' and symmetry != 'TRIGONAL' and symmetry != 'HEXAGONAL':
-                symmetry = input("What is the symmetry? " + "[" + cp2k_config['CELL_OPT']['symmetry'] + "]: ")
+                symmetry = input("What is the symmetry (CUBIC, TRICLINIC, NONE, MONOCLINIC, ORTHORHOMBIC, TETRAGONAL, TRIGONAL, HEXAGONAL)? " + "[" + cp2k_config['CELL_OPT']['symmetry'] + "]: ")
                 if symmetry == '':
                     symmetry = cp2k_config['CELL_OPT']['symmetry']
                 elif symmetry != 'CUBIC' and symmetry != 'TRICLINIC' and symmetry != 'NONE' and symmetry != 'MONOCLINIC' and symmetry != 'ORTHORHOMBIC' and symmetry != 'TETRAGONAL' and symmetry != 'TRIGONAL' and symmetry != 'HEXAGONAL':
-                    print("Invalid input. Please enter a valid symmetry: CUBIC, NONE, TRICLINIC, TETRAGONAL, MONOCLINIC, TRIGONAL, HEXAGONAL, ORTHOROMBIC.")
+                    print("Invalid input. Please enter a valid symmetry: CUBIC, NONE, TRICLINIC, TETRAGONAL, MONOCLINIC, TRIGONAL, HEXAGONAL, ORTHORHOMBIC.")
             
             print(f"Available exchange-correlation functionals (SR uses pseudo potentials with shorter range, used for solids): {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['CELL_OPT']['xc_functional'] + "]: ")
