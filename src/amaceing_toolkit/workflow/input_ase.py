@@ -325,8 +325,8 @@ mlip_calc = {dict_foundation_model['model']}
 print("Loading of MLIP model ({self.framework}) completed: {config['foundation_model']} model")
 
 # Load the coordinates (take care if it is the first start or a restart)
-if os.path.isfile('{config['project_name']}.traj'):
-    atoms = read('{config['project_name']}.traj')
+if os.path.isfile('{config['project_name']}_md.traj'):
+    atoms = read('{config['project_name']}_md.traj')
     #atoms = read('{config['project_name']}_restart.traj')
 else:
     atoms = read('{config['coord_file']}')
@@ -339,7 +339,7 @@ atoms.calc = mlip_calc
 
 # Set the temperature in Kelvin and initialize the velocities (only if it is the first start)
 temperature_K = {int(config['temperature'])}
-if os.path.isfile('{config['project_name']}.traj') == False:
+if os.path.isfile('{config['project_name']}_md.traj') == False:
     MaxwellBoltzmannDistribution(atoms, temperature_K = temperature_K)
 
 
