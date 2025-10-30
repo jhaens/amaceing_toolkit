@@ -49,7 +49,7 @@ def atk_cp2k():
         
                 with open('cp2k_input.log', 'w') as output:
                     output.write("Input file created with the following configuration:\n") 
-                    output.write(f"{args.config}")
+                    output.write(f'"{args.config}"')
 
                 if args.run_type == 'MD':
                     if input_config['equilibration_run'] == 'y':
@@ -272,7 +272,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
             print_forces = ask_for_yes_no("Do you want to print the forces? (y/n)", yesno_dict[cp2k_config['GEO_OPT']['print_forces']])
             print_forces = onoff_dict[print_forces]
             
-            print(f"Available exchange-correlation functionals (SR uses pseudo potentials with shorter range, used for solids): {available_functionals()}")
+            print(f"Available exchange-correlation functionals (SR uses basis sets with shorter range, used for solids): {available_functionals()}")
             xc_functional = input("What is the exchange-correlation functional? " + "[" + cp2k_config['GEO_OPT']['xc_functional'] + "]: ")
             if xc_functional == '':
                 xc_functional = cp2k_config['GEO_OPT']['xc_functional']
@@ -990,7 +990,7 @@ def write_log(input_config):
         output.write("Input file created with the following configuration:\n") 
         input_config["pbc_list"] = f'[{input_config["pbc_list"][0,0]} {input_config["pbc_list"][0,1]} {input_config["pbc_list"][0,2]} {input_config["pbc_list"][1,0]} {input_config["pbc_list"][1,1]} {input_config["pbc_list"][1,2]} {input_config["pbc_list"][2,0]} {input_config["pbc_list"][2,1]} {input_config["pbc_list"][2,2]}]'
         #input_config = str(input_config).replace("'", '')
-        output.write(f"{input_config}")
+        output.write(f'"{input_config}"')
 
 def write_runscript(project_name, run_type, equi_run=''):
     """
