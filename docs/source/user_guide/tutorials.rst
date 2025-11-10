@@ -7,11 +7,11 @@ Tutorials
 
 .. image:: https://img.shields.io/badge/Basic-f5f116
    :alt: Basic Tutorial
-   :target:https://colab.research.google.com/drive/17sz84cj8PTPJPxAjs4IHuFamNq2g5mBM
+   :target: https://colab.research.google.com/drive/17sz84cj8PTPJPxAjs4IHuFamNq2g5mBM
 
-.. image:: https://img.shields.io/badge/Advanced-f22424
+.. image:: https://img.shields.io/badge/Advanced-f27a24
    :alt: Advanced Tutorial
-   :target:https://colab.research.google.com/drive/1laGokzPIKxsPjj3GXn383Cu22Fq_ihb2
+   :target: https://colab.research.google.com/drive/1laGokzPIKxsPjj3GXn383Cu22Fq_ihb2
 
 
 Beginners Notebook
@@ -37,23 +37,23 @@ Basic and Advanced Notebooks
 
 For users interested in exploring the full capabilities of the aMACEing_toolkit, we offer two additional interactive notebooks: a Basic Tutorial and an Advanced Tutorial. These provide more in-depth workflows and advanced features.
 
-  - `Basic Notebook <https://colab.research.google.com/drive/17sz84cj8PTPJPxAjs4IHuFamNq2g5mBM>`_: 
-    
-    - CP2K Input Files: Geometry Optimization (GEO_OPT)
-    - MACE Input Files: Molecular Dynamics (MD)
-    - MACE Input Files: Fine-tuning
-    - MatterSim Input Files: MD and Fine-tuning
-    - SevenNet Input Files: MD and Fine-tuning
-    - Recalculating reference trajectories with MACE
+- `Basic Notebook <https://colab.research.google.com/drive/17sz84cj8PTPJPxAjs4IHuFamNq2g5mBM>`_: 
+  
+  - CP2K Input Files: Geometry Optimization (GEO_OPT)
+  - MACE Input Files: Molecular Dynamics (MD)
+  - MACE Input Files: Fine-tuning
+  - MatterSim Input Files: MD and Fine-tuning
+  - SevenNet Input Files: MD and Fine-tuning
+  - Recalculating reference trajectories with MACE
 
 
-  - `Advanced Notebook <https://colab.research.google.com/drive/1laGokzPIKxsPjj3GXn383Cu22Fq_ihb2>`_: 
+- `Advanced Notebook <https://colab.research.google.com/drive/1laGokzPIKxsPjj3GXn383Cu22Fq_ihb2>`_: 
 
-    - Benchmarking MACE, MatterSim, and SevenNet models
-    - Analyzing simulation trajectories
-    - Preparing for error evaluation
-    - Evaluating errors in the fine-tuned model
-    - Obtaining citations for MACE runs
+  - Benchmarking MACE, MatterSim, and SevenNet models
+  - Analyzing simulation trajectories
+  - Preparing for error evaluation
+  - Evaluating errors in the fine-tuned model
+  - Obtaining citations for MACE runs
 
 
 These notebooks can also be found in the `/tutorials/` directory of the `aMACEing_toolkit GitHub Repository <https://github.com/jhaens/amaceing_toolkit/tree/main/tutorials>`_.
