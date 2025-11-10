@@ -7,13 +7,22 @@ aMACEing toolkit
    :alt: GitHub Release
    :target: https://github.com/jhaens/amaceing_toolkit/releases
 
-.. image:: https://img.shields.io/github/issues/jhaens/amaceing_toolkit
-   :alt: GitHub Issues or Pull Requests
-   :target: https://github.com/jhaens/amaceing_toolkit/issues
+.. image:: https://img.shields.io/badge/arXiv-2511.05337-b31b1b
+   :alt: arXiv
+   :target: https://arxiv.org/abs/2511.05337
 
 .. image:: https://app.readthedocs.org/projects/amaceing-toolkit/badge/
    :alt: Documentation Status
    :target: https://amaceing-toolkit.readthedocs.io/en/latest/
+
+.. image:: https://img.shields.io/badge/Presentation-PDF-4c1
+   :alt: Presentation
+   :target: https://cloud.tu-ilmenau.de/s/yEiDs9fSPHkfcMc
+
+.. image:: https://img.shields.io/github/issues/jhaens/amaceing_toolkit
+   :alt: GitHub Issues or Pull Requests
+   :target: https://github.com/jhaens/amaceing_toolkit/issues
+
 
 Overview
 --------
@@ -59,8 +68,9 @@ Resources
 * **GitHub Repository**: `aMACEing Toolkit GitHub <https://github.com/jhaens/amaceing_toolkit>`_
 * **PyPI Package**: `aMACEing Toolkit PyPI <https://pypi.org/project/amaceing-toolkit/>`_
 * **Interactive Tutorials**: 
-  `Tutorial Notebook A <https://colab.research.google.com/drive/17sz84cj8PTPJPxAjs4IHuFamNq2g5mBM?usp=sharing>`_ | 
-  `Tutorial Notebook B <https://colab.research.google.com/drive/1laGokzPIKxsPjj3GXn383Cu22Fq_ihb2?usp=sharing>`_
+  `Tutorial Notebook Beginner <https://colab.research.google.com/drive/1brd82x-yWesVKbeUJTC6kR8wx2YIYSKG>`_ |
+  `Tutorial Notebook Basic <https://colab.research.google.com/drive/17sz84cj8PTPJPxAjs4IHuFamNq2g5mBM>`_ | 
+  `Tutorial Notebook Advanced <https://colab.research.google.com/drive/1laGokzPIKxsPjj3GXn383Cu22Fq_ihb2>`_
 
 Contents
 --------
@@ -71,6 +81,7 @@ Contents
 
    user_guide/installation
    user_guide/getting_started
+   user_guide/tutorials
    user_guide/workflow_overview
    user_guide/configuration
 

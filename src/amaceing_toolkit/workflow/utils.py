@@ -36,34 +36,13 @@ def cite_amaceing_toolkit():
     print(
     r"""
     ┌
-    │ If you use aMACEing_toolkit in your research, please cite the following publication:
+    │ If you use aMACEing_toolkit in your research, please cite the following pre-print:
     │
-    │ PREPRINT AVAILABLE SOON!
+    │     Hänseroth, J. and Flötotto, A. and Qaisrani, M. N. and Dreßler, C. "Fine-Tuning Unifies
+    │     Foundational Machine-learned Interatomic Potential Architectures at ab initio Accuracy."
+    │     arXiv preprint arXiv:2511.05337, https://doi.org/10.48550/arXiv.2511.05337 (2025).
     └
     """
-    # print(
-    # r"""
-    # ┌
-    # │ If you use aMACEing_toolkit in your research, please cite the following publication:
-    # │
-    # │ Jonas Hänseroth, Christian Dreßler.  A Python package for a fast and easy workflow of molecular dynamics simulations with MACE and CP2K,
-    # │ Journal, 111 (111), 1111, https://google.com, 2025. 
-    # │
-    # │ BibTeX:
-    # │ @article{haenseroth2025_amaceing_toolkit,
-    # │   doi = {111/1111},
-    # │   url = {https://google.com},
-    # │   year = {2025},
-    # │   publisher = {Publisher},
-    # │   volume = {111},
-    # │   number = {111},
-    # │   pages = {111},
-    # │   author = {Hänseroth, Jonas and Dreßler, Christian},
-    # │   title = {aMACEing_toolkit: A Python package for a fast and easy workflow of molecular dynamics simulations with MACE and CP2K},
-    # │   journal = {Journal}
-    # │ }
-    # └
-    # """
     )
 
 try:

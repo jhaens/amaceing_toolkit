@@ -1,10 +1,11 @@
 # aMACEing_toolkit
 
 ![GitHub Release](https://img.shields.io/github/v/release/jhaens/amaceing_toolkit)
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/jhaens/amaceing_toolkit)
+[![arXiv](https://img.shields.io/badge/arXiv-2511.05337-b31b1b.svg)](https://arxiv.org/abs/2511.05337)
 [![Documentation Status](https://app.readthedocs.org/projects/amaceing-toolkit/badge/)](https://amaceing-toolkit.readthedocs.io/en/latest/)
-[![Presentation](https://img.shields.io/badge/Presentation-PDF-green)](https://cloud.tu-ilmenau.de/s/oYzns2qkKNYLS3L)
-<!--- [![arXiv](https://img.shields.io/badge/arXiv-<INDEX>-<COLOR>.svg)](https://arxiv.org/abs/<INDEX>) -->
+[![Presentation](https://img.shields.io/badge/Presentation-PDF-4c1)](https://cloud.tu-ilmenau.de/s/yEiDs9fSPHkfcMc)
+[![Beginners Tutorial](https://img.shields.io/badge/Tutorial-Beginners-yellow)](https://colab.research.google.com/drive/1brd82x-yWesVKbeUJTC6kR8wx2YIYSKG)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/jhaens/amaceing_toolkit)
 
 
 ## Table of Contents
@@ -169,7 +170,7 @@ Complete documentation is available at [ReadTheDocs](https://amaceing-toolkit.re
 
 The documentation provides:
 - Comprehensive installation instructions
-- Detailed API reference (now consolidated into a single page for easier reference)
+- Detailed API reference 
 - User guides for all supported simulation engines
 - Configuration guides
 - Example workflows
@@ -191,13 +192,19 @@ Example systems and scripts are provided in the `examples/` directory:
 
 If you use aMACEing_toolkit in your research, please cite:
 
-```
-[soon]
-```
+Hänseroth, J. and Flötotto, A. and Qaisrani, M. N. and Dreßler, C. "Fine-Tuning Unifies Foundational Machine-learned Interatomic Potential Architectures at ab initio Accuracy." arXiv preprint arXiv:2511.05337 (2025).
 
-## Roadmap
-
-- [x] The MACE module will be updated to support the latest features in the next release.
+```
+@misc{hänseroth2025amaceingtoolkit,
+      title={Fine-Tuning Unifies Foundational Machine-learned Interatomic Potential Architectures at ab initio Accuracy}, 
+      author={Jonas Hänseroth and Aaron Flötotto and Muhammad Nawaz Qaisrani and Christian Dreßler},
+      year={2025},
+      eprint={2511.05337},
+      archivePrefix={arXiv},
+      primaryClass={physics.chem-ph},
+      url={https://arxiv.org/abs/2511.05337}, 
+}
+```
 
 ## License
 
