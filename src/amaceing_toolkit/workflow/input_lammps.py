@@ -123,19 +123,12 @@ class LAMMPSInputGenerator:
             return unique_elements
         else:
             return ' '.join(unique_elements)
-    
-    # @staticmethod
-    # def _convert_pbc_string_to_array(pbc_str: str) -> np.ndarray:
-    #     pbc_str = pbc_str.strip('[')
-    #     pbc_str = pbc_str.strip(']')
-    #     return np.array([float(x) for x in pbc_str.split()]).reshape(3, 3)
 
     def _prepare_coordinate_file(self) -> str:
         """Prepare coordinate file for LAMMPS."""
         if self.config['coord_file'].endswith('.xyz'):
             # Convert XYZ to LAMMPS data format
             atoms = read(self.config['coord_file'], format='xyz', index=0)
-            #atoms.set_cell(self._convert_pbc_string_to_array(self.config['pbc_list']))
             atoms.set_cell(np.array(self.config['pbc_list']).reshape(3, 3))
             atoms.set_pbc([True, True, True])
             
@@ -265,6 +258,7 @@ neigh_modify  every 1 delay 0 check yes
 velocity      all create {self.config['temperature']} 42 dist uniform rot yes mom yes
 
 # --------- Equilibration ---------
+# 
 fix           integrator all nve
 fix           fcom all momentum 10000 linear 1 1 1 rescale
 thermo        1000
@@ -281,6 +275,22 @@ reset_timestep 0
 {thermostat_content}
 {self._get_footer()}"""
         
+        restart_content = f"""{self._get_header()}
+read_restart  md.XXX.restart # Replace XXX with the appropriate timestep number or final.restart
+{self._get_potential_section()}
+
+# --------- Timestep and Neighbors ---------
+timestep      {timestep}     # ps
+neighbor      2.0 bin
+neigh_modify  every 1 delay 0 check yes
+
+{thermostat_content}
+{self._get_footer()}"""
+        
+        # Write the restart input file
+        with open('lammps_md_restart.inp', 'w') as f_restart:
+            f_restart.write(restart_content)
+
         return content
 
     def generate_recalc_input(self) -> str:
@@ -330,7 +340,8 @@ thermo        {log_interval}
 thermo_style  custom step temp pe ke etotal press vol
 dump          d_prod all xyz {write_interval} md_traj.xyz
 dump_modify   d_prod element {element_list} sort id
-fix           log_energy all print {write_interval} """ + r'"${pot_e}"' + """ file energies.txt screen no title ""
+dump_modify   d_prod append yes
+fix           log_energy all print {write_interval} """ + r'"${pot_e}"' + """ file energies.txt screen no title "" append yes
 """
         
         if thermostat == 'Langevin':
@@ -339,7 +350,11 @@ fix           integrator all nve
 fix           prod all langevin {temperature} {temperature} $(100.0*dt) 42
 {ext_traj_content[0]}
 
+restart       100000 md.*.restart
+
 run           {nsteps}
+
+write_restart final.restart
 
 {ext_traj_content[1]}
 unfix         prod
@@ -350,7 +365,11 @@ unfix         integrator"""
 fix           prod all nvt temp {temperature} {temperature} $(100.0*dt)
 {ext_traj_content[0]}
 
+restart       100000 md.*.restart
+
 run           {nsteps}
+
+write_restart final.restart
 
 {ext_traj_content[1]}
 unfix         prod"""
@@ -361,7 +380,11 @@ fix           integrator all nve
 fix           prod all temp/csvr {temperature} {temperature} $(100.0*dt) 42
 {ext_traj_content[0]}
 
+restart       100000 md.*.restart
+
 run           {nsteps}
+
+write_restart final.restart
 
 {ext_traj_content[1]}
 unfix         prod
@@ -380,7 +403,11 @@ unfix         integrator"""
 fix           integrator all npt temp {temperature} {temperature} $(100.0*dt) {npt_fix}
 {ext_traj_content[0]}
 
+restart       100000 md.*.restart
+
 run           {nsteps}
+
+write_restart final.restart
 
 {ext_traj_content[1]}
 unfix         integrator
@@ -452,7 +479,8 @@ unfix         pressavg"""
         else:
             write_interval = self.config['write_interval']
             return [f"""dump          d_prod_frc all custom {write_interval} md_frc.lammpstrj type fx fy fz
-dump_modify   d_prod_frc sort id""", """
+dump_modify   d_prod_frc sort id
+dump_modify   d_prod_frc append yes""", """
 undump        d_prod_frc"""]
 
     def _shrink_module(self, element_list: str) -> str:
