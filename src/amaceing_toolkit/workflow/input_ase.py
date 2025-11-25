@@ -285,7 +285,7 @@ print("Cell size after optimization: ", atoms.atoms.cell)
 print("Final positions:", atoms.get_positions())
 print("Total energy:", atoms.get_potential_energy())
 
-write("{config['project_name']}_cellopt_final.xyz", atoms)
+write("{config['project_name']}_cellopt_final.xyz", atoms.atoms)
 """ + self._footer()
     
     def generate_md_input(self) -> str:
