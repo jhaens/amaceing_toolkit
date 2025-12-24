@@ -824,6 +824,10 @@ def xyz_reader(file, only_atoms=False):
         meta_data = np.zeros((n_frames))
         meta_data = np.array(meta_data, dtype='object')
 
+        if len(lines) != int(n_frames*(n_atoms+2)):
+            print(f'Error in the file, expected {int(n_frames*(n_atoms+2))} lines in the file, got {len(lines)}.')
+            sys.exit()
+
         # Check if the file contains forces
         force_check = lines[2].split(' ')
         force_check = list(filter(None, force_check))
