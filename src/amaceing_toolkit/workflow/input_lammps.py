@@ -114,8 +114,10 @@ class LAMMPSInputGenerator:
                            "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W",
                            "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb",
                            "Bi", "Po", "At", "Rn"]
-
-        atoms = read(self.config['coord_file'], format='xyz')
+        if self.config['coord_file'].endswith('.xyz'):
+            atoms = read(self.config['coord_file'])
+        else:
+            atoms = read(self.config['coord_file'], format='lammps-data')
         elements = atoms.get_chemical_symbols()
         unique_elements = [el for el in elements_ordered if el in elements]
         
@@ -276,7 +278,7 @@ reset_timestep 0
 {self._get_footer()}"""
         
         restart_content = f"""{self._get_header()}
-read_restart  md.XXX.restart # Replace XXX with the appropriate timestep number or final.restart
+read_restart  md.restart.* 
 {self._get_potential_section()}
 
 # --------- Timestep and Neighbors ---------
@@ -341,7 +343,8 @@ thermo_style  custom step temp pe ke etotal press vol
 dump          d_prod all xyz {write_interval} md_traj.xyz
 dump_modify   d_prod element {element_list} sort id
 dump_modify   d_prod append yes
-fix           log_energy all print {write_interval} """ + r'"${pot_e}"' + """ file energies.txt screen no title "" append yes
+fix           log_energy all print {write_interval} """ + r'"${pot_e}"' + """ append energies.txt screen no
+
 """
         
         if thermostat == 'Langevin':
@@ -350,7 +353,7 @@ fix           integrator all nve
 fix           prod all langevin {temperature} {temperature} $(100.0*dt) 42
 {ext_traj_content[0]}
 
-restart       100000 md.*.restart
+restart       {write_interval} md.restart.1 md.restart.2
 
 run           {nsteps}
 
@@ -365,7 +368,8 @@ unfix         integrator"""
 fix           prod all nvt temp {temperature} {temperature} $(100.0*dt)
 {ext_traj_content[0]}
 
-restart       100000 md.*.restart
+restart       {write_interval} md.restart.1 md.restart.2
+
 
 run           {nsteps}
 
@@ -380,7 +384,8 @@ fix           integrator all nve
 fix           prod all temp/csvr {temperature} {temperature} $(100.0*dt) 42
 {ext_traj_content[0]}
 
-restart       100000 md.*.restart
+restart       {write_interval} md.restart.1 md.restart.2
+
 
 run           {nsteps}
 
@@ -403,7 +408,7 @@ unfix         integrator"""
 fix           integrator all npt temp {temperature} {temperature} $(100.0*dt) {npt_fix}
 {ext_traj_content[0]}
 
-restart       100000 md.*.restart
+restart       100000 md.restart.1 md.restart.2
 
 run           {nsteps}
 
