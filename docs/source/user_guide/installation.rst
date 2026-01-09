@@ -76,7 +76,7 @@ Installation from Source
        conda create -n atk_ms7n python=3.9
        conda activate atk_ms7n
        pip install torch torchvision torchaudio
-       pip install mattersim==1.1.2 sevenn==0.11.2
+       pip install mattersim==1.1.2 sevenn==0.11.2.post1
 
 6. **Create a separate environment for ORB**:
 
