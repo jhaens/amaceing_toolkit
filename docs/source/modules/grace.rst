@@ -45,7 +45,7 @@ This guides you through:
 
     amaceing_grace -rt="RUN_TYPE" -c="{'parameter1': 'value1', 'parameter2': 'value2', ...}"
 
-Where RUN_TYPE is one of: GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE
+Where RUN_TYPE is one of: GEO_OPT, CELL_OPT, MD, MULTI_MD, FINETUNE, TRAIN, RECALC
 
 For MD:
 
@@ -58,6 +58,13 @@ For FINETUNE:
 .. code-block:: bash
 
     amaceing_grace -rt="FINETUNE" -c="{'project_name': 'NAME', 'foundation_model': 'GRACE-1L-OAM', 'train_file': 'FILE', 'batch_size': 'INT', 'epochs': 'INT', 'seed': '1', 'lr': '0.01', 'force_loss_ratio': 1.0}"
+
+For TRAIN:
+
+.. code-block:: bash
+
+    amaceing_grace -rt="TRAIN" -c="{'project_name': 'NAME', 'train_file': 'FILE', 'batch_size': 'INT', 'epochs': 'INT', 'seed': '1', 'lr': '0.01', 'force_loss_ratio': 1.0}"
+
 
 For RECALC:
 

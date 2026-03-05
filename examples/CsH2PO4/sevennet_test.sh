@@ -23,6 +23,12 @@ cd FINETUNE
 amaceing_sevennet --run_type="FINETUNE" --config="{'project_name': 'csh2po4_finetune', 'device': 'cuda', 'train_file': '../../data/train_file_7net.xyz', 'foundation_model': '7net-0', 'epochs': 2, 'batch_size': 4, 'seed': 1, 'lr': 0.01, 'force_loss_ratio': 1.0}"
 cd ..
 echo ----------------------------
+echo Testing input file generation: TRAIN
+mkdir -p TRAIN
+cd TRAIN
+amaceing_sevennet --run_type="TRAIN" --config="{'project_name': 'csh2po4_train', 'device': 'cuda', 'train_file': '../../data/train_file_7net.xyz', 'epochs': 2, 'batch_size': 4, 'seed': 1, 'lr': 0.01, 'force_loss_ratio': 1.0}"
+cd ..
+echo ----------------------------
 echo Testing input file generation: RECALC
 mkdir -p RECALC
 cd RECALC

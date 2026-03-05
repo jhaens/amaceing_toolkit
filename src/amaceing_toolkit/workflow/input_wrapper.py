@@ -28,6 +28,7 @@ from .utils import extract_frames
 from .input_ase import ASEInputGeneratorWrapper
 from .input_lammps import LAMMPSInputGeneratorWrapper
 from .input_ft import FTInputGenerator
+from .input_train import TrainInputGenerator
 
 # Import configurations and runscripts
 from amaceing_toolkit.default_configs import configs_mace
@@ -58,11 +59,11 @@ class UniversalMLIPInputWriter:
     
     SUPPORTED_FRAMEWORKS = ['mace', 'sevennet', 'mattersim', 'new_mlip']
     SUPPORTED_RUN_TYPES = {
-        'mace': {'simulation': ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'], 'training': ['FINETUNE', 'FINETUNE_MULTIHEAD']},
+        'mace': {'simulation': ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'], 'training': ['FINETUNE', 'FINETUNE_MULTIHEAD', 'TRAIN']},
         'mattersim': {'simulation': ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'], 'training': ['FINETUNE']},
-        'sevennet': {'simulation': ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'], 'training': ['FINETUNE']},
+        'sevennet': {'simulation': ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'], 'training': ['FINETUNE', 'TRAIN']},
         'orb': {'simulation': ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'], 'training': ['FINETUNE']},
-        'grace': {'simulation': ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'], 'training': ['FINETUNE']},
+        'grace': {'simulation': ['GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC'], 'training': ['FINETUNE', 'TRAIN']},
         #'new_mlip': {'simulation': ['MD'], 'training': ['FINETUNE']},
     }
     SUPPORTED_SIM_ENVIRONMENTS = {
@@ -125,7 +126,7 @@ class UniversalMLIPInputWriter:
         )
         
         parser.add_argument("-rt", "--run_type", type=str, 
-                           help="[REQUIRED] Run type: 'GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'FINETUNE', 'FINETUNE_MULTIHEAD', 'RECALC'", 
+                           help="[REQUIRED] Run type: 'GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'FINETUNE', 'FINETUNE_MULTIHEAD', 'TRAIN', 'RECALC'", 
                            required=True)
         
         parser.add_argument("-c", "--config", type=str, 
@@ -161,6 +162,9 @@ class UniversalMLIPInputWriter:
         \033[1mFINETUNE_MULTIHEAD\033[0m: 
         "{'project_name': 'NAME', 'train_file': '['FILE', ...]', 'device': 'cuda/cpu', 'stress_weight': 'FLOAT', 'forces_weight': 'FLOAT', 'energy_weight': 'FLOAT', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'batch_size': 'INT', 'valid_fraction': 'FLOAT', 'valid_batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT', 'xc_functional_of_dataset': '['FUNCTIONAL', ...]', 'dir': 'PATH'}"
         
+        \033[1mTRAIN\033[0m: 
+        "{'project_name': 'NAME', 'train_file': '['FILE', ...]', 'device': 'cuda/cpu', 'stress_weight': 'FLOAT', 'forces_weight': 'FLOAT', 'energy_weight': 'FLOAT', 'batch_size': 'INT', 'valid_fraction': 'FLOAT', 'valid_batch_size': 'INT', 'epochs': 'INT', 'seed': 'INT', 'lr': 'FLOAT', 'xc_functional_of_dataset': '['FUNCTIONAL', ...]', 'dir': 'PATH'}"
+
         \033[1mRECALC\033[0m: 
         "{'project_name': 'NAME', 'coord_file': 'FILE', 'pbc_list': '[9 floats]', 'foundation_model': 'NAME/PATH', 'model_size': 'small/medium/large/none', 'dispersion_via_simenv': 'y/n', 'simulation_environment': 'ase/lammps'}"
         """)
@@ -182,7 +186,7 @@ class UniversalMLIPInputWriter:
         # Parse configuration based on run type
         if self.run_type == 'MULTI_MD':
             self.config = string_to_dict_multi(args.config)
-        elif self.run_type == 'FINETUNE':
+        elif self.run_type in ['FINETUNE', 'TRAIN']:
             self.config = string_to_dict(args.config)
             try:
                 self.config['E0s'] = e0_wrapper(
@@ -278,6 +282,8 @@ class UniversalMLIPInputWriter:
             self._configure_finetune(coord_file, pbc_mat, project_name, base_config)
         elif self.run_type == 'FINETUNE_MULTIHEAD':
             self._configure_finetune_multihead(coord_file, pbc_mat, project_name, base_config)
+        elif self.run_type == 'TRAIN':
+            self._configure_train(coord_file, pbc_mat, project_name, base_config)
         else:
             self._configure_simulation_run(coord_file, pbc_mat, project_name, base_config)
 
@@ -423,7 +429,7 @@ class UniversalMLIPInputWriter:
     
     def _ask_for_project_name(self, run_type: str) -> str:
         """Ask for project name"""
-        if run_type in ['FINETUNE', 'FINETUNE_MULTIHEAD']:
+        if run_type in ['FINETUNE', 'FINETUNE_MULTIHEAD', 'TRAIN']:
             project_name = input("What is the name of the model?: ")
         else:
             project_name = input("What is the name of the project?: ")
@@ -912,6 +918,139 @@ for head in heads:
         print(f"\nA script to extract the heads from the multihead model has been written to {script_path}.")
         print("You can run it after the finetuning is finished.")
         print("")
+
+    def _configure_train(self, coord_file: str, pbc_mat: np.ndarray, project_name: str, base_config: dict):
+        """Configure finetuning parameters"""
+        # Ask if dataset needs to be created
+        dataset_needed = ask_for_yes_no(
+            "Do you want to create a training dataset from force & position files (y) or is it already defined (n)?", 
+            'y'
+        )
+        
+        if dataset_needed == 'y':
+            force_file = self._ask_for_force_file(base_config['TRAIN'])
+            print("Creating the training dataset...")
+            path_to_training_file = create_dataset(coord_file, force_file, pbc_mat)
+        else:
+            path_to_training_file = coord_file
+
+        # Use only a fraction of the dataset
+        smaller_dataset = ask_for_yes_no("Do you want to use only a fraction of the dataset (e.g. for testing purposes)? (y/n)", 'n')
+        if smaller_dataset == 'y':
+            dataset_fraction = ask_for_int("Which n-th frame do you want to use? (e.g. 10 means every 10th frame)", 10)
+            if dataset_fraction != 1:
+                path_to_training_file = extract_frames(path_to_training_file, dataset_fraction)
+            no_frames = frame_counter(path_to_training_file)
+            dataset_limit = int(ask_for_int(f"How many frames do you want to use of the {no_frames} available? (0 for all)", 0))
+            if dataset_limit > 0 and dataset_limit < no_frames:
+                # Extract the number of atoms
+                with open(path_to_training_file, 'r') as file:
+                    no_atoms = file.readline().strip()
+                no_atoms = int(no_atoms.split()[0])
+                no_lines = (no_atoms + 2) * dataset_limit
+                # Read the first no_lines lines and write them into a new file
+                with open(path_to_training_file, 'r') as file:
+                    lines = file.readlines()[:no_lines]
+                new_file_path = f"{path_to_training_file}_{dataset_limit}f.xyz"
+                with open(new_file_path, 'w') as new_file:
+                    new_file.writelines(lines)
+                path_to_training_file = new_file_path
+            else:
+                print(f"Using the {no_frames} frames of the datase.")
+
+
+        if self.framework == 'mace':
+            self._configure_train_mace(pbc_mat, project_name, path_to_training_file, base_config)
+        elif self.framework == 'sevennet':
+            self._configure_train_sevennet(pbc_mat, project_name, path_to_training_file, base_config)
+        elif self.framework == 'grace':
+            self._configure_train_grace(pbc_mat, project_name, path_to_training_file, base_config)
+        else:
+            raise ValueError(f"Unsupported framework for finetuning: {self.framework}")       
+
+    def _configure_train_mace(self, pbc_mat: np.ndarray, project_name: str, train_file: str, base_config: dict):
+        """Configure training parameters for MACE"""
+        # Load default configuration
+        self.config, use_default = self._default_config_loader()
+
+        # Basic configuration
+        self.config['project_name'] = project_name
+        self.config['train_file'] = train_file
+
+        if use_default == False:
+
+            # Ask for training parameters with defaults
+            ft_config = base_config.get('TRAIN', {})
+            self.config.update({
+                'device': 'cuda' if ask_for_yes_no("Use GPU (CUDA)? (y/n)", 'y') == 'y' else 'cpu',
+                'energy_weight': ask_for_float_int("Energy weight:", str(ft_config.get('energy_weight', 1.0))),
+                'forces_weight': ask_for_float_int("Forces weight:", str(ft_config.get('forces_weight', 10.0))),
+                'stress_weight': ask_for_float_int("Stress weight:", str(ft_config.get('stress_weight', 0.0))),
+                'batch_size': ask_for_int("Batch size:", str(ft_config.get('batch_size', 10))),
+                'valid_fraction': ask_for_float_int("Validation fraction:", str(ft_config.get('valid_fraction', 0.1))),
+                'epochs': ask_for_int("Maximum epochs:", str(ft_config.get('epochs', 100))),
+                'lr': ask_for_float_int("Learning rate:", str(ft_config.get('lr', 0.01))),
+                'seed': ask_for_int("Random seed:", str(ft_config.get('seed', 123))),
+            })
+
+        # Get XC functional
+        xc_functional = self._ask_for_xc_functional()
+        self.config['xc_functional_of_dataset'] = xc_functional
+
+
+        if xc_functional in available_functionals():
+            self.config['E0s'] = e0_wrapper(
+                e0s_functionals(xc_functional), 
+                train_file, 
+                xc_functional
+            )
+        else:
+            print(f"Warning: E0s for the XC functional '{xc_functional}' not available. Have to be entered manually.")
+            self.config['E0s'] = input("Please provide the E0s [eV] yourself for each element in the dataset in the following format: {1:-12.4830138479, ...}: ")
+    
+
+    def _configure_train_sevennet(self, pbc_mat: np.ndarray, project_name: str, train_file: str, base_config: dict):
+        """Configure training parameters for SevenNet"""
+        # Load default configuration
+        self.config, use_default = self._default_config_loader()
+
+        # Basic configuration
+        self.config['project_name'] = project_name
+        self.config['train_file'] = train_file
+
+        if use_default == False:
+
+            # Ask for training parameters with defaults
+            ft_config = base_config.get('TRAIN', {})
+            self.config.update({
+                #'device': 'cuda' if ask_for_yes_no("Use GPU (CUDA)? (y/n)", 'y') == 'y' else 'cpu',
+                'force_loss_ratio': ask_for_float_int("Force-Energy-Loss Ratio:", str(ft_config.get('force_loss_ratio', 10.0))),
+                'batch_size': ask_for_int("Batch size:", str(ft_config.get('batch_size', 10))),
+                'epochs': ask_for_int("Maximum epochs:", str(ft_config.get('epochs', 100))),
+                'lr': ask_for_float_int("Learning rate:", str(ft_config.get('lr', 0.01))),
+                'seed': ask_for_int("Random seed:", str(ft_config.get('seed', 123))),
+            })
+
+    def _configure_train_grace(self, pbc_mat: np.ndarray, project_name: str, train_file: str, base_config: dict):
+        """Configure training parameters for Grace"""
+        # Load default configuration
+        self.config, use_default = self._default_config_loader()
+
+        # Basic configuration
+        self.config['project_name'] = project_name
+        self.config['train_file'] = train_file
+
+        if use_default == False:
+
+            # Ask for training parameters with defaults
+            ft_config = base_config.get('TRAIN', {})
+            self.config.update({
+                'force_loss_ratio': ask_for_float_int("Force-Energy-Loss Ratio:", str(ft_config.get('force_loss_ratio', 10.0))),
+                'batch_size': ask_for_int("Batch size:", str(ft_config.get('batch_size', 10))),
+                'epochs': ask_for_int("Maximum epochs:", str(ft_config.get('epochs', 100))),
+                'lr': ask_for_float_int("Learning rate:", str(ft_config.get('lr', 0.01))),
+                'seed': ask_for_int("Random seed:", str(ft_config.get('seed', 123))),
+            })
         
 
     def _load_framework_config(self, config_name: str) -> dict:
@@ -1438,6 +1577,8 @@ for head in heads:
     def _execute_run(self):
         """Execute the run based on configuration"""        
         if self.run_type in ['FINETUNE', 'FINETUNE_MULTIHEAD']:
+            self._execute_ft_run()
+        elif self.run_type == 'TRAIN':
             self._execute_training_run()
         elif self.run_type == 'MULTI_MD':
             # Backup copy of the original config
@@ -1487,11 +1628,15 @@ for head in heads:
 
     def _model_logger_wrapper(self):
         """Wrapper for model logging"""
-        if np.size(self.config['foundation_model']) > 1:
-            f_model = self.config['foundation_model'][0]
-            f_model_size = self.config['foundation_model'][1]
-        else:
-            f_model = self.config['foundation_model']
+        try:
+            if np.size(self.config['foundation_model']) > 1:
+                f_model = self.config['foundation_model'][0]
+                f_model_size = self.config['foundation_model'][1]
+            else:
+                f_model = self.config['foundation_model']
+                f_model_size = ' ' 
+        except KeyError:
+            f_model = 'TRAINING-FROM-SCRATCH'
             f_model_size = ' ' 
         loc_of_execution = os.getcwd()
         folder_dict = {
@@ -1517,7 +1662,7 @@ for head in heads:
             no_question=self.no_questions
         )
 
-    def _execute_training_run(self):
+    def _execute_ft_run(self):
         """Execute training runs (FINETUNE, FINETUNE_MULTIHEAD)"""
         if self.framework == 'mace':
             FTInputGenerator(self.config, self.run_type, self.framework).mace_ft()
@@ -1529,6 +1674,20 @@ for head in heads:
             FTInputGenerator(self.config, self.run_type, self.framework).orb_ft()
         elif self.framework == 'grace':
             FTInputGenerator(self.config, self.run_type, self.framework).grace_ft()
+        else:
+            raise ValueError(f"Training not supported for framework: {self.framework}")
+        
+        # Log the model after training
+        self._model_logger_wrapper()
+
+    def _execute_training_run(self):
+        """Execute training runs (TRAIN)"""
+        if self.framework == 'mace':
+            TrainInputGenerator(self.config, self.run_type, self.framework).mace_train()
+        elif self.framework == 'sevennet':
+            TrainInputGenerator(self.config, self.run_type, self.framework).sevennet_train()
+        elif self.framework == 'grace':
+            TrainInputGenerator(self.config, self.run_type, self.framework).grace_train()
         else:
             raise ValueError(f"Training not supported for framework: {self.framework}")
         
@@ -1581,6 +1740,8 @@ for head in heads:
             'FINETUNE_MULTIHEAD_mace': ['project_name', 'train_file', 'foundation_model', 'xc_functional_of_dataset', 'E0s', 'device', 'energy_weight', 'forces_weight', 'stress_weight', 'batch_size', 'valid_fraction', 'valid_batch_size', 'epochs', 'lr', 'seed', 'dir'],
             'FINETUNE_sevennet': ['project_name', 'train_file', 'foundation_model', 'modal', 'batch_size', 'epochs', 'seed', 'force_loss_ratio', 'lr'],
             'FINETUNE_mattersim': ['project_name', 'train_file', 'foundation_model', 'batch_size', 'epochs', 'seed', 'force_loss_ratio', 'lr'],
+            'TRAIN_mace': ['project_name', 'train_file', 'xc_functional_of_dataset', 'E0s', 'device', 'energy_weight', 'forces_weight', 'stress_weight', 'batch_size', 'valid_fraction', 'valid_batch_size', 'epochs', 'lr', 'seed', 'dir'],
+            'TRAIN_sevennet': ['project_name', 'train_file', 'batch_size', 'epochs', 'seed', 'force_loss_ratio', 'lr'],
         }
         explain_params = {
             'project_name': 'Name of the project/model',
@@ -1601,7 +1762,7 @@ for head in heads:
             'pressure': 'Pressure for NPT MD simulation in bar (only needed for NPT, in bar)',
             'thermostat': 'Thermostat type for MD simulation',
             'simulation_environment': 'Simulation environment to use (ase or lammps)',
-            # FT parameters
+            # FT and TRAIN parameters
             'train_file': 'Path to the training file (train.xyz)',
             'xc_functional_of_dataset': 'XC functional used for the dataset',
             'E0s': 'E0s for the XC functional, provided as a dictionary',
@@ -1620,6 +1781,8 @@ for head in heads:
             rt_val = f'FINETUNE_{self.framework.lower()}'
         elif self.run_type == 'FINETUNE_MULTIHEAD':
             rt_val = f'FINETUNE_MULTIHEAD_{self.framework.lower()}'
+        elif self.run_type == 'TRAIN':
+            rt_val = f'TRAIN_{self.framework.lower()}'
         else:
             rt_val = self.run_type.upper()
 
@@ -1641,6 +1804,9 @@ for head in heads:
                     else: 
                         raise ValueError(f"Missing required parameter: {param} ({explain_params.get(param, 'No explanation available')})")
         if self.run_type == 'FINETUNE':
+            if not os.path.isfile(self.config['train_file']):
+                raise FileNotFoundError(f"Training file not found: {self.config['train_file']}")
+        elif self.run_type == 'TRAIN':
             if not os.path.isfile(self.config['train_file']):
                 raise FileNotFoundError(f"Training file not found: {self.config['train_file']}")
         elif self.run_type == 'FINETUNE_MULTIHEAD':
@@ -1705,19 +1871,22 @@ for head in heads:
                 model_size_string = f"'[{model_size_string}]'"
                 input_config['model_size'] = model_size_string
         else: 
-            if type(input_config['foundation_model']) == list:
-                input_config['model_size'] = input_config['foundation_model'][1]
-                input_config['foundation_model'] = input_config['foundation_model'][0]
-            else:
-                # Delete model_size or model
-                try:
-                    del input_config['model_size']
-                except:
-                    pass
-                try:
-                    del input_config['modal']
-                except:
-                    pass
+            try:
+                if type(input_config['foundation_model']) == list:
+                    input_config['model_size'] = input_config['foundation_model'][1]
+                    input_config['foundation_model'] = input_config['foundation_model'][0]
+                else:
+                    # Delete model_size or model
+                    try:
+                        del input_config['model_size']
+                    except:
+                        pass
+                    try:
+                        del input_config['modal']
+                    except:
+                        pass
+            except KeyError:
+                pass # Training from scratch does not have a foundation model, so no need to log it
 
         try:
             if type(input_config['dispersion_via_simenv']) == list:

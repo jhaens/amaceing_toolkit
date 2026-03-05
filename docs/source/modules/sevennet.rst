@@ -43,7 +43,7 @@ This guides you through:
 
     amaceing_sevennet -rt="RUN_TYPE" -c="{'parameter1': 'value1', 'parameter2': 'value2', ...}"
 
-Where RUN_TYPE is one of: GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE
+Where RUN_TYPE is one of: GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE, TRAIN
 
 For MD:
 
@@ -56,6 +56,12 @@ For FINETUNE:
 .. code-block:: bash
 
     amaceing_sevennet -rt="FINETUNE" -c="{'project_name': 'NAME', 'foundation_model': '7net-0', 'train_file': 'FILE', 'batch_size': 'INT', 'epochs': 'INT', 'seed': '1', 'lr': '0.01', 'force_loss_ratio': 1.0, 'device': 'cuda'}"
+
+For TRAIN:
+
+.. code-block:: bash
+
+    amaceing_sevennet -rt="TRAIN" -c="{'project_name': 'NAME', 'train_file': 'FILE', 'batch_size': 'INT', 'epochs': 'INT', 'seed': '1', 'lr': '0.01', 'force_loss_ratio': 1.0, 'device': 'cuda'}"
 
 For RECALC:
 

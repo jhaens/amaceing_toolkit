@@ -2,8 +2,8 @@
 echo ============================
 echo Testing amaceing_grace
 echo ============================
-mkdir -p sevennet
-cd sevennet
+mkdir -p grace
+cd grace
 echo ----------------------------
 echo Testing input file generation: MD 
 mkdir -p MD
@@ -21,6 +21,12 @@ echo Testing input file generation: FINETUNE
 mkdir -p FINETUNE
 cd FINETUNE
 amaceing_grace --run_type="FINETUNE" --config="{'project_name': '4koh_92h2o_ft', 'train_file': '../../data/train_file_7net.xyz', 'foundation_model': 'GRACE-1L-OAM', 'epochs': 2, 'batch_size': 4, 'seed': 1, 'lr': 0.01, 'force_loss_ratio': 1.0}"
+cd ..
+echo ----------------------------
+echo Testing input file generation: TRAIN
+mkdir -p TRAIN
+cd TRAIN
+amaceing_grace --run_type="TRAIN" --config="{'project_name': '4koh_92h2o_train', 'train_file': '../../data/train_file_7net.xyz', 'epochs': 2, 'batch_size': 4, 'seed': 1, 'lr': 0.01, 'force_loss_ratio': 1.0}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: RECALC

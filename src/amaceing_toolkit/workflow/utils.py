@@ -43,7 +43,7 @@ def cite_amaceing_toolkit():
     │     arXiv preprint arXiv:2511.05337, https://doi.org/10.48550/arXiv.2511.05337 (2025).
     └
     """
-    )
+    ) # scientfic article is published in JPCL: doi.org/10.1021/acs.jpclett.5c03801
 
 try:
     # Enable tab completion for file names, append '/' for directories

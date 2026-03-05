@@ -83,7 +83,7 @@ MACE Workflows (``amaceing_mace``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * **Simulation**: ``GEO_OPT``, ``CELL_OPT``, ``MD``, ``MULTI_MD``, ``RECALC`` 
-* **Training**: ``FINETUNE``, ``FINETUNE_MULTIHEAD``
+* **Training**: ``FINETUNE``, ``FINETUNE_MULTIHEAD``, ``TRAIN``
 * **Output formats**: ASE and LAMMPS
 
 MatterSim Workflows (``amaceing_mattersim``)
@@ -97,7 +97,7 @@ SevenNet Workflows (``amaceing_sevennet``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * **Simulation**: ``GEO_OPT``, ``CELL_OPT``, ``MD``, ``MULTI_MD``, ``RECALC``
-* **Training**: ``FINETUNE``
+* **Training**: ``FINETUNE``, ``TRAIN``
 * **Output formats**: ASE, LAMMPS
 
 ORB Workflows (``amaceing_orb``)
@@ -111,7 +111,7 @@ Grace Workflows (``amaceing_grace``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * **Simulation**: ``GEO_OPT``, ``CELL_OPT``, ``MD``, ``MULTI_MD``, ``RECALC``
-* **Training**: ``FINETUNE``
+* **Training**: ``FINETUNE``, ``TRAIN``
 * **Output formats**: ASE, LAMMPS
 
 Trajectory Analysis (``amaceing_ana``)

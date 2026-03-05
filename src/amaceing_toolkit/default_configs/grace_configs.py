@@ -54,6 +54,14 @@ def configs_grace(config_name):
         'lr': 0.001,
         'force_loss_ratio': 5.0,
       },
+      'TRAIN' : {
+        'batch_size': 4,
+        'epochs': 500,
+        'seed': 1,
+        'force_file': 'force.xyz',
+        'lr': 0.001,
+        'force_loss_ratio': 5.0,
+      },
       'RECALC' : {
         'simulation_environment': 'ase',
         'foundation_model': 'GRACE-1L-OAM',

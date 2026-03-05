@@ -1,16 +1,16 @@
 # aMACEing_toolkit
 
 ![GitHub Release](https://img.shields.io/github/v/release/jhaens/amaceing_toolkit)
-[![arXiv](https://img.shields.io/badge/arXiv-2511.05337-b31b1b.svg)](https://arxiv.org/abs/2511.05337)
+[![Paper](https://img.shields.io/badge/Paper-JPCL-0039a6)](https://doi.org/10.1021/acs.jpclett.5c03801)
 [![Documentation Status](https://app.readthedocs.org/projects/amaceing-toolkit/badge/)](https://amaceing-toolkit.readthedocs.io/en/latest/)
 [![Presentation](https://img.shields.io/badge/Presentation-PDF-4c1)](https://cloud.tu-ilmenau.de/s/yEiDs9fSPHkfcMc)
 [![Beginners Tutorial](https://img.shields.io/badge/Tutorial-Beginners-yellow)](https://colab.research.google.com/drive/1brd82x-yWesVKbeUJTC6kR8wx2YIYSKG)
 ![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/jhaens/amaceing_toolkit)
 
 
-## Table of Contents
+## Table of contents
 - [Description](#description)
-- [Supported Simulation Engines](#supported-simulation-engines)
+- [Supported calculation types and simulation engines](#supported-calculations-and-simulation-engines)
 - [Installation](#installation)
   - [(i) Installation from source](#i-installation-from-source)
   - [(ii) Installation via pip](#ii-installation-via-pip)
@@ -24,7 +24,7 @@
 
 
 ## Description
-aMACEing_toolkit is a scientific software package that facilitates the creation, execution, and analysis of molecular dynamics simulations using multiple simulation engines. It provides a unified workflow for quantum-mechanical calculations with CP2K and machine-learned interatomic potentials (MLIPs) including MACE, MatterSim, SevenNet, ORB and Grace.
+aMACEing_toolkit is a scientific software package that facilitates the creation, execution, and analysis of molecular dynamics simulations using multiple simulation engines. It provides a unified workflow for quantum-chemical calculations with CP2K and machine-learned interatomic potentials (MLIPs) including MACE, MatterSim, SevenNet, ORB and Grace.
 
 The toolkit offers:
 
@@ -34,16 +34,16 @@ The toolkit offers:
 4. **Model Evaluation**: Utilities to assess and compare MLIP performance against reference data
 5. **Run Logging**: Tracking and documentation of simulation runs and fine-tuned models
 
-## Supported Simulation Engines
+## Supported calculation types and simulation engines
 
-| Engine | Simulation Types | File Formats |
+| Engine | Simulation/training types | File formats |
 | ------ | --------------- | ----------- |
 | CP2K | GEO_OPT, CELL_OPT, MD, REFTRAJ, ENERGY | Input files |
-| MACE | GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE, FINETUNE_MULTIHEAD | ASE, LAMMPS |
-| MatterSim | GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE | ASE |
-| SevenNet | GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE | ASE, LAMMPS |
-| ORB | GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE | ASE |
-| Grace | GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE | ASE, LAMMPS |
+| MACE | GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, _FINETUNE_, _FINETUNE_MULTIHEAD_, _TRAIN_ | ASE, LAMMPS |
+| MatterSim | GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, _FINETUNE_ | ASE |
+| SevenNet | GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, _FINETUNE_, _TRAIN_ | ASE, LAMMPS |
+| ORB | GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, _FINETUNE_ | ASE |
+| Grace | GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, _FINETUNE_, _TRAIN_ | ASE, LAMMPS |
 
 ## Installation
 

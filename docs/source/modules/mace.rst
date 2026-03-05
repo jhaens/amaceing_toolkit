@@ -48,7 +48,7 @@ This guides you through:
 
     amaceing_mace -rt="RUN_TYPE" -c="{'parameter1': 'value1', 'parameter2': 'value2', ...}"
 
-Where RUN_TYPE is one of: GEO_OPT, CELL_OPT, MD, MULTI_MD, FINETUNE, FINETUNE_MULTIHEAD, RECALC
+Where RUN_TYPE is one of: GEO_OPT, CELL_OPT, MD, MULTI_MD, FINETUNE, FINETUNE_MULTIHEAD, TRAIN, RECALC
 
 For GEO_OPT:
 
@@ -67,6 +67,12 @@ For FINETUNE:
 .. code-block:: bash
 
     amaceing_mace -rt="FINETUNE" -c="{'project_name': 'NAME', 'train_file': 'FILE', 'device': 'cuda', 'stress_weight': '0.0', 'forces_weight': '10.0', 'energy_weight': '1.0', 'foundation_model': 'mace_mp', 'model_size': 'small', 'prevent_catastrophic_forgetting': 'n', 'batch_size': '5', 'valid_fraction': '0.1', 'valid_batch_size': '2', 'max_num_epochs': '200', 'seed': '42', 'lr': '0.01', 'xc_functional_of_dataset': 'PBE', 'dir': 'models'}"
+
+For TRAIN:
+
+.. code-block:: bash
+
+    amaceing_mace -rt="TRAIN" -c="{'project_name': 'NAME', 'train_file': 'FILE', 'device': 'cuda', 'stress_weight': '0.0', 'forces_weight': '10.0', 'energy_weight': '1.0', 'batch_size': '5', 'valid_fraction': '0.1', 'valid_batch_size': '2', 'max_num_epochs': '200', 'seed': '42', 'lr': '0.01', 'xc_functional_of_dataset': 'PBE', 'dir': 'models'}"
 
 .. note::
    Do **NOT** use double quotes inside the dictionary. Also do **NOT** use commas inside of lists in the dictionary.

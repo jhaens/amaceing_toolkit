@@ -72,6 +72,23 @@ def main():
     grace_api(run_type='FINETUNE', config=finetune_config)
 
     os.chdir("../..")  # Go back to main grace directory
+    os.makedirs("grace/TRAIN", exist_ok=True)
+    os.chdir("grace/TRAIN")
+    
+    print("----------------------------")
+    print("Running TRAIN example")
+    train_config = {
+        'project_name': '4koh_92h2o_train',
+        'train_file': '../../../4KOH_92H2O_333K/data/train_file_7net.xyz',
+        'epochs': 2,
+        'batch_size': 4,
+        'seed': 1,
+        'lr': 0.01,
+        'force_loss_ratio': 1.0
+    }
+    grace_api(run_type='TRAIN', config=train_config)
+
+    os.chdir("../..")  # Go back to main grace directory
     os.makedirs("grace/RECALC", exist_ok=True)
     os.chdir("grace/RECALC")
     

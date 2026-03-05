@@ -715,6 +715,9 @@ pair_coeff    * * {model_path} {element_list}
             print(f"Model {foundation_model} is already in LAMMPS format.")
             return foundation_model
         
+        if modal == "-":
+            modal = None
+        
         # Convert model to LAMMPS format
         if "." not in foundation_model:
             # Foundation model name

@@ -32,7 +32,7 @@ class FTInputGenerator:
             runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'py', device).load_runscript()
         else:
             runscript_content = RunscriptLoader(self.framework, self.config['project_name'], filename, 'py', 'gpu', mattersim_string).load_runscript()
-        rs_name = {'cpu': 'runscript.sh', 'gpu': 'gpu_script.job'}
+        rs_name = {'cpu': 'runscript.sh', 'gpu': 'gpu_script.job', 'cuda': 'gpu_script.job'}
         
         if runscript_content == '0':
             return

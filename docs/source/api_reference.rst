@@ -43,7 +43,7 @@ MACE API
 
    API function for MACE input file creation.
    
-   :param run_type: Type of calculation to run ('GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'FINETUNE', 'FINETUNE_MULTIHEAD', 'RECALC')
+   :param run_type: Type of calculation to run ('GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'FINETUNE', 'FINETUNE_MULTIHEAD', 'TRAIN', 'RECALC')
    :type run_type: str, optional
    :param config: Dictionary with the configuration parameters
    :type config: dict, optional
@@ -114,7 +114,7 @@ SevenNet API
 
    API function for SevenNet input file creation.
    
-   :param run_type: Type of calculation to run ('GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'RECALC')
+   :param run_type: Type of calculation to run ('GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'FINETUNE', 'TRAIN', 'RECALC')
    :type run_type: str, optional
    :param config: Dictionary with the configuration parameters
    :type config: dict, optional
@@ -148,7 +148,7 @@ ORB API
 
    API function for ORB input file creation.
    
-   :param run_type: Type of calculation to run ('GEO_OPT', 'CELL_OPT', 'MD')
+   :param run_type: Type of calculation to run ('GEO_OPT', 'CELL_OPT', 'MD', 'FINETUNE', 'RECALC')
    :type run_type: str, optional
    :param config: Dictionary with the configuration parameters
    :type config: dict, optional
@@ -183,7 +183,7 @@ Grace API
 
    API function for Grace input file creation.
    
-   :param run_type: Type of calculation to run ('GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'FINETUNE', 'RECALC')
+   :param run_type: Type of calculation to run ('GEO_OPT', 'CELL_OPT', 'MD', 'MULTI_MD', 'FINETUNE', 'TRAIN', 'RECALC')
    :type run_type: str, optional
    :param config: Dictionary with the configuration parameters
    :type config: dict, optional

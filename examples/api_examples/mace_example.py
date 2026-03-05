@@ -148,6 +148,30 @@ def main():
         'dir': 'MACE_models'
     }
     mace_api(run_type='FINETUNE_MULTIHEAD', config=multihead_config)
+
+    os.chdir("../..")  # Go back to main mace directory
+    os.makedirs("mace/TRAIN", exist_ok=True)
+    os.chdir("mace/TRAIN")
+
+    print("----------------------------")
+    print("Running TRAIN example")
+    train_config = {
+        'project_name': 'system_train',
+        'train_file': '../../../4KOH_92H2O_333K/data/train_file.xyz',
+        'device': 'cuda',
+        'stress_weight': 0.0,
+        'forces_weight': 10.0,
+        'energy_weight': 0.1,
+        'batch_size': 5,
+        'valid_fraction': 0.1,
+        'valid_batch_size': 2,
+        'epochs': 2,
+        'seed': 1,
+        'lr': 0.01,
+        'dir': 'MACE_models',
+        'xc_functional_of_dataset': 'BLYP'
+    }
+    mace_api(run_type='TRAIN', config=train_config)
     
     os.chdir("../..")  # Go back to main mace directory
     os.makedirs("mace/RECALC", exist_ok=True)

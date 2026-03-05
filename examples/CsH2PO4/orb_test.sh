@@ -2,8 +2,8 @@
 echo ============================
 echo Testing amaceing_orb
 echo ============================
-mkdir -p sevennet
-cd sevennet
+mkdir -p orb
+cd orb
 echo ----------------------------
 echo Testing input file generation: MD 
 mkdir -p MD

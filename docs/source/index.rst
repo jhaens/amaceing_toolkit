@@ -7,6 +7,10 @@ aMACEing toolkit
    :alt: GitHub Release
    :target: https://github.com/jhaens/amaceing_toolkit/releases
 
+.. image:: https://img.shields.io/badge/Paper-JPCL-0039a6
+   :alt: Paper
+   :target: https://doi.org/10.1021/acs.jpclett.5c03801
+
 .. image:: https://img.shields.io/badge/arXiv-2511.05337-b31b1b
    :alt: arXiv
    :target: https://arxiv.org/abs/2511.05337
@@ -47,19 +51,19 @@ Key features:
      - GEO_OPT, CELL_OPT, MD, REFTRAJ, ENERGY
      - Input files
    * - MACE
-     - GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE, FINETUNE_MULTIHEAD
+     - GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE, FINETUNE_MULTIHEAD, TRAIN
      - ASE, LAMMPS
    * - MatterSim
      - GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE
      - ASE
    * - SevenNet
-     - GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE
+     - GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE, TRAIN
      - ASE, LAMMPS
    * - ORB
      - GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE
      - ASE
    * - Grace
-     - GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE
+     - GEO_OPT, CELL_OPT, MD, MULTI_MD, RECALC, FINETUNE, TRAIN
      - ASE, LAMMPS
 
 Resources

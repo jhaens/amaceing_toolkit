@@ -317,8 +317,7 @@ def sevennet_api(run_type=None, config=None):
             if run_type == 'MULTI_MD':
                 for key in ['foundation_model', 'modal', 'dispersion_via_simenv']:
                     if key in config_copy and isinstance(config_copy[key], list):
-                        config_copy[key] = ' '.join(str(x).strip('"') for x in config_copy[key])
-                
+                        config_copy[key] = ' '.join(str(x).strip('"') for x in config_copy[key])  
             sys.argv.extend(["-c", str(config_copy)])
         atk_sevennet()
     finally:

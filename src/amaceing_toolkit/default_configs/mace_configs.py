@@ -82,6 +82,20 @@ def configs_mace(config_name):
         'lr': 1e-2, 
         'dir': 'MACE_models'
       }, 
+      'TRAIN' : {
+        'device': 'cuda',
+        'stress_weight': 0.0,
+        'forces_weight': 10.0,
+        'energy_weight': 1.0,
+        'force_file': 'force.xyz',
+        'batch_size': 5,
+        'valid_batch_size': 2,
+        'valid_fraction': 0.1,
+        'epochs': 200,
+        'seed': 1,
+        'lr': 1e-2, 
+        'dir': 'MACE_models'
+      },  
       'RECALC' : {
         'simulation_environment': 'ase',
         'foundation_model': 'mace_mp',

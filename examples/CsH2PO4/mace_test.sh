@@ -32,13 +32,19 @@ echo ----------------------------
 echo Testing input file generation: FINETUNE
 mkdir -p FINETUNE
 cd FINETUNE
-amaceing_mace --run_type="FINETUNE" --config="{'project_name': 'csh2po4_ft', 'train_file': '../../data/train_file.xyz', 'device': 'cuda', 'stress_weight': 0.0, 'forces_weight': 10.0, 'energy_weight': 0.1, 'foundation_model': 'mace_mp', 'model_size': 'small', 'batch_size': 5, 'prevent_catastrophic_forgetting': 'n', 'valid_fraction': 0.1, 'valid_batch_size': 2, 'epochs': '2', 'seed': 1, 'lr': 0.01, 'dir': 'MACE_models', 'xc_functional_of_dataset' : 'BLYP'}"
+amaceing_mace --run_type="FINETUNE" --config="{'project_name': 'csh2po4_ft', 'train_file': '../../data/train_file.xyz', 'device': 'cuda', 'stress_weight': 0.0, 'forces_weight': 10.0, 'energy_weight': 0.1, 'foundation_model': 'mace_mp', 'model_size': 'small', 'batch_size': 5, 'prevent_catastrophic_forgetting': 'n', 'valid_fraction': 0.1, 'valid_batch_size': 2, 'epochs': '2', 'seed': 1, 'lr': 0.01, 'dir': 'MACE_models', 'xc_functional_of_dataset' : 'PBE'}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: FINETUNE_MULTIHEAD
 mkdir -p FINETUNE_MULTIHEAD
 cd FINETUNE_MULTIHEAD
-amaceing_mace --run_type="FINETUNE_MULTIHEAD" --config="{'project_name': 'csh2po4_mhft', 'train_file': '['../../data/train_file.xyz' '../../data/train_file2.xyz']', 'device': 'cuda', 'stress_weight': 0.0, 'forces_weight': 10.0, 'energy_weight': 0.1, 'foundation_model': 'mace_mp', 'model_size': 'small', 'batch_size': 5, 'valid_fraction': 0.1, 'valid_batch_size': 2, 'epochs': 2, 'seed': 1, 'lr': 0.01, 'xc_functional_of_dataset': '['BLYP' 'BLYP']', 'dir': 'MACE_models'}"
+amaceing_mace --run_type="FINETUNE_MULTIHEAD" --config="{'project_name': 'csh2po4_mhft', 'train_file': '['../../data/train_file.xyz' '../../data/train_file2.xyz']', 'device': 'cuda', 'stress_weight': 0.0, 'forces_weight': 10.0, 'energy_weight': 0.1, 'foundation_model': 'mace_mp', 'model_size': 'small', 'batch_size': 5, 'valid_fraction': 0.1, 'valid_batch_size': 2, 'epochs': 2, 'seed': 1, 'lr': 0.01, 'xc_functional_of_dataset': '['PBE' 'PBE']', 'dir': 'MACE_models'}"
+cd ..
+echo ----------------------------
+echo Testing input file generation: TRAIN
+mkdir -p TRAIN
+cd TRAIN
+amaceing_mace --run_type="TRAIN" --config="{'project_name': 'csh2po4_train', 'train_file': '../../data/train_file.xyz', 'device': 'cuda', 'stress_weight': 0.0, 'forces_weight': 10.0, 'energy_weight': 0.1, 'batch_size': 5, 'prevent_catastrophic_forgetting': 'n', 'valid_fraction': 0.1, 'valid_batch_size': 2, 'epochs': '2', 'seed': 1, 'lr': 0.01, 'dir': 'MACE_models', 'xc_functional_of_dataset' : 'PBE'}"
 cd ..
 echo ----------------------------
 echo Testing input file generation: RECALC

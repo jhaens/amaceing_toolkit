@@ -243,6 +243,7 @@ from ase.io import read, write
 from ase.optimize import BFGS, LBFGS
 from ase.constraints import ExpCellFilter, StrainFilter
 {dict_foundation_model['import']}
+from ase.constraints import FixCom
 
 # Load the MLIP model
 mlip_calc = {dict_foundation_model['model']}
@@ -337,6 +338,10 @@ atoms.set_cell({self._get_cell_matrix_code()})
 
 atoms.calc = mlip_calc
 
+# Fix center of mass movement
+c = FixCom()
+atoms.set_constraint(c)
+
 # Set the temperature in Kelvin and initialize the velocities (only if it is the first start)
 temperature_K = {int(config['temperature'])}
 if os.path.isfile('{config['project_name']}_md.traj') == False:
@@ -345,7 +350,6 @@ if os.path.isfile('{config['project_name']}_md.traj') == False:
 
 # Thermostat and/or barostat
 {dict_thermostat['dynamics']}
-dyn.fixcm = True
 
 {lines_log_file}
 {lines_traj_file}
@@ -533,6 +537,9 @@ device = "cuda" if torch.cuda.is_available() else "cpu" """,
             calc = 'SevenNetD3Calculator'
         else:
             calc = 'SevenNetCalculator'
+
+        if modal == "-":
+            modal = None
 
         if modal is not None:
             return {

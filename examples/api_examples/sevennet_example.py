@@ -44,7 +44,7 @@ def main():
         'pbc_list': [14.2067, 0, 0, 0, 14.2067, 0, 0, 0, 14.2067],
         'foundation_model': ['7net-0', '7net-mf-ompa'],
         'dispersion_via_simenv': ['n', 'n'],
-        'modal': ['', 'mpa'],
+        'modal': ['-', 'mpa'],
         'temperature': '300',
         'pressure': '1.0',
         'thermostat': 'Langevin',
@@ -75,6 +75,24 @@ def main():
         'force_loss_ratio': 1.0
     }
     sevennet_api(run_type='FINETUNE', config=finetune_config)
+
+    os.chdir("../..")  # Go back to main sevennet directory
+    os.makedirs("sevennet/TRAIN", exist_ok=True)
+    os.chdir("sevennet/TRAIN")
+    
+    print("----------------------------")
+    print("Running TRAIN example")
+    train_config = {
+        'project_name': '4koh_92h2o_train',
+        'device': 'cuda',
+        'train_file': '../../../4KOH_92H2O_333K/data/train_file_7net.xyz',
+        'epochs': 2,
+        'batch_size': 4,
+        'seed': 1,
+        'lr': 0.01,
+        'force_loss_ratio': 1.0
+    }
+    sevennet_api(run_type='TRAIN', config=train_config)
     
     os.chdir("../..")  # Go back to main sevennet directory
     os.makedirs("sevennet/RECALC", exist_ok=True)

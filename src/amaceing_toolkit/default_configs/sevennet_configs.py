@@ -59,6 +59,15 @@ def configs_sevennet(config_name):
         'force_file': 'force.xyz',
         'lr': 0.004
       },
+      'TRAIN' : {
+        'device': 'cuda',
+        'force_loss_ratio': 1.0,
+        'batch_size': 4,
+        'epochs': 100,
+        'seed': 1,
+        'force_file': 'force.xyz',
+        'lr': 0.004
+      },
       'RECALC' : {
         'simulation_environment': 'ase',
         'foundation_model': '7net-mf-ompa',
