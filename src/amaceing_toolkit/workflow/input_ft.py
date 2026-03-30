@@ -66,6 +66,8 @@ class FTInputGenerator:
             return f"{foundation_model[1]}_off"
         elif foundation_model[0] == 'mp_anicc':
             return "anicc"
+        else:
+            return foundation_model[0]
 
     def cuequivariance_import(self):
         """Check if the cuequivariance package is installed."""
