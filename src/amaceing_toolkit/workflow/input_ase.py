@@ -318,6 +318,7 @@ from ase import units
 from ase.io.trajectory import Trajectory
 from ase.io import read, write
 from ase.md import MDLogger
+from ase.constraints import FixCom
 {dict_foundation_model['import']}
 {dict_thermostat['import']}
 
