@@ -325,7 +325,7 @@ def config_wrapper(default, run_type, cp2k_config, coord_file, pbc_mat, project_
             
             pressure_b = '' # placeholder
             if ensemble == 'NPT_F' or ensemble == 'NPT_I':
-                input_config['pressure_b'] = ask_for_float_int("What is the pressure in bar?", cp2k_config['MD']['pressure_b'])
+                pressure_b = ask_for_float_int("What is the pressure in bar?", cp2k_config['MD']['pressure_b'])
             
             nsteps = ask_for_int("What is the number of steps?", cp2k_config['MD']['nsteps'])
             
