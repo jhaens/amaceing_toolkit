@@ -441,11 +441,15 @@ def create_input(input_config, run_type, equi_prod=''):
         &FORCES {input_config['print_forces']}
             FILENAME force.xyz
         &END FORCES
+        &STRESS ON
+            FILENAME stress
+        &END STRESS
     &END PRINT
 &END MOTION
 
 &FORCE_EVAL
     METHOD QUICKSTEP
+    STRESS_TENSOR ANALYTICAL
     &DFT
         BASIS_SET_FILE_NAME BASIS_MOLOPT
         POTENTIAL_FILE_NAME POTENTIAL
@@ -528,11 +532,22 @@ def create_input(input_config, run_type, equi_prod=''):
         MAX_ITER {input_config['max_iter']}
         KEEP_SYMMETRY {input_config['keep_symmetry']}
     &END CELL_OPT
+    &PRINT
+	    &STRESS ON
+            FILENAME stress
+        &END STRESS
+        &RESTART
+            ADD_LAST NUMERIC
+            &EACH
+                MD 1
+            &END EACH
+        &END RESTART
+    &END PRINT
 &END MOTION
 
 &FORCE_EVAL
     METHOD QUICKSTEP
-    STRESS_TENSOR Analytical
+    STRESS_TENSOR ANALYTICAL
     &DFT
         BASIS_SET_FILE_NAME BASIS_MOLOPT
         POTENTIAL_FILE_NAME POTENTIAL
@@ -747,6 +762,9 @@ def create_input(input_config, run_type, equi_prod=''):
         &VELOCITIES {input_config['print_velocities']}
             FILENAME velocities.xyz
         &END VELOCITIES
+        &STRESS ON
+            FILENAME stress
+        &END STRESS
         &RESTART
             ADD_LAST NUMERIC
             &EACH
@@ -758,6 +776,7 @@ def create_input(input_config, run_type, equi_prod=''):
 
 &FORCE_EVAL
     METHOD QUICKSTEP
+    STRESS_TENSOR ANALYTICAL
     &DFT
         BASIS_SET_FILE_NAME BASIS_MOLOPT
         POTENTIAL_FILE_NAME POTENTIAL
@@ -840,7 +859,6 @@ def create_input(input_config, run_type, equi_prod=''):
 &FORCE_EVAL
     METHOD QUICKSTEP
     &DFT
-        UKS
         BASIS_SET_FILE_NAME BASIS_MOLOPT
         POTENTIAL_FILE_NAME POTENTIAL
         &MGRID
