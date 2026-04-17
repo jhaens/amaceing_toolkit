@@ -88,6 +88,7 @@ class FTInputGenerator:
         expected_keys = {
             'energy_key': ['REF_TotEnergy', 'REF_Energy', 'REF_TotEner', 'REF_Ener', 'ref_TotEnergy', 'ref_Energy', 'ref_TotEner', 'ref_Ener', 'TotEnergy', 'Energy', 'TotEner', 'Ener', 'totenergy', 'energy', 'totener', 'ener', 'REF_TotEnergies', 'REF_Energies', 'TotEnergies', 'Energies','totenergies', 'energies', 'free_energy', 'free_energies', 'REF_FreeEnergy', 'REF_FreeEnergies', 'ref_FreeEnergy', 'ref_FreeEnergies'],
             'forces_key': ['REF_Force', 'REF_Forces', 'Force', 'Forces', 'ref_force', 'ref_forces', 'force', 'forces', 'frc', 'frcs', 'REF_Frc', 'REF_Frcs', 'REF_frc', 'REF_frcs', 'ref_Frc', 'ref_Frcs', 'ref_frc', 'ref_frcs'],
+            'stress_key': ['REF_Stress', 'REF_Stresses', 'stress', 'Stress', 'stresses', 'Stresses', 'ref_stress', 'ref_stresses', 'REF_stress', 'REF_stresses']
         }
         # Read the first two lines of the train file to check the keys, forget the first line
         with open(train_file, 'r') as file:
@@ -110,7 +111,7 @@ class FTInputGenerator:
                 keys.append(current)
 
         # Check which of the expected force and energy key is present in the file
-        ener_key, frc_key = "REF_TotEnergy", "REF_Force"
+        ener_key, frc_key, stress_key = "REF_TotEnergy", "REF_Force", "REF_Stress"
         for key in expected_keys['energy_key']:
             if key in keys:
                 ener_key = key
@@ -119,12 +120,19 @@ class FTInputGenerator:
             if key in keys:
                 frc_key = key
                 break
+        for key in expected_keys['stress_key']:
+            if key in keys:
+                stress_key = key
+                break
         # If no key is found, raise an error
         if ener_key not in keys:
             raise ValueError(f"Energy key '{ener_key}' not found in the train file. Expected one of: {expected_keys['energy_key']}")
         if frc_key not in keys:
             raise ValueError(f"Forces key '{frc_key}' not found in the train file. Expected one of: {expected_keys['forces_key']}")
-        return [ener_key, frc_key]
+        if stress_key != None:
+            if stress_key not in keys:
+                raise ValueError(f"Stress key '{stress_key}' not found in the train file. Expected one of: {expected_keys['stress_key']}")
+        return [ener_key, frc_key, stress_key]
 
     def _write_mace_pyft_script(self, config_filename):
         """Write the MACE finetuning script to a Python file."""
@@ -145,6 +153,10 @@ train_mace("{config_filename}")
         filenames = self._get_filename(self.run_type)
         multihead_or_naive_ft = 'multiheads_finetuning: True' if config['prevent_catastrophic_forgetting'] == 'y' else 'multiheads_finetuning: False'
         keys = self._check_extxyz_keys(config['train_file'])
+        stress_line = ""
+        if keys[2] != None:
+            stress_line = f"""stress_key: "{keys[2]}" 
+loss: "universal" """
 
         config_content = f"""model: "MACE"
 foundation_model: {self._translate_mace_foundation_model(config['foundation_model'])}
@@ -157,6 +169,7 @@ seed: {config['seed']}
 lr: {config['lr']}
 energy_key: "{keys[0]}"
 forces_key: "{keys[1]}"
+{stress_line}
 stress_weight: {config['stress_weight']}
 forces_weight: {config['forces_weight']}
 energy_weight: {config['energy_weight']}
@@ -191,11 +204,15 @@ save_all_checkpoints: True
         head_text = "heads: "
         for i in range(len(train_files)):
             keys = self._check_extxyz_keys(train_files[i])
+            stress_line = ""
+            if keys[2] != None:
+                stress_line = f'    stress_key: "{keys[2]}"'
             head_text += f"""
   head_{i}:
     train_file: "{train_files[i]}"  
     energy_key: "{keys[0]}"
     forces_key: "{keys[1]}"
+    {stress_line}
     E0s: "{e0_dict[i]}" """
         return head_text
 
@@ -213,6 +230,7 @@ batch_size: {config['batch_size']}
 max_num_epochs: {config['epochs']}
 seed: {config['seed']}
 lr: {config['lr']}
+{'loss: "universal"'  if any([self._check_extxyz_keys(train_file)[2] != None for train_file in config['train_file']]) else ' '}
 stress_weight: {config['stress_weight']}
 forces_weight: {config['forces_weight']}
 energy_weight: {config['energy_weight']}

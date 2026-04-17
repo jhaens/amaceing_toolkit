@@ -20,6 +20,7 @@ from .utils import ask_for_yes_no
 from .utils import ask_for_yes_no_pbc
 from .utils import ask_for_non_cubic_pbc
 from .utils import create_dataset
+from .utils import create_dataset_stress
 from .utils import e0_wrapper
 from .utils import frame_counter
 from .utils import extract_frames
@@ -365,6 +366,43 @@ class UniversalMLIPInputWriter:
             readline.set_completer(None)
         except Exception:
             pass
+
+    def _ask_for_stress_file(self, base_config: dict) -> str:
+        """Ask for stress file (with tab-completion support if available)"""
+        try:
+            # Enable tab completion for file names, append '/' for directories
+            def complete(text, state):
+                matches = glob.glob(text + '*')
+                # Append '/' if match is a directory
+                matches = [
+                    m + '/' if os.path.isdir(m) else m
+                    for m in matches
+                ]
+                matches.append(None)
+                return matches[state]
+
+            readline.set_completer_delims(' \t\n;')
+            readline.parse_and_bind("tab: complete")
+            readline.set_completer(complete)
+        except ImportError:
+            # If readline is not available, fallback to simple input
+            pass
+
+        while True:
+            stress_file = input(f"What is the name of the stress file? [{base_config['stress_file']}]: ")
+            if stress_file == '':
+                stress_file = base_config['stress_file']
+
+            if os.path.isfile(stress_file):
+                return stress_file
+            else:
+                print(f"Stress file does not exist: {stress_file}. Please try again.")
+
+        try:
+            readline.set_completer(None)
+        except Exception:
+            pass
+
     
     def _ask_for_pbc_matrix(self, base_config: dict) -> np.ndarray:
         """Ask for PBC matrix configuration"""
@@ -590,14 +628,24 @@ class UniversalMLIPInputWriter:
         """Configure finetuning parameters"""
         # Ask if dataset needs to be created
         dataset_needed = ask_for_yes_no(
-            "Do you want to create a training dataset from force & position files (y) or is it already defined (n)?", 
+            "Do you want to create a training dataset from (stress,) force & position files (y) or is it already defined (n)?", 
             'y'
         )
         
         if dataset_needed == 'y':
+            # Stress fine-tuning only available for MACE
+            if self.framework == "mace":
+                use_stress = ask_for_yes_no("Do you want to include stress data for fine-tuning? (y/n)", 'n')
+                if use_stress == 'y':
+                    stress_file = self._ask_for_stress_file(base_config['FINETUNE'])
+                else:                    
+                    stress_file = None
             force_file = self._ask_for_force_file(base_config['FINETUNE'])
             print("Creating the training dataset...")
-            path_to_training_file = create_dataset(coord_file, force_file, pbc_mat)
+            if stress_file is not None:
+                path_to_training_file = create_dataset_stress(coord_file, force_file, stress_file, pbc_mat)
+            else:
+                path_to_training_file = create_dataset(coord_file, force_file, pbc_mat)
         else:
             path_to_training_file = coord_file
 
@@ -928,9 +976,19 @@ for head in heads:
         )
         
         if dataset_needed == 'y':
+            # Stress fine-tuning only available for MACE
+            if self.framework == "mace":
+                use_stress = ask_for_yes_no("Do you want to include stress data for training? (y/n)", 'n')
+                if use_stress == 'y':
+                    stress_file = self._ask_for_stress_file(base_config['TRAIN'])
+                else:                    
+                    stress_file = None
             force_file = self._ask_for_force_file(base_config['TRAIN'])
             print("Creating the training dataset...")
-            path_to_training_file = create_dataset(coord_file, force_file, pbc_mat)
+            if stress_file is not None:
+                path_to_training_file = create_dataset_stress(coord_file, force_file, stress_file, pbc_mat)
+            else:
+                path_to_training_file = create_dataset(coord_file, force_file, pbc_mat)
         else:
             path_to_training_file = coord_file
 

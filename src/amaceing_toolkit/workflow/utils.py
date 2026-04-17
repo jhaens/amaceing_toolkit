@@ -36,14 +36,14 @@ def cite_amaceing_toolkit():
     print(
     r"""
     ┌
-    │ If you use aMACEing_toolkit in your research, please cite the following pre-print:
+    │ If you use aMACEing_toolkit in your research, please cite the following scientific article:
     │
     │     Hänseroth, J. and Flötotto, A. and Qaisrani, M. N. and Dreßler, C. "Fine-Tuning Unifies
     │     Foundational Machine-learned Interatomic Potential Architectures at ab initio Accuracy."
-    │     arXiv preprint arXiv:2511.05337, https://doi.org/10.48550/arXiv.2511.05337 (2025).
+    │     J. Phys. Chem. Lett. 2026, 17, 11, 3152–3162, https://doi.org/10.1021/acs.jpclett.5c03801 (2026).
     └
     """
-    ) # scientfic article is published in JPCL: doi.org/10.1021/acs.jpclett.5c03801
+    ) # preprint on arXiv: https://doi.org/10.48550/arXiv.2511.05337
 
 try:
     # Enable tab completion for file names, append '/' for directories
@@ -587,7 +587,8 @@ def string_to_dict_multi(string):
     Special case for multi_md, because "lists" are in the dictionary.
     """
 
-    string = string[1:-2]
+    #string = string[1:-2]
+    string = string.split('{')[1].split('}')[0]
     dict_export = {}
     for pair in string.split(','):
         pair_key = pair.split(':')[0]
@@ -681,6 +682,46 @@ def create_dataset(coord_file, force_file, pbc_list):
                 atomic_number = atom_symbol_to_atomic_number(atoms[j])
                 f.write('%s %f %f %f %f %f %f %d \n' % (atoms[j], positions[i,j,0], positions[i,j,1], positions[i,j,2], forces[i,j,0], forces[i,j,1], forces[i,j,2], atomic_number))
     return filename        
+
+def stress_loader(stress_file):
+    stress = np.loadtxt(stress_file, skiprows=1)
+    stress = stress[:, 2:]
+    return stress
+
+def create_dataset_stress(coord_file, force_file, stress_file, pbc_list):
+    """
+    Function to create the training dataset out of the force, position and stress files
+    """
+   
+    # Read the coordinate file
+    atoms = xyz_reader(coord_file)[0]
+    positions  = xyz_reader(coord_file)[1]
+    energies = xyz_reader(coord_file)[2]
+    forces = xyz_reader(force_file)[1]
+    stress = stress_loader(stress_file)
+
+    # Set the pbc string
+    lattice = f"{pbc_list[0,0]} {pbc_list[0,1]} {pbc_list[0,2]} {pbc_list[1,0]} {pbc_list[1,1]} {pbc_list[1,2]} {pbc_list[2,0]} {pbc_list[2,1]} {pbc_list[2,2]}"
+
+    # Rescale the forces (ASE uses eV/Angstrom)
+    forces *= 51.4221
+
+    # Rescale the energies (ASE uses eV)
+    energies *= 27.2114
+
+    # Rescale the stress (ASE uses eV/Angstrom^3)
+    stress *= 6.24150907446e-07
+
+    # Write the dataset file
+    filename = 'dataset.xyz'
+    with open(filename, 'w') as f:
+        for i in range(0, positions.shape[0]):
+            f.write(f"{len(atoms)}\n")
+            f.write(f"REF_TotEnergy={energies[i]:.8f} cutoff=-1.00000000 nneightol=1.20000000 pbc=\"T T T\" Lattice=\"{lattice}\" REF_Stress=\"{stress[i,0]:.8f} {stress[i,1]:.8f} {stress[i,2]:.8f} {stress[i,3]:.8f} {stress[i,4]:.8f} {stress[i,5]:.8f}\" Properties=species:S:1:pos:R:3:REF_Force:R:3:Z:I:1\n")
+            for j in range(0, positions.shape[1]):
+                atomic_number = atom_symbol_to_atomic_number(atoms[j])
+                f.write('%s %f %f %f %f %f %f %d \n' % (atoms[j], positions[i,j,0], positions[i,j,1], positions[i,j,2], forces[i,j,0], forces[i,j,1], forces[i,j,2], atomic_number))
+    return filename   
 
 def e0_wrapper(e0s_precalc, coord_file, xc_functional):
     """
