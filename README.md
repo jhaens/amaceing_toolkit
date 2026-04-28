@@ -58,7 +58,7 @@ The toolkit offers:
 
 2. Install PyTorch:
    ```bash
-   pip install torch torchvision torchaudio
+   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
    ```
    For CPU-only systems:
    ```bash

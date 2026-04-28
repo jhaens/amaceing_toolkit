@@ -21,7 +21,7 @@ Installation from Source
    
    .. code-block:: bash
      
-       pip install torch torchvision torchaudio
+       pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
    
    For CPU-only systems:
    
