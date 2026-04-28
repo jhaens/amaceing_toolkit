@@ -111,7 +111,7 @@ class FTInputGenerator:
                 keys.append(current)
 
         # Check which of the expected force and energy key is present in the file
-        ener_key, frc_key, stress_key = "REF_TotEnergy", "REF_Force", "REF_Stress"
+        ener_key, frc_key, stress_key = "REF_TotEnergy", "REF_Force", None
         for key in expected_keys['energy_key']:
             if key in keys:
                 ener_key = key
