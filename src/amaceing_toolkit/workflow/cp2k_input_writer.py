@@ -422,8 +422,10 @@ def create_input(input_config, run_type, equi_prod=''):
     # Obtain the description of the kind of the atoms in the system
     if run_type == 'REFTRAJ':
         kind_data = kind_data_functionals(input_config['xc_functional'], input_config['ref_traj'])
+        max_scf = 1000 # independent frames can lead to convergence issues, so we increase the MAX_SCF for the REFTRAJ runs
     else:
         kind_data = kind_data_functionals(input_config['xc_functional'], input_config['coord_file'])
+        max_scf = 100
 
     if run_type == 'GEO_OPT':
         return f"""
@@ -484,7 +486,7 @@ def create_input(input_config, run_type, equi_prod=''):
         &END XC
         &SCF
             EPS_SCF 1.0E-6
-            MAX_SCF 100
+            MAX_SCF {max_scf}
             {ignore_convergence_failure}
             &OT
                 MINIMIZER DIIS

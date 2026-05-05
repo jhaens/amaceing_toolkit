@@ -67,7 +67,7 @@ class FTInputGenerator:
         elif foundation_model[0] == 'mp_anicc':
             return "anicc"
         else:
-            return foundation_model[0]
+            return foundation_model
 
     def cuequivariance_import(self):
         """Check if the cuequivariance package is installed."""
@@ -159,7 +159,7 @@ train_mace("{config_filename}")
 loss: "universal" """
 
         config_content = f"""model: "MACE"
-foundation_model: {self._translate_mace_foundation_model(config['foundation_model'])}
+foundation_model: "{self._translate_mace_foundation_model(config['foundation_model'])}"
 name: "{config['project_name']}"
 train_file: "{config['train_file']}" 
 E0s: "{config['E0s']}"
@@ -222,7 +222,7 @@ save_all_checkpoints: True
         heads_config = self._write_mace_mhft_heads(self.config)
         
         config_content = f"""model: "MACE"
-foundation_model: {self._translate_mace_foundation_model(config['foundation_model'])}
+foundation_model: "{self._translate_mace_foundation_model(config['foundation_model'])}"
 name: "{config['project_name']}"
 multiheads_finetuning: True
 {heads_config}
