@@ -357,7 +357,7 @@ if os.path.isfile('{config['project_name']}_md.traj') == False:
 
 # Write the xyz trajectory
 def write_xyz():
-    write('{config['project_name']}_pos.xyz', atoms, format='xyz', append=True)
+    write('{config['project_name']}_pos.xyz', atoms, format='xyz', append=True, comment="Comment line")
 dyn.attach(write_xyz, interval={int(config['write_interval'])})
 
 start_time = time.time()

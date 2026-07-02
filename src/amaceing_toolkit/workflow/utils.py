@@ -404,6 +404,8 @@ def run_eval_error(filenames):
         ener_ground_truth = xyz_reader(filenames[0])[2]
     else:
         ener_ground_truth = np.loadtxt(filenames[0])
+        if len(np.array(ener_ground_truth).shape) == 2:
+            ener_ground_truth = ener_ground_truth[:,4]
     force_ground_truth = xyz_reader(filenames[1])[1]
     if filenames[2].split('.')[-1] == 'xyz':
         ener_compare = xyz_reader(filenames[2])[2]

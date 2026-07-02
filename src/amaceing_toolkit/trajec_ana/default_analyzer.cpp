@@ -1180,7 +1180,8 @@ std::unordered_map<std::string, float> atom_mass_dict = {
     {"Ba", 137.327f},
     {"Cs", 132.905f},
     {"Rb", 85.468f},
-    {"Sr", 87.620f}
+    {"Sr", 87.620f},
+    {"Zr", 91.224f}
 };
 
 // Helper function: calculate the center of mass 
