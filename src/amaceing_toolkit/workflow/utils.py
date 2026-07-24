@@ -714,6 +714,9 @@ def create_dataset_stress(coord_file, force_file, stress_file, pbc_list):
     # Rescale the stress (ASE uses eV/Angstrom^3)
     stress *= 6.24150907446e-07
 
+    # Set the stress to voit notation (sigma_xx, sigma_yy, sigma_zz, sigma_yz, sigma_xz, sigma_xy)
+    stress = np.array([[stress[i,0], stress[i,4], stress[i,8], stress[i,5], stress[i,2], stress[i,1]] for i in range(stress.shape[0])])
+
     # Write the dataset file
     filename = 'dataset.xyz'
     with open(filename, 'w') as f:
