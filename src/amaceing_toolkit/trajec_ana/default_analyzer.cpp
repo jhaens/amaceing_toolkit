@@ -417,49 +417,19 @@ std::vector<std::vector<float>> pbc_dist_norm(const std::vector<std::vector<floa
         // Calculate the relative distance between coord1 and coord2
         for (size_t j = 0; j < transformed_coords1.size(); ++j) {
             for (size_t k = 0; k < transformed_coords2.size(); ++k) {
+                // Minimum image in fractional space: subtract the rounded part in EVERY dimension
+                // (checking only the sum of the rounded components fails for cases like (1,-1,0))
                 std::vector<float> relative_dist_vec(3, 0.0f);
-                std::vector<float> rounded_relative_dist_vec(3, 0.0f);
                 for (int dim = 0; dim < 3; ++dim) {
                     relative_dist_vec[dim] = transformed_coords2[k][dim] - transformed_coords1[j][dim];
-                    rounded_relative_dist_vec[dim] = round(relative_dist_vec[dim]);
-                    }
-                
-                // Determine if the rounded relative distance vector has any non-zero elements
-                float sum_rounded = std::accumulate(rounded_relative_dist_vec.begin(), rounded_relative_dist_vec.end(), 0.0f);
-
-                if (sum_rounded == 0.0f) {
-                    // Transform the relative coordinates back to real space
-                    std::vector<float> real_coords = vector_matrix_multiply(relative_dist_vec, pbc);
-                
-                    // Calculate the norm of the distance
-                    norm_distance[j][k] = sqrt(pow(real_coords[0], 2) + pow(real_coords[1], 2) + pow(real_coords[2], 2));
-
-                } else {
-                    // Change the real coordinates of atom j in coords1 to the minimum image
-                    // Calculate the shifter vector using the rounded relative distance vector and the PBC matrix
-                    std::vector<float> shifter(3, 0.0f);
-                    for (int dim = 0; dim < 3; ++dim) {
-                        for (int dim2 = 0; dim2 < 3; ++dim2) {
-                            shifter[dim] += rounded_relative_dist_vec[dim2] * pbc[dim2][dim];
-                        }
-                    }
-
-                    // Shift the real coordinates of atom j in coords1 to the minimum image
-                    std::vector<float> shifted_real_coords1(3, 0.0f);
-                    for (int dim = 0; dim < 3; ++dim) {
-                        shifted_real_coords1[dim] = coords1[j][dim] + shifter[dim];
-                    }
-                    
-                    // Calculate the distance vector in real space between the shifted atom j (coord1) and atom k (coord2)
-                    std::vector<float> distance_vector(3, 0.0f);
-                    for (int dim = 0; dim < 3; ++dim) {
-                        distance_vector[dim] = coords2[k][dim] - shifted_real_coords1[dim];
-                    }
-
-                    // Calculate the norm of the distance
-                    norm_distance[j][k] = sqrt(pow(distance_vector[0], 2) + pow(distance_vector[1], 2) + pow(distance_vector[2], 2));
-
+                    relative_dist_vec[dim] -= round(relative_dist_vec[dim]);
                 }
+
+                // Transform the relative coordinates back to real space
+                std::vector<float> real_coords = vector_matrix_multiply(relative_dist_vec, pbc);
+
+                // Calculate the norm of the distance
+                norm_distance[j][k] = sqrt(pow(real_coords[0], 2) + pow(real_coords[1], 2) + pow(real_coords[2], 2));
             }
         }
     }
@@ -1607,11 +1577,17 @@ std::tuple<std::vector<float>, std::vector<float>, std::vector<std::vector<float
     int verbosity,
     int max_length = -1) {
     
+    if (vector_arr.empty() || vector_arr[0].empty()) {
+        std::cerr << "No vectors to correlate!" << std::endl;
+        return std::make_tuple(std::vector<float>(), std::vector<float>(), std::vector<std::vector<float>>());
+    }
+
     size_t num_frames = vector_arr.size();
     size_t num_atoms = vector_arr[0].size();
-    
+
     // Normalize vectors
-    #pragma omp parallel for collapse(2)
+    long long zero_vectors = 0;
+    #pragma omp parallel for collapse(2) reduction(+:zero_vectors)
     for (size_t t = 0; t < num_frames; ++t) {
         for (size_t i = 0; i < num_atoms; ++i) {
             // Calculate norm of vector
@@ -1620,16 +1596,24 @@ std::tuple<std::vector<float>, std::vector<float>, std::vector<std::vector<float
                 vector_arr[t][i][1] * vector_arr[t][i][1] +
                 vector_arr[t][i][2] * vector_arr[t][i][2]
             );
-            
+
             // Normalize vector
             if (norm > 1e-10f) {
                 vector_arr[t][i][0] /= norm;
                 vector_arr[t][i][1] /= norm;
                 vector_arr[t][i][2] /= norm;
+            } else {
+                // Zero-length vectors cannot be normalized: they contribute 0 to the ACF
+                zero_vectors++;
             }
         }
     }
-    
+
+    if (zero_vectors > 0) {
+        std::cerr << "Warning: " << zero_vectors << " of " << num_frames * num_atoms
+                  << " vectors have zero length - the autocorrelation will be (partly) zero!" << std::endl;
+    }
+
     // Set limit
     size_t limit = (max_length > 0) ? 
         std::min(static_cast<size_t>(max_length), num_frames) : num_frames;
@@ -1721,8 +1705,14 @@ std::tuple<std::vector<float>, std::vector<float>, std::vector<std::vector<float
     }
     
     // Exit if no atoms found
-    if (indices1.empty() || indices2.empty()) {
-        std::cerr << "No atoms found of specified types" << std::endl;
+    if (indices1.empty() || indices2.empty() || trajectory.empty()) {
+        std::cerr << "No atoms found of specified types (or empty trajectory)" << std::endl;
+        return std::make_tuple(std::vector<float>(), std::vector<float>(), std::vector<std::vector<float>>());
+    }
+
+    // Exit if the only possible partner is the atom itself
+    if (atom_type1 == atom_type2 && indices1.size() < 2) {
+        std::cerr << "Only one atom of type " << atom_type1 << " - no vector can be defined" << std::endl;
         return std::make_tuple(std::vector<float>(), std::vector<float>(), std::vector<std::vector<float>>());
     }
     
@@ -1738,13 +1728,43 @@ std::tuple<std::vector<float>, std::vector<float>, std::vector<std::vector<float
         coord2_frame0[i] = trajectory[0][indices2[i]];
     }
     
-    // Find nearest neighbors
-    auto [ind_list, min_dist] = next_neighbor(coord1_frame0, coord2_frame0, pbc_mat);
-    
+    // Find nearest neighbors in the first frame
+    // (an atom must never pair with itself: for atom_type1 == atom_type2 the nearest
+    //  neighbor would be the atom itself and all vectors would be zero)
+    std::vector<std::vector<float>> dist_frame0 = pbc_dist_norm(coord1_frame0, coord2_frame0, pbc_mat);
+    std::vector<int> ind_list(indices1.size(), -1);
+
+    for (size_t i = 0; i < indices1.size(); ++i) {
+        float min_dist_i = std::numeric_limits<float>::max();
+        for (size_t j = 0; j < indices2.size(); ++j) {
+            if (indices2[j] == indices1[i]) continue; // skip self-pairing
+            if (dist_frame0[i][j] < min_dist_i) {
+                min_dist_i = dist_frame0[i][j];
+                ind_list[i] = static_cast<int>(j);
+            }
+        }
+    }
+
+    // Exit if no partner atom is left for at least one atom of type1
+    for (size_t i = 0; i < ind_list.size(); ++i) {
+        if (ind_list[i] < 0) {
+            std::cerr << "No " << atom_type2 << " partner found for atom " << indices1[i]
+                      << " (" << atom_type1 << ") - autocorrelation skipped" << std::endl;
+            return std::make_tuple(std::vector<float>(), std::vector<float>(), std::vector<std::vector<float>>());
+        }
+    }
+
     // Create vector_arr as the difference between coord1 and nearest neighbors in coord2
-    std::vector<std::vector<std::vector<float>>> vector_arr(trajectory.size(), 
+    std::vector<std::vector<std::vector<float>>> vector_arr(trajectory.size(),
         std::vector<std::vector<float>>(indices1.size(), std::vector<float>(3, 0.0f)));
-    
+
+    // Calculate the inverse of the PBC matrix once (only needed for non-orthogonal cells)
+    const bool ortho_pbc = is_ortho(pbc_mat);
+    std::vector<std::vector<float>> inv_pbc;
+    if (!ortho_pbc) {
+        inv_pbc = matrix_inverse(pbc_mat);
+    }
+
     for (size_t t = 0; t < trajectory.size(); ++t) {
         for (size_t i = 0; i < indices1.size(); ++i) {
             // Get coordinates of atom i of type1 at frame t
@@ -1755,68 +1775,36 @@ std::tuple<std::vector<float>, std::vector<float>, std::vector<std::vector<float
             const auto& pos2 = trajectory[t][neigh_idx];
             
             // Create minimum distance vector between the atoms using PBC
-            std::vector<std::vector<float>> single_pos1 = {pos1};
-            std::vector<std::vector<float>> single_pos2 = {pos2};
-            
+
             // For orthogonal PBC, can directly calculate the vector
-            if (is_ortho(pbc_mat)) {
+            if (ortho_pbc) {
                 for (int d = 0; d < 3; ++d) {
                     vector_arr[t][i][d] = pos1[d] - pos2[d];
                     vector_arr[t][i][d] -= pbc_mat[d][d] * std::round(vector_arr[t][i][d] / pbc_mat[d][d]);
                 }
-            } 
+            }
             // For non-orthogonal, need to transform to fractional coordinates
             else {
-                // Calculate the inverse of the PBC matrix
-                std::vector<std::vector<float>> inv_pbc = matrix_inverse(pbc_mat);
-                
                 // Transform to fractional coordinates
                 std::vector<float> frac1 = vector_matrix_multiply(pos1, inv_pbc);
                 std::vector<float> frac2 = vector_matrix_multiply(pos2, inv_pbc);
-                
+
+                // Calculate minimum image by using fractional coords: the rounded part has to be
+                // subtracted in EVERY dimension (a check on the sum fails e.g. for (1,-1,0))
                 std::vector<float> frac_dist_vec(3, 0.0f);
-                std::vector<float> rounded_frac_dist_vec(3, 0.0f);
-                // Calculate minimum image by using fractional coords
                 for (int dim = 0; dim < 3; ++dim) {
-                    frac_dist_vec[dim] = frac2[dim] - frac1[dim];
-                    rounded_frac_dist_vec[dim] = round(frac_dist_vec[dim]);
+                    frac_dist_vec[dim] = frac1[dim] - frac2[dim];
+                    frac_dist_vec[dim] -= round(frac_dist_vec[dim]);
                 }
 
-                float sum_rounded = std::accumulate(rounded_frac_dist_vec.begin(), rounded_frac_dist_vec.end(), 0.0f);
-                
-                if (sum_rounded == 0.0f) {
-                    // Transform the relative coordinates back to real space
-                    vector_arr[t][i] = vector_matrix_multiply(frac_dist_vec, pbc_mat);
-                
-                } else {
-                    // Change the real coordinates of atom j in coords1 to the minimum image
-                    std::vector<float> shifter(3, 0.0f);
-                    for (int dim = 0; dim < 3; ++dim) {
-                        for (int dim2 = 0; dim2 < 3; ++dim2) {
-                            shifter[dim] += rounded_frac_dist_vec[dim2] * pbc_mat[dim2][dim];
-                        }
-                    }
-
-                    // Shift the real coordinates of atom j in coords1 to the minimum image
-                    std::vector<float> shifted_real_coords1(3, 0.0f);
-                    for (int dim = 0; dim < 3; ++dim) {
-                        shifted_real_coords1[dim] = pos1[dim] + shifter[dim];
-                    }
-                    
-                    // Calculate the distance in real space between the shifted atom j (coord1) and atom k (coord2)
-                    std::vector<float> distance_vector(3, 0.0f);
-                    for (int dim = 0; dim < 3; ++dim) {
-                        distance_vector[dim] = pos2[dim] - shifted_real_coords1[dim];
-                    }
-
-                    vector_arr[t][i] = distance_vector;
-                }
+                // Transform the relative coordinates back to real space
+                vector_arr[t][i] = vector_matrix_multiply(frac_dist_vec, pbc_mat);
             }
         }
-        
-        // Call vector_autocorr with the calculated vectors
-        return vector_autocorr(vector_arr, timestep_md, tau_steps, verbosity, max_length);
-    }   
+    }
+
+    // Call vector_autocorr with the calculated vectors (after ALL frames are filled)
+    return vector_autocorr(vector_arr, timestep_md, tau_steps, verbosity, max_length);
 }
 
 // Wrapper function to save autocorrelation data to file
@@ -1834,9 +1822,15 @@ void save_autocorr_data(
     std::cout << "Computing " << atom_type1 << "-" << atom_type2 << " vector autocorrelation..." << std::endl;
     
     auto [tau, auto_corr, auto_single] = calc_autocorr_xy(
-        trajectory, atoms, atom_type1, atom_type2, 
+        trajectory, atoms, atom_type1, atom_type2,
         pbc_mat, timestep_md/1000, tau_steps*10, verbosity, max_length);
-    
+
+    if (tau.empty()) {
+        std::cerr << "No autocorrelation data for " << atom_type1 << "-" << atom_type2
+                  << " - no file written." << std::endl;
+        return;
+    }
+
     // Generate the output filename
     std::string output_filename = "autocorr_" + atom_type1 + atom_type2 + ".csv";
     

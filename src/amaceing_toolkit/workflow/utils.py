@@ -414,32 +414,48 @@ def run_eval_error(filenames):
     if filenames[3].split('.')[-1] == 'xyz':
         force_compare = xyz_reader(filenames[3])[1]
     elif filenames[3].split('.')[-1] == 'lammpstrj':
-        force_compare, _ = lmp_reader(filenames[3])[1]
+        force_compare = lmp_reader(filenames[3])[0]
 
     # Rescale the ground truth (AIMD) forces and energies
     force_ground_truth *= 51.4221
     ener_ground_truth *= 27.2114
 
-    # Compare them
-    diff_force = force_compare - force_ground_truth
-    diff_ener = ener_compare - ener_ground_truth
+    force_compare = np.asarray(force_compare, dtype=float)
+    force_ground_truth = np.asarray(force_ground_truth, dtype=float)
+    ener_compare = np.asarray(ener_compare, dtype=float).flatten()
+    ener_ground_truth = np.asarray(ener_ground_truth, dtype=float).flatten()
 
-    diff_force = np.linalg.norm(diff_force, axis=2)
-    ref_force = np.linalg.norm(force_ground_truth, axis=2)
-    rel_diff_force = diff_force / ref_force
-    diff_force = np.mean(diff_force, axis=1)
-    rel_diff_force = np.mean(rel_diff_force, axis=1)
-    print(f"The mean absolute force error is {np.mean(diff_force):.8f} eV/Angstrom.")
-    print(f"The mean relative force error is {np.mean(rel_diff_force):.8f}.")
+    assert force_compare.shape == force_ground_truth.shape, (
+        f"Force shape mismatch: {force_compare.shape} (compare) vs "
+        f"{force_ground_truth.shape} (ground truth)."
+    )
+    assert ener_compare.shape == ener_ground_truth.shape, (
+        f"Energy shape mismatch: {ener_compare.shape} (compare) vs "
+        f"{ener_ground_truth.shape} (ground truth)."
+    )
 
-    diff_energy = np.abs(ener_compare - ener_ground_truth)/force_compare.shape[1]
-    print(f"The mean absolute energy error per atom is {np.mean(diff_energy):.8f} eV/atom.")
+    # Compare them: component-wise force errors, pooled over frames, atoms and
+    # xyz components. Same convention as MACE's own mae_f / rel_mae_f
+    # (mace.tools.utils.compute_mae / compute_rel_mae), so the numbers are
+    # directly comparable to MACE training logs. The relative error is
+    # rel_mae_f without the factor 100 (x100 -> percent).
+    abs_diff_force = np.abs(force_compare - force_ground_truth)
+
+    mae_force = np.mean(abs_diff_force)
+    rel_mae_force = np.sum(abs_diff_force) / (np.sum(np.abs(force_ground_truth)) + 1e-9)
+
+    print(f"The mean absolute force error is {mae_force:.8f} eV/Angstrom.")
+    print(f"The mean relative force error is {rel_mae_force:.8f}.")
+
+    n_atoms = force_ground_truth.shape[1]
+    mae_energy = np.mean(np.abs(ener_compare - ener_ground_truth) / n_atoms)
+    print(f"The mean absolute energy error per atom is {mae_energy:.8f} eV/atom.")
 
     # Write the error files
     with open('errors.txt', 'w') as f:
-        f.write("Mean absolute force error: " + str(np.mean(diff_force)) + " eV/Angstrom\n")
-        f.write("Mean relative force error: " + str(np.mean(rel_diff_force)) + "\n")
-        f.write("Mean absolute energy error per atom: " + str(np.mean(diff_energy)) + " eV/atom\n")
+        f.write("Mean absolute force error: " + str(mae_force) + " eV/Angstrom\n")
+        f.write("Mean relative force error: " + str(rel_mae_force) + "\n")
+        f.write("Mean absolute energy error per atom: " + str(mae_energy) + " eV/atom\n")
 
 
 def run_prepare_eval_error(traj_file, each_nth_frame, start_cp2k, log_file="", xc_functional=""):
