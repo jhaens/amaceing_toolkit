@@ -183,7 +183,7 @@ model_dir: {config['dir']}
 log_dir: {config['dir']}
 results_dir: {config['dir']}
 checkpoints_dir: {config['dir']}
-save_all_checkpoints: True
+save_all_checkpoints: False
 
 # INPUT WRITTEN BY AMACEING_TOOLKIT on {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
@@ -243,7 +243,7 @@ model_dir: {config['dir']}
 log_dir: {config['dir']}
 results_dir: {config['dir']}
 checkpoints_dir: {config['dir']}
-save_all_checkpoints: True
+save_all_checkpoints: False
 
 # INPUT WRITTEN BY AMACEING_TOOLKIT on {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
